@@ -1,0 +1,26 @@
+{
+  "name": "DuplicateFields",
+  "module": "TestModule",
+  "fields": [
+    {
+      "fieldname": "name",
+      "label": "Name",
+      "fieldtype": "Data",
+      "required": true
+    },
+    {
+      "fieldname": "name",
+      "label": "Another Name",
+      "fieldtype": "Data"
+    }
+  ],
+  "permissions": [
+    {
+      "role": "System Manager",
+      "read": true,
+      "write": true,
+      "create": true,
+      "delete": true
+    }
+  ]
+}

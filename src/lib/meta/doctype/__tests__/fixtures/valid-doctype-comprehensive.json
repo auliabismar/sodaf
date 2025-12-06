@@ -1,0 +1,236 @@
+{
+  "name": "ComprehensiveDocType",
+  "module": "TestModule",
+  "issingle": false,
+  "istable": false,
+  "is_submittable": true,
+  "is_tree": false,
+  "is_virtual": false,
+  "autoname": "COMP-.#####",
+  "naming_series": "COMP-.#####",
+  "title_field": "name",
+  "image_field": "image",
+  "search_fields": "name,status",
+  "keyword_fields": "name,description",
+  "default_sort_order": "modified desc",
+  "max_attachments": 5,
+  "track_changes": true,
+  "track_seen": false,
+  "track_visits": false,
+  "show_in_global_search": true,
+  "allow_auto_repeat": false,
+  "allow_events": true,
+  "allow_import": true,
+  "allow_rename": true,
+  "engine": "InnoDB",
+  "table_name": "tab_comprehensive_doctype",
+  "subject_field": "subject",
+  "sender_field": "sender",
+  "email_template": "Test Template",
+  "timeline_fields": "status,modified_by",
+  "grid_view_fields": "name,status,modified",
+  "list_view_settings": {
+    "add_row": true,
+    "get_report": true
+  },
+  "custom_fields": [],
+  "fields": [
+    {
+      "fieldname": "name",
+      "label": "Name",
+      "fieldtype": "Data",
+      "required": true,
+      "unique": true,
+      "length": 100,
+      "in_list_view": true,
+      "in_standard_filter": true,
+      "in_global_search": true,
+      "search_index": true
+    },
+    {
+      "fieldname": "status",
+      "label": "Status",
+      "fieldtype": "Select",
+      "options": "Draft\nSubmitted\nCancelled",
+      "default": "Draft",
+      "required": true,
+      "in_list_view": true,
+      "in_standard_filter": true
+    },
+    {
+      "fieldname": "description",
+      "label": "Description",
+      "fieldtype": "Long Text",
+      "length": 1000,
+      "description": "Detailed description of the document"
+    },
+    {
+      "fieldname": "amount",
+      "label": "Amount",
+      "fieldtype": "Currency",
+      "precision": 2,
+      "default": 0,
+      "in_list_view": true
+    },
+    {
+      "fieldname": "date_field",
+      "label": "Date",
+      "fieldtype": "Date",
+      "required": false
+    },
+    {
+      "fieldname": "link_field",
+      "label": "Related Document",
+      "fieldtype": "Link",
+      "options": "OtherDocType",
+      "filters": "{\"status\": \"Active\"}"
+    },
+    {
+      "fieldname": "table_field",
+      "label": "Child Table",
+      "fieldtype": "Table",
+      "options": "ChildDocType"
+    },
+    {
+      "fieldname": "section_break",
+      "label": "Section Break",
+      "fieldtype": "Section Break"
+    },
+    {
+      "fieldname": "check_field",
+      "label": "Active",
+      "fieldtype": "Check",
+      "default": 0
+    }
+  ],
+  "permissions": [
+    {
+      "role": "System Manager",
+      "read": true,
+      "write": true,
+      "create": true,
+      "delete": true,
+      "submit": true,
+      "cancel": true,
+      "amend": true,
+      "report": true,
+      "export": true,
+      "import": true,
+      "share": true,
+      "print": true,
+      "email": true,
+      "select": true,
+      "permlevel": 0,
+      "if_owner": false,
+      "apply_to_all": true,
+      "condition": "doc.status !== \"Submitted\"",
+      "description": "Full access for system managers"
+    },
+    {
+      "role": "All",
+      "read": true,
+      "permlevel": 0,
+      "if_owner": false,
+      "apply_to_all": true
+    }
+  ],
+  "indexes": [
+    {
+      "name": "idx_name",
+      "columns": ["name"],
+      "unique": true,
+      "type": "btree"
+    },
+    {
+      "name": "idx_status_modified",
+      "columns": ["status", "modified"],
+      "unique": false,
+      "where": "status != 'Deleted'"
+    }
+  ],
+  "actions": [
+    {
+      "label": "Submit",
+      "action_type": "Server Action",
+      "action": "submit_doc",
+      "group": "Actions",
+      "hidden": false,
+      "condition": "doc.status === \"Draft\"",
+      "order": 10,
+      "is_standard": true
+    },
+    {
+      "label": "Cancel",
+      "action_type": "Server Action",
+      "action": "cancel_doc",
+      "group": "Actions",
+      "condition": "doc.status === \"Submitted\"",
+      "order": 20,
+      "is_standard": true
+    }
+  ],
+  "links": [
+    {
+      "group": "Related Documents",
+      "link_doctype": "ChildDocType",
+      "link_fieldname": "parent",
+      "parent_doctype": "ComprehensiveDocType",
+      "label": "Child Documents",
+      "hidden": false,
+      "condition": "doc.status !== \"Deleted\"",
+      "order": 10
+    }
+  ],
+  "form_view_settings": {
+    "add_row": true,
+    "get_report": true
+  },
+  "tree_view_settings": {
+    "show_expand_collapse": true
+  },
+  "calendar_view_settings": {
+    "start_date": "date_field",
+    "title_field": "name"
+  },
+  "kanban_view_settings": {
+    "title_field": "name",
+    "status_field": "status"
+  },
+  "report_view_settings": {
+    "show_chart": true
+  },
+  "dashboard_view_settings": {
+    "refresh_interval": 30
+  },
+  "mobile_view_settings": {
+    "show_form": true
+  },
+  "quick_entry_fields": "name,description,amount",
+  "hide_toolbar": false,
+  "print_heading": "Comprehensive Document",
+  "print_format_templates": ["Standard", "Custom"],
+  "email_templates": ["Notification", "Alert"],
+  "custom_scripts": {
+    "onload": "console.log('Document loaded');",
+    "refresh": "console.log('Document refreshed');"
+  },
+  "custom_css": ".custom-field { font-weight: bold; }",
+  "custom_js": "// Custom JavaScript code",
+  "custom_html": "<div>Custom HTML</div>",
+  "custom_json": {
+    "custom_property": "custom_value"
+  },
+  "version": 1,
+  "created_by": "Administrator",
+  "created_at": "2023-01-01T00:00:00.000Z",
+  "modified_by": "Administrator",
+  "modified_at": "2023-01-01T00:00:00.000Z",
+  "is_deprecated": false,
+  "is_standard": true,
+  "is_custom": false,
+  "is_module": false,
+  "is_archived": false,
+  "is_active": true,
+  "is_public": false,
+  "is_private": false
+}

@@ -1,0 +1,27 @@
+{
+  "name": "InvalidFieldTypes",
+  "module": "TestModule",
+  "fields": [
+    {
+      "fieldname": "name",
+      "label": "Name",
+      "fieldtype": "InvalidType",
+      "required": true
+    },
+    {
+      "fieldname": "link_field",
+      "label": "Link Field",
+      "fieldtype": "Link"
+      // Missing options for Link field
+    }
+  ],
+  "permissions": [
+    {
+      "role": "System Manager",
+      "read": true,
+      "write": true,
+      "create": true,
+      "delete": true
+    }
+  ]
+}

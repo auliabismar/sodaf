@@ -12,11 +12,11 @@ export * from './core/document';
 
 // Export schema module with explicit re-exports to avoid naming conflicts
 export type {
-	FieldType,
-	DocField,
-	DocIndex,
+	FieldType as SchemaFieldType,
+	DocField as SchemaDocField,
+	DocIndex as SchemaDocIndex,
 	DocSchema,
-	DocPermission,
+	DocPermission as SchemaDocPermission,
 	FieldConstraint,
 	FieldDisplayOptions,
 	FieldCondition,
@@ -42,3 +42,34 @@ export type { ValidationError as SchemaValidationError } from './core/schema';
 
 // Export site module
 export * from './core/site';
+
+// Export DocType module with explicit re-exports to avoid naming conflicts
+export type {
+	DocType,
+	DocField,
+	DocPerm,
+	DocIndex,
+	DocTypeAction,
+	DocTypeLink,
+	FieldType
+} from './meta/doctype';
+
+export {
+	DocTypeEngine,
+	DocTypeValidator,
+	DocTypeJSONParser
+} from './meta/doctype';
+
+export {
+	DocTypeError,
+	DocTypeExistsError,
+	DocTypeNotFoundError,
+	DocTypeValidationError,
+	JSONParseError,
+	FileNotFoundError,
+	FileIOError,
+	SerializationError
+} from './meta/doctype';
+
+export type { ValidationResult } from './meta/doctype';
+export type { ValidationError as DocTypeValidationErrorType } from './meta/doctype';

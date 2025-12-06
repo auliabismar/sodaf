@@ -14,6 +14,8 @@ import {
 	DocTypeValidationError
 } from './errors';
 import type { ValidationResult } from './errors';
+import { MetaCache } from './meta-cache';
+import type { DocTypeMeta } from './meta';
 
 // Re-export error classes for convenience
 export {
@@ -88,6 +90,14 @@ export class DocTypeEngine {
 				this.moduleIndex.set(doctype.module, new Set());
 			}
 			this.moduleIndex.get(doctype.module)!.add(doctype.name);
+
+			// Invalidate cache for this DocType
+			try {
+				const cache = MetaCache.getInstance(this);
+				cache.invalidateMeta(doctype.name);
+			} catch {
+				// Cache not initialized yet, ignore
+			}
 		});
 	}
 
@@ -113,6 +123,14 @@ export class DocTypeEngine {
 				if (moduleDocTypes.size === 0) {
 					this.moduleIndex.delete(doctype.module);
 				}
+			}
+
+			// Invalidate cache for this DocType
+			try {
+				const cache = MetaCache.getInstance(this);
+				cache.invalidateMeta(doctypeName);
+			} catch {
+				// Cache not initialized yet, ignore
 			}
 		});
 	}
@@ -240,5 +258,50 @@ export class DocTypeEngine {
 			// Clear the lock when operation is complete
 			this.registrationLock = Promise.resolve();
 		}
+	}
+
+	/**
+		* Get MetaCache instance for this DocTypeEngine
+		* @returns MetaCache instance
+		*/
+	public getMetaCache(): MetaCache {
+		return MetaCache.getInstance(this);
+	}
+
+	/**
+		* Get DocTypeMeta instance for a DocType
+		* @param doctypeName Name of the DocType to get Meta for
+		* @returns Promise resolving to DocTypeMeta instance or null if not found
+		*/
+	public async getDocTypeMeta(doctypeName: string): Promise<DocTypeMeta | null> {
+		const cache = this.getMetaCache();
+		return cache.getMeta(doctypeName);
+	}
+
+	/**
+		* Reload DocTypeMeta instance for a DocType
+		* @param doctypeName Name of the DocType to reload Meta for
+		* @returns Promise resolving to DocTypeMeta instance or null if not found
+		*/
+	public async reloadDocTypeMeta(doctypeName: string): Promise<DocTypeMeta | null> {
+		const cache = this.getMetaCache();
+		return cache.reloadMeta(doctypeName);
+	}
+
+	/**
+		* Invalidate DocTypeMeta cache for a DocType
+		* @param doctypeName Name of the DocType to invalidate cache for
+		*/
+	public invalidateDocTypeMeta(doctypeName: string): void {
+		const cache = this.getMetaCache();
+		cache.invalidateMeta(doctypeName);
+	}
+
+	/**
+		* Clear all DocTypeMeta cache
+		*/
+	public clearDocTypeMetaCache(): void {
+		const cache = this.getMetaCache();
+		cache.clearCache();
 	}
 }
