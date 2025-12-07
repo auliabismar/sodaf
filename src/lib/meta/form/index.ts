@@ -53,3 +53,6 @@ export type {
 	FormGeneratorOptions,
 	FormGenerationResult
 } from './form-generator';
+
+// Export Field Mapping (P2-011)
+export * from './field-mapping';
