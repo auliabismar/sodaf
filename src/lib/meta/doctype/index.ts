@@ -45,4 +45,13 @@ export { MetaFactory } from './meta-factory';
 
 // P2-002: Validation types
 export type { ValidationResult } from './errors';
-export type { ValidationError } from './errors';
+export type { ValidationError } from './errors';// P2-015: Single DocType Implementation
+export {
+SingleDocument,
+SingleDocTypeError,
+get_single_value,
+set_single_value,
+is_single_doctype,
+get_single_doc
+} from './single-document';
+export type { SingleDocumentOptions, SinglesTableRow } from './single-document';
