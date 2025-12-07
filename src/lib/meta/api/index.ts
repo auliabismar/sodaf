@@ -54,3 +54,11 @@ export type {
     // OpenAPI Types
     OpenAPIOperation
 } from './types';
+
+// =============================================================================
+// API Generator Exports
+// =============================================================================
+
+export { APIGenerator } from './api-generator';
+export type { APIGeneratorOptions, GeneratedRoute } from './api-generator';
+
