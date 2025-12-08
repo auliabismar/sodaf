@@ -15,7 +15,9 @@
 		"lint:fix": "eslint . --fix",
 		"test": "vitest run",
 		"test:ui": "vitest --ui",
-		"test:run": "vitest run"
+		"test:run": "vitest run",
+		"build:cli": "tsc -p tsconfig.cli.json",
+		"cli": "node dist/cli/index.js"
 	},
 	"devDependencies": {
 		"@eslint/js": "^9.18.0",

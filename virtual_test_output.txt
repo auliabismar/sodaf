@@ -1,0 +1,225 @@
+
+> sodaf@0.0.1 test
+> vitest run src/lib/meta/doctype/__tests__/virtual-manager.test.ts
+
+The following Vite config options will be overridden by SvelteKit:
+  - base
+
+[1m[46m RUN [49m[22m [36mv4.0.15 [39m[90mD:/workspace/sodaf[39m
+
+[90mstdout[2m | src/lib/meta/doctype/__tests__/virtual-manager.test.ts[2m > [22m[2mVirtualManager[2m > [22m[2mRegistration[2m > [22m[2mshould handle unregistering non-existent DocType
+[22m[39m[DEBUG] Registering TestDocType
+[DEBUG] Registering TestDocType
+[DEBUG] Registering TestDocType
+[DEBUG] Registering TestDocType
+
+[90mstdout[2m | src/lib/meta/doctype/__tests__/virtual-manager.test.ts[2m > [22m[2mVirtualManager[2m > [22m[2mRegistration[2m > [22m[2mshould handle unregistering non-existent DocType
+[22m[39m[DEBUG] Registered TestDocType. Map size: 1. Controller map size: 1
+[DEBUG] Registered TestDocType. Map size: 1. Controller map size: 1
+[DEBUG] Registered TestDocType. Map size: 1. Controller map size: 1
+[DEBUG] Registered TestDocType. Map size: 1. Controller map size: 1
+
+[90mstdout[2m | src/lib/meta/doctype/__tests__/virtual-manager.test.ts[2m > [22m[2mVirtualManager[2m > [22m[2mRegistration[2m > [22m[2mshould handle unregistering non-existent DocType
+[22m[39m[DEBUG] Registering TestDocType
+
+[90mstdout[2m | src/lib/meta/doctype/__tests__/virtual-manager.test.ts[2m > [22m[2mVirtualManager[2m > [22m[2mRegistration[2m > [22m[2mshould handle unregistering non-existent DocType
+[22m[39m[DEBUG] Registered TestDocType. Map size: 1. Controller map size: 1
+
+[90mstdout[2m | src/lib/meta/doctype/__tests__/virtual-manager.test.ts[2m > [22m[2mVirtualManager[2m > [22m[2mController Management[2m > [22m[2mshould reuse existing controller
+[22m[39m[DEBUG] Registering TestDocType
+[DEBUG] Registering TestDocType
+
+[90mstdout[2m | src/lib/meta/doctype/__tests__/virtual-manager.test.ts[2m > [22m[2mVirtualManager[2m > [22m[2mQuery Operations[2m > [22m[2mshould query Virtual DocType
+[22m[39m[DEBUG] Registering TestDocType
+
+[90mstdout[2m | src/lib/meta/doctype/__tests__/virtual-manager.test.ts[2m > [22m[2mVirtualManager[2m > [22m[2mRegistration
+[22m[39m[DEBUG] Registered TestDocType. Map size: 1. Controller map size: 1
+[DEBUG] Registered TestDocType. Map size: 1. Controller map size: 1
+[DEBUG] Registering TestDocType
+
+[90mstdout[2m | src/lib/meta/doctype/__tests__/virtual-manager.test.ts[2m > [22m[2mVirtualManager[2m > [22m[2mQuery Operations[2m > [22m[2mshould handle query for non-existent DocType
+[22m[39m[DEBUG] TestDocType is already registered. Map size: 1
+
+[90mstdout[2m | src/lib/meta/doctype/__tests__/virtual-manager.test.ts[2m > [22m[2mVirtualManager[2m > [22m[2mQuery Operations[2m > [22m[2mshould handle query for non-existent DocType
+[22m[39m[DEBUG] Registered TestDocType. Map size: 1. Controller map size: 1
+
+[90mstdout[2m | src/lib/meta/doctype/__tests__/virtual-manager.test.ts[2m > [22m[2mVirtualManager
+[22m[39m[DEBUG] Registering TestDocType
+[DEBUG] getController(TestDocType) -> Null. Map size: 0
+[DEBUG] getController(NonExistent) -> Null. Map size: 0
+
+[90mstdout[2m | src/lib/meta/doctype/__tests__/virtual-manager.test.ts[2m > [22m[2mVirtualManager
+[22m[39m[DEBUG] Registered TestDocType. Map size: 1. Controller map size: 1
+[DEBUG] getController(TestDocType) -> Found. Map size: 1
+
+[90mstdout[2m | src/lib/meta/doctype/__tests__/virtual-manager.test.ts[2m > [22m[2mVirtualManager[2m > [22m[2mController Management
+[22m[39m[DEBUG] getController(NonExistent) -> Null. Map size: 1
+
+[90mstdout[2m | src/lib/meta/doctype/__tests__/virtual-manager.test.ts[2m > [22m[2mVirtualManager[2m > [22m[2mQuery Operations
+[22m[39m[DEBUG] Registering TestDocType
+[DEBUG] Registering TestDocType
+
+[90mstdout[2m | src/lib/meta/doctype/__tests__/virtual-manager.test.ts[2m > [22m[2mVirtualManager[2m > [22m[2mQuery Operations
+[22m[39m[DEBUG] Registered TestDocType. Map size: 1. Controller map size: 1
+[DEBUG] Registered TestDocType. Map size: 1. Controller map size: 1
+
+[90mstdout[2m | src/lib/meta/doctype/__tests__/virtual-manager.test.ts[2m > [22m[2mVirtualManager[2m > [22m[2mController Factory[2m > [22m[2mshould create API controller
+[22m[39m[DEBUG] getController(TestDocType) -> Null. Map size: 0
+[DEBUG] getController(NonExistent) -> Null. Map size: 0
+
+[90mstdout[2m | src/lib/meta/doctype/__tests__/virtual-manager.test.ts[2m > [22m[2mVirtualManager[2m > [22m[2mController Factory
+[22m[39m[DEBUG] Registering TestDocType
+
+[90mstdout[2m | src/lib/meta/doctype/__tests__/virtual-manager.test.ts[2m > [22m[2mVirtualManager[2m > [22m[2mController Factory
+[22m[39m[DEBUG] Registering TestDocType
+
+[90mstdout[2m | src/lib/meta/doctype/__tests__/virtual-manager.test.ts[2m > [22m[2mVirtualManager[2m > [22m[2mController Factory
+[22m[39m[DEBUG] Registering TestDocType
+
+[90mstdout[2m | src/lib/meta/doctype/__tests__/virtual-manager.test.ts[2m > [22m[2mVirtualManager[2m > [22m[2mController Factory
+[22m[39m[DEBUG] Registered TestDocType. Map size: 1. Controller map size: 1
+[DEBUG] Registering TestDocType
+
+[90mstdout[2m | src/lib/meta/doctype/__tests__/virtual-manager.test.ts[2m > [22m[2mVirtualManager[2m > [22m[2mError Handling
+[22m[39m[DEBUG] getController(TestDocType) -> Null. Map size: 0
+
+[90mstdout[2m | src/lib/meta/doctype/__tests__/virtual-manager.test.ts[2m > [22m[2mVirtualManager
+[22m[39m[DEBUG] Registered TestDocType. Map size: 1. Controller map size: 1
+
+[90mstdout[2m | src/lib/meta/doctype/__tests__/virtual-manager.test.ts[2m > [22m[2mVirtualManager
+[22m[39m[DEBUG] getController(TestDocType) -> Found. Map size: 1
+
+ [31mΓ¥»[39m src/lib/meta/doctype/__tests__/virtual-manager.test.ts [2m([22m[2m22 tests[22m[2m | [22m[31m9 failed[39m[2m)[22m[32m 37[2mms[22m[39m
+       [32mΓ£ô[39m should register a Virtual DocType[32m 16[2mms[22m[39m
+       [32mΓ£ô[39m should get all Virtual DocTypes[32m 16[2mms[22m[39m
+       [32mΓ£ô[39m should unregister a Virtual DocType[32m 18[2mms[22m[39m
+[31m       [31m├ù[31m should handle duplicate registration[39m[32m 20[2mms[22m[39m
+[31m       [31m├ù[31m should handle unregistering non-existent DocType[39m[32m 16[2mms[22m[39m
+[31m       [31m├ù[31m should get controller for Virtual DocType[39m[32m 5[2mms[22m[39m
+       [32mΓ£ô[39m should return null for non-existent DocType[32m 5[2mms[22m[39m
+[31m       [31m├ù[31m should reuse existing controller[39m[32m 5[2mms[22m[39m
+       [32mΓ£ô[39m should query Virtual DocType[32m 6[2mms[22m[39m
+       [32mΓ£ô[39m should handle query for non-existent DocType[32m 5[2mms[22m[39m
+[31m       [31m├ù[31m should refresh Virtual DocType[39m[32m 3[2mms[22m[39m
+       [32mΓ£ô[39m should handle refresh for non-existent DocType[32m 3[2mms[22m[39m
+       [32mΓ£ô[39m should validate valid configuration[32m 2[2mms[22m[39m
+       [32mΓ£ô[39m should reject invalid configuration[32m 2[2mms[22m[39m
+       [32mΓ£ô[39m should create API controller[32m 2[2mms[22m[39m
+       [32mΓ£ô[39m should create file controller[32m 1[2mms[22m[39m
+       [32mΓ£ô[39m should create computed controller[32m 1[2mms[22m[39m
+[31m       [31m├ù[31m should throw error for unsupported source type[39m[32m 2[2mms[22m[39m
+[31m       [31m├ù[31m should cleanup all controllers[39m[32m 2[2mms[22m[39m
+[31m       [31m├ù[31m should handle controller creation errors[39m[32m 2[2mms[22m[39m
+[31m       [31m├ù[31m should handle query errors gracefully[39m[32m 6[2mms[22m[39m
+       [32mΓ£ô[39m should track manager performance[32m 6[2mms[22m[39m
+
+ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ» Failed Tests 9 ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»
+
+ FAIL  src/lib/meta/doctype/__tests__/virtual-manager.test.ts > VirtualManager > Registration > should handle duplicate registration
+AssertionError: promise resolved "undefined" instead of rejecting
+
+- Expected: 
+Error {
+  "message": "rejected promise",
+}
+
++ Received: 
+undefined
+
+ Γ¥» src/lib/meta/doctype/__tests__/virtual-manager.test.ts:132:63
+    130| 
+    131|    // Should throw error on duplicate registration
+    132|    await expect(manager.registerVirtualDocType(virtualDocType)).rejectΓÇª
+       |                                                               ^
+    133|   });
+    134| 
+
+ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»[1/9]ΓÄ»
+
+ FAIL  src/lib/meta/doctype/__tests__/virtual-manager.test.ts > VirtualManager > Registration > should handle unregistering non-existent DocType
+AssertionError: promise rejected "VirtualDocTypeNotFoundError: Virtual DocTΓÇª { ΓÇª(6) }" instead of resolving
+ Γ¥» src/lib/meta/doctype/__tests__/virtual-manager.test.ts:137:64
+    135|   it('should handle unregistering non-existent DocType', async () => {
+    136|    // Should not throw error
+    137|    await expect(manager.unregisterVirtualDocType('NonExistent')).resolΓÇª
+       |                                                                ^
+    138|   });
+    139|  });
+
+ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»[2/9]ΓÄ»
+
+ FAIL  src/lib/meta/doctype/__tests__/virtual-manager.test.ts > VirtualManager > Controller Management > should get controller for Virtual DocType
+AssertionError: expected null to be an instance of MockController
+ Γ¥» src/lib/meta/doctype/__tests__/virtual-manager.test.ts:148:23
+    146|   it('should get controller for Virtual DocType', async () => {
+    147|    const controller = await manager.getController('TestDocType');
+    148|    expect(controller).toBeInstanceOf(MockController);
+       |                       ^
+    149|    if (controller) {
+    150|     expect(controller.type).toBe('api');
+
+ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»[3/9]ΓÄ»
+
+ FAIL  src/lib/meta/doctype/__tests__/virtual-manager.test.ts > VirtualManager > Controller Management > should reuse existing controller
+Unknown Error: {
+ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»[4/9]ΓÄ»
+
+ FAIL  src/lib/meta/doctype/__tests__/virtual-manager.test.ts > VirtualManager > Refresh Operations > should refresh Virtual DocType
+AssertionError: promise rejected "VirtualControllerNotFoundError: ControlleΓÇª { ΓÇª(7) }" instead of resolving
+ Γ¥» src/lib/meta/doctype/__tests__/virtual-manager.test.ts:196:61
+    194| 
+    195|   it('should refresh Virtual DocType', async () => {
+    196|    await expect(manager.refreshVirtualDocType('TestDocType')).resolvesΓÇª
+       |                                                             ^
+    197|   });
+    198| 
+
+ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»[5/9]ΓÄ»
+
+ FAIL  src/lib/meta/doctype/__tests__/virtual-manager.test.ts > VirtualManager > Controller Factory > should throw error for unsupported source type
+TypeError: You must provide a Promise to expect() when using .rejects, not 'object'.
+ Γ¥» src/lib/meta/doctype/__tests__/virtual-manager.test.ts:278:70
+    276|    const unsupportedDocType = { ...virtualDocType, virtual_config: conΓÇª
+    277| 
+    278|    await expect((manager as any).createController(unsupportedDocType))ΓÇª
+       |                                                                      ^
+    279|   });
+    280|  });
+
+ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»[6/9]ΓÄ»
+
+ FAIL  src/lib/meta/doctype/__tests__/virtual-manager.test.ts > VirtualManager > Cleanup > should cleanup all controllers
+ FAIL  src/lib/meta/doctype/__tests__/virtual-manager.test.ts > VirtualManager > Error Handling > should handle controller creation errors
+Error: Controller creation failed
+ Γ¥» src/lib/meta/doctype/__tests__/virtual-manager.test.ts:304:42
+    302|    };
+    303| 
+    304|    createControllerSpy.mockRejectedValue(new Error('Controller creatioΓÇª
+       |                                          ^
+    305| 
+    306|    await manager.registerVirtualDocType({
+
+ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»[7/9]ΓÄ»
+
+ FAIL  src/lib/meta/doctype/__tests__/virtual-manager.test.ts > VirtualManager > Error Handling > should handle query errors gracefully
+AssertionError: expected [Function] to throw error including 'Query failed' but got 'Controller not found for Virtual DocTΓÇª'
+
+Expected: "Query failed"
+Received: "Controller not found for Virtual DocType 'TestDocType' of type 'unknown'"
+
+ Γ¥» src/lib/meta/doctype/__tests__/virtual-manager.test.ts:323:4
+    321|    await manager.registerVirtualDocType(virtualDocType);
+    322| 
+    323|    await expect(manager.queryVirtualDocType('TestDocType', {})).rejectΓÇª
+       |    ^
+    324|   });
+    325|  });
+
+ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»[8/9]ΓÄ»
+
+
+[2m Test Files [22m [1m[31m1 failed[39m[22m[90m (1)[39m
+[2m      Tests [22m [1m[31m9 failed[39m[22m[2m | [22m[1m[32m13 passed[39m[22m[90m (22)[39m
+[2m   Start at [22m 19:44:20
+[2m   Duration [22m 670ms[2m (transform 204ms, setup 0ms, import 405ms, tests 37ms, environment 1ms)[22m
+

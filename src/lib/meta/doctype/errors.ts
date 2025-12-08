@@ -53,7 +53,7 @@ export class DocTypeValidationError extends DocTypeError {
  */
 export interface ValidationError {
 	/** Error type */
-	type: 'required' | 'duplicate' | 'invalid_type' | 'missing_options';
+	type: 'required' | 'duplicate' | 'invalid_type' | 'missing_options' | 'invalid_format' | 'missing_options';
 	/** Field or property name */
 	field?: string;
 	/** Error message */

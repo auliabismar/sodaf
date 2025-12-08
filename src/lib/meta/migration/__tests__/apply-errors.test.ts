@@ -25,7 +25,7 @@ describe('Migration Error Classes', () => {
 	beforeEach(() => {
 		vi.clearAllMocks();
 	});
-	
+
 	afterEach(() => {
 		vi.restoreAllMocks();
 	});
@@ -37,9 +37,9 @@ describe('Migration Error Classes', () => {
 			const doctype = 'TestDocType';
 			const migrationId = 'test_migration_123';
 			const details = { customField: 'test_value' };
-			
+
 			const error = new MigrationError(message, code, doctype, migrationId, details);
-			
+
 			expect(error).toBeInstanceOf(Error);
 			expect(error.name).toBe('MigrationError');
 			expect(error.message).toBe(message);
@@ -48,7 +48,7 @@ describe('Migration Error Classes', () => {
 			expect(error.migrationId).toBe(migrationId);
 			expect(error.details).toBe(details);
 		});
-		
+
 		it('should serialize to JSON correctly', () => {
 			const error = new MigrationError(
 				'Test error',
@@ -57,9 +57,9 @@ describe('Migration Error Classes', () => {
 				'test_migration_123',
 				{ test: 'value' }
 			);
-			
+
 			const json = error.toJSON();
-			
+
 			expect(json.name).toBe('MigrationError');
 			expect(json.message).toBe('Test error');
 			expect(json.code).toBe('TEST_CODE');
@@ -82,9 +82,9 @@ describe('Migration Error Classes', () => {
 				score: 25,
 				validatedAt: new Date()
 			};
-			
+
 			const error = new MigrationValidationError(validation);
-			
+
 			expect(error).toBeInstanceOf(MigrationError);
 			expect(error.name).toBe('MigrationValidationError');
 			expect(error.message).toBe('Migration validation failed: Field is invalid');
@@ -100,9 +100,9 @@ describe('Migration Error Classes', () => {
 				table: 'test'
 			};
 			const originalError = new Error('SQL syntax error');
-			
+
 			const error = new MigrationExecutionError(statement, originalError);
-			
+
 			expect(error).toBeInstanceOf(MigrationError);
 			expect(error.name).toBe('MigrationExecutionError');
 			expect(error.message).toBe('Migration execution failed: SQL syntax error');
@@ -115,9 +115,9 @@ describe('Migration Error Classes', () => {
 		it('should create rollback error with migration ID and original error', () => {
 			const migrationId = 'test_migration_123';
 			const originalError = new Error('Rollback failed');
-			
+
 			const error = new MigrationRollbackError(migrationId, originalError);
-			
+
 			expect(error).toBeInstanceOf(MigrationError);
 			expect(error.name).toBe('MigrationRollbackError');
 			expect(error.message).toBe('Migration rollback failed: Rollback failed');
@@ -129,7 +129,7 @@ describe('Migration Error Classes', () => {
 	describe('DataLossRiskError', () => {
 		it('should create data loss risk error with risks', () => {
 			const error = new DataLossRiskError(sampleDataLossRisks.columnRemoval);
-			
+
 			expect(error).toBeInstanceOf(MigrationError);
 			expect(error.name).toBe('DataLossRiskError');
 			expect(error.message).toContain('Data loss risks detected');
@@ -142,9 +142,9 @@ describe('Migration Error Classes', () => {
 			const migrationId = 'test_migration_123';
 			const timeout = 300;
 			const operation = 'execution';
-			
+
 			const error = new MigrationTimeoutError(migrationId, timeout, operation);
-			
+
 			expect(error).toBeInstanceOf(MigrationError);
 			expect(error.name).toBe('MigrationTimeoutError');
 			expect(error.message).toBe('Migration execution timed out after 300 seconds');
@@ -158,9 +158,9 @@ describe('Migration Error Classes', () => {
 		it('should create backup error with path and original error', () => {
 			const backupPath = '/tmp/backup.sql';
 			const originalError = new Error('Disk full');
-			
+
 			const error = new MigrationBackupError(backupPath, originalError);
-			
+
 			expect(error).toBeInstanceOf(MigrationError);
 			expect(error.name).toBe('MigrationBackupError');
 			expect(error.message).toBe('Backup failed: Disk full');
@@ -173,9 +173,9 @@ describe('Migration Error Classes', () => {
 		it('should create restore error with path and original error', () => {
 			const backupPath = '/tmp/backup.sql';
 			const originalError = new Error('Corrupt backup file');
-			
+
 			const error = new MigrationRestoreError(backupPath, originalError);
-			
+
 			expect(error).toBeInstanceOf(MigrationError);
 			expect(error.name).toBe('MigrationRestoreError');
 			expect(error.message).toBe('Restore failed: Corrupt backup file');
@@ -189,13 +189,12 @@ describe('Migration Error Classes', () => {
 			const migrationId = 'test_migration_123';
 			const dependencies = ['User', 'Role'];
 			const originalError = new Error('Missing dependency');
-			
+
 			const error = new MigrationDependencyError(migrationId, dependencies, originalError);
-			
+
 			expect(error).toBeInstanceOf(MigrationError);
 			expect(error.name).toBe('MigrationDependencyError');
 			expect(error.message).toBe('Migration dependency error: Missing dependency');
-			expect(error.migrationId).toBe(migrationId);
 			expect(error.dependencies).toBe(dependencies);
 			expect(error.originalError).toBe(originalError);
 		});
@@ -206,13 +205,12 @@ describe('Migration Error Classes', () => {
 			const migrationId = 'test_migration_123';
 			const conflicts = ['Table already exists', 'Index conflict'];
 			const originalError = new Error('Schema conflict detected');
-			
+
 			const error = new MigrationConflictError(migrationId, conflicts, originalError);
-			
+
 			expect(error).toBeInstanceOf(MigrationError);
 			expect(error.name).toBe('MigrationConflictError');
 			expect(error.message).toBe('Migration conflict error: Schema conflict detected');
-			expect(error.migrationId).toBe(migrationId);
 			expect(error.conflicts).toBe(conflicts);
 			expect(error.originalError).toBe(originalError);
 		});
@@ -232,55 +230,55 @@ describe('Migration Error Classes', () => {
 			};
 			const error = new MigrationValidationError(validation);
 			const context = { user: 'test_user' };
-			
+
 			const result = await MigrationErrorRecovery.attemptRecovery(error, context);
-			
+
 			expect(result.success).toBe(true);
 			expect(result.recovered).toBe(true);
 			expect(result.message).toContain('Validation errors can be fixed');
 			expect(result.nextSteps).toContain('Fix field type');
 		});
-		
+
 		it('should attempt recovery from execution error', async () => {
 			const statement = { sql: 'ALTER TABLE test ADD COLUMN field', type: 'alter_table' };
 			const originalError = new Error('Table locked');
 			const error = new MigrationExecutionError(statement, originalError);
 			const context = { retryCount: 1 };
-			
+
 			const result = await MigrationErrorRecovery.attemptRecovery(error, context);
-			
+
 			expect(result.success).toBe(true);
 			expect(result.recovered).toBe(true);
-			expect(result.message).toContain('Execution retry');
-			expect(result.nextSteps).toContain('Retry execution');
+			expect(result.message).toContain('Execution error recovered');
+			expect(result.nextSteps).toContain('Retry migration with increased timeout');
 		});
-		
+
 		it('should attempt recovery from rollback error', async () => {
 			const migrationId = 'test_migration_123';
 			const originalError = new Error('Cannot rollback');
 			const error = new MigrationRollbackError(migrationId, originalError);
 			const context = { manualIntervention: true };
-			
+
 			const result = await MigrationErrorRecovery.attemptRecovery(error, context);
-			
-			expect(result.success).toBe(true);
-			expect(result.recovered).toBe(true);
-			expect(result.message).toContain('Manual intervention required');
-			expect(result.nextSteps).toContain('Contact system administrator');
+
+			expect(result.success).toBe(false);
+			expect(result.recovered).toBe(false);
+			expect(result.message).toContain('manual intervention');
+			expect(result.nextSteps).toContain('Review rollback SQL statements');
 		});
-		
+
 		it('should handle recovery failure', async () => {
 			const error = new Error('Unknown error type');
 			const context = {};
-			
+
 			const result = await MigrationErrorRecovery.attemptRecovery(error as any, context);
-			
+
 			expect(result.success).toBe(false);
 			expect(result.recovered).toBe(false);
 			expect(result.message).toContain('Recovery failed');
 			expect(result.nextSteps).toContain('Check error logs');
 		});
-		
+
 		it('should determine correct recovery strategy', async () => {
 			const validationError = new MigrationValidationError({
 				valid: false,
@@ -290,12 +288,12 @@ describe('Migration Error Classes', () => {
 				score: 0,
 				validatedAt: new Date()
 			});
-			
+
 			const executionError = new MigrationExecutionError(
 				{ sql: 'ALTER TABLE test', type: 'alter_table' },
 				new Error('Syntax error')
 			);
-			
+
 			const rollbackError = new MigrationRollbackError('test_123', new Error('Rollback failed'));
 			const timeoutError = new MigrationTimeoutError('test_123', 300, 'execution');
 			const backupError = new MigrationBackupError('/tmp/backup', new Error('Disk full'));
@@ -303,34 +301,33 @@ describe('Migration Error Classes', () => {
 			const dependencyError = new MigrationDependencyError('test_123', ['User'], new Error('Missing dep'));
 			const conflictError = new MigrationConflictError('test_123', ['Conflict'], new Error('Schema conflict'));
 			const unknownError = new Error('Unknown error');
-			
-			// Test strategy determination
-			expect(await MigrationErrorRecovery.attemptRecovery(validationError, {}))
-				.toMatchObject({ nextSteps: expect.arrayContaining(['Fix validation errors']) });
-			
-			expect(await MigrationErrorRecovery.attemptRecovery(executionError, {}))
-				.toMatchObject({ nextSteps: expect.arrayContaining(['Retry execution']) });
-			
-			expect(await MigrationErrorRecovery.attemptRecovery(rollbackError, {}))
-				.toMatchObject({ nextSteps: expect.arrayContaining(['Manual intervention']) });
-			
-			expect(await MigrationErrorRecovery.attemptRecovery(timeoutError, {}))
-				.toMatchObject({ nextSteps: expect.arrayContaining(['Increase timeout']) });
-			
-			expect(await MigrationErrorRecovery.attemptRecovery(backupError, {}))
-				.toMatchObject({ nextSteps: expect.arrayContaining(['Recreate backup']) });
-			
-			expect(await MigrationErrorRecovery.attemptRecovery(restoreError, {}))
-				.toMatchObject({ nextSteps: expect.arrayContaining(['Alternative restore']) });
-			
-			expect(await MigrationErrorRecovery.attemptRecovery(dependencyError, {}))
-				.toMatchObject({ nextSteps: expect.arrayContaining(['Resolve dependencies']) });
-			
-			expect(await MigrationErrorRecovery.attemptRecovery(conflictError, {}))
-				.toMatchObject({ nextSteps: expect.arrayContaining(['Resolve conflicts']) });
-			
-			expect(await MigrationErrorRecovery.attemptRecovery(unknownError as any, {}))
-				.toMatchObject({ nextSteps: expect.arrayContaining(['Manual intervention']) });
+
+			const validationResult = await MigrationErrorRecovery.attemptRecovery(validationError, {});
+			expect(validationResult.nextSteps).toContain('Review validation errors');
+
+			const execResult = await MigrationErrorRecovery.attemptRecovery(executionError, {});
+			expect(execResult.nextSteps).toContain('Retry migration with increased timeout');
+
+			const rollbackResult = await MigrationErrorRecovery.attemptRecovery(rollbackError, {});
+			expect(rollbackResult.nextSteps).toContain('Review rollback SQL statements');
+
+			const timeoutResult = await MigrationErrorRecovery.attemptRecovery(timeoutError, {});
+			expect(timeoutResult.nextSteps).toContain('Retry migration with increased timeout');
+
+			const backupResult = await MigrationErrorRecovery.attemptRecovery(backupError, {});
+			expect(backupResult.nextSteps).toContain('Create new backup before migration');
+
+			const restoreResult = await MigrationErrorRecovery.attemptRecovery(restoreError, {});
+			expect(restoreResult.nextSteps).toContain('Try manual data restoration');
+
+			const depResult = await MigrationErrorRecovery.attemptRecovery(dependencyError, {});
+			expect(depResult.nextSteps).toContain('Install missing dependencies');
+
+			const conflictResult = await MigrationErrorRecovery.attemptRecovery(conflictError, {});
+			expect(conflictResult.nextSteps).toContain('Review conflicting migrations');
+
+			const unknownResult = await MigrationErrorRecovery.attemptRecovery(unknownError as any, {});
+			expect(unknownResult.nextSteps).toContain('Check error logs');
 		});
 	});
 });

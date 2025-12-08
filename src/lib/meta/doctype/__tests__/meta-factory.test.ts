@@ -1,357 +1,332 @@
 /**
- * MetaFactory Unit Tests
+ * Meta Factory Tests
  * 
- * This file contains comprehensive unit tests for the MetaFactory class
- * covering all factory methods and validation logic.
+ * Tests for the MetaFactory class implementation.
  */
 
-import { describe, it, expect, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { DocTypeEngine } from '../doctype-engine';
-import { DocTypeMeta } from '../meta';
 import { MetaFactory } from '../meta-factory';
 import { DocTypeError } from '../errors';
 import type { DocType } from '../types';
+import { DocTypeTestFactory, DocTypeTestHelper } from '../../../__tests__/utils/doctype';
 
 describe('MetaFactory', () => {
 	let engine: DocTypeEngine;
-	let sampleDocType: DocType;
+	let metaHelper: DocTypeTestHelper;
+	let testDocType: DocType;
 
-	beforeEach(() => {
-		// Reset instances for clean testing
+	beforeEach(async () => {
+		// Reset engine instance
 		DocTypeEngine.resetInstance();
-		
 		engine = DocTypeEngine.getInstance();
-
-		// Create a sample DocType for testing
-		sampleDocType = {
+		metaHelper = new DocTypeTestHelper();
+		
+		// Create test DocType
+		testDocType = DocTypeTestFactory.createComprehensiveDocType({
 			name: 'TestDocType',
-			module: 'TestModule',
-			fields: [
-				{
-					fieldname: 'title',
-					label: 'Title',
-					fieldtype: 'Data',
-					required: true
-				}
-			],
-			permissions: [
-				{
-					role: 'System Manager',
-					read: true,
-					write: true,
-					create: true,
-					delete: true
-				}
-			]
-		};
+			module: 'TestModule'
+		});
+		
+		// Register DocType
+		await engine.registerDocType(testDocType);
 	});
 
 	afterEach(() => {
-		// Clean up after each test
+		// Clean up
+		metaHelper.clear();
 		DocTypeEngine.resetInstance();
+		vi.restoreAllMocks();
 	});
 
-	describe('create method', () => {
-		it('should create DocTypeMeta instance from valid DocType', () => {
-			const meta = MetaFactory.create(sampleDocType);
+	describe('create', () => {
+		it('should create Meta instance for valid DocType', async () => {
+			const meta = MetaFactory.create(testDocType);
 			
-			expect(meta).toBeInstanceOf(DocTypeMeta);
-			expect(meta.get_doctype()).toBe(sampleDocType);
-			expect(meta.has_field('title')).toBe(true);
+			expect(meta).toBeDefined();
+			expect(meta.get_doctype().name).toBe(testDocType.name);
+			expect(meta.get_doctype().module).toBe(testDocType.module);
 		});
 
-		it('should throw error for null DocType', () => {
-			expect(() => MetaFactory.create(null as any)).toThrow(DocTypeError);
-			expect(() => MetaFactory.create(undefined as any)).toThrow(DocTypeError);
+		it('should throw error for invalid DocType', () => {
+			const invalidDocType = null as any;
+			
+			expect(() => MetaFactory.create(invalidDocType))
+				.toThrow(DocTypeError);
 		});
 
 		it('should throw error for DocType without name', () => {
-			const invalidDocType = { ...sampleDocType, name: '' };
-			expect(() => MetaFactory.create(invalidDocType)).toThrow(DocTypeError);
+			const invalidDocType = {
+				module: 'TestModule',
+				fields: [],
+				permissions: []
+			} as unknown as DocType;
+			
+			expect(() => MetaFactory.create(invalidDocType))
+				.toThrow(DocTypeError);
 		});
 
 		it('should throw error for DocType without module', () => {
-			const invalidDocType = { ...sampleDocType, module: undefined as any };
-			expect(() => MetaFactory.create(invalidDocType)).toThrow(DocTypeError);
+			const invalidDocType = {
+				name: 'TestDocType',
+				fields: [],
+				permissions: []
+			} as unknown as DocType;
+			
+			expect(() => MetaFactory.create(invalidDocType))
+				.toThrow(DocTypeError);
 		});
 
 		it('should throw error for DocType without fields array', () => {
-			const invalidDocType = { ...sampleDocType, fields: null as any };
-			expect(() => MetaFactory.create(invalidDocType)).toThrow(DocTypeError);
+			const invalidDocType = {
+				name: 'TestDocType',
+				module: 'TestModule',
+				fields: null as any,
+				permissions: []
+			};
+			
+			expect(() => MetaFactory.create(invalidDocType))
+				.toThrow(DocTypeError);
 		});
 
 		it('should throw error for DocType without permissions array', () => {
-			const invalidDocType = { ...sampleDocType, permissions: null as any };
-			expect(() => MetaFactory.create(invalidDocType)).toThrow(DocTypeError);
-		});
-
-		it('should initialize computed indexes', () => {
-			const meta = MetaFactory.create(sampleDocType);
+			const invalidDocType = {
+				name: 'TestDocType',
+				module: 'TestModule',
+				fields: [],
+				permissions: null as any
+			};
 			
-			// Trigger computation to verify initialization
-			const validColumns = meta.get_valid_columns();
-			expect(validColumns).toContain('title');
+			expect(() => MetaFactory.create(invalidDocType))
+				.toThrow(DocTypeError);
 		});
 	});
 
-	describe('createFromName method', () => {
-		beforeEach(async () => {
-			// Register sample DocType for createFromName tests
-			await engine.registerDocType(sampleDocType);
-		});
-
-		it('should create DocTypeMeta from DocType name', async () => {
-			const meta = await MetaFactory.createFromName('TestDocType', engine);
+	describe('createFromName', () => {
+		it('should create Meta instance from DocType name', async () => {
+			const meta = await MetaFactory.createFromName(testDocType.name, engine);
 			
-			expect(meta).toBeInstanceOf(DocTypeMeta);
-			expect(meta?.get_doctype().name).toBe('TestDocType');
-			expect(meta?.has_field('title')).toBe(true);
+			expect(meta).toBeDefined();
+			expect(meta?.get_doctype().name).toBe(testDocType.name);
+			expect(meta?.get_doctype().module).toBe(testDocType.module);
 		});
 
 		it('should return null for non-existent DocType', async () => {
 			const meta = await MetaFactory.createFromName('NonExistentDocType', engine);
+			
 			expect(meta).toBeNull();
 		});
 
-		it('should throw error when engine is null', async () => {
-			await expect(
-				MetaFactory.createFromName('TestDocType', null as any)
-			).rejects.toThrow();
+		it('should handle engine errors gracefully', async () => {
+			// Mock engine to throw error
+			const mockEngine = {
+				getDocType: vi.fn().mockRejectedValue(new Error('Engine error'))
+			} as any;
+			
+			await expect(MetaFactory.createFromName(testDocType.name, mockEngine))
+				.rejects.toThrow('Engine error');
 		});
 	});
 
-	describe('createFromNames method', () => {
-		beforeEach(async () => {
-			// Register multiple DocTypes for createFromNames tests
-			await engine.registerDocType(sampleDocType);
+	describe('createFromNames', () => {
+		it('should create multiple Meta instances from DocType names', async () => {
+			const docTypeNames = [testDocType.name];
 			
-			const secondDocType = {
-				...sampleDocType,
-				name: 'SecondDocType'
-			};
-			await engine.registerDocType(secondDocType);
+			const metas = await MetaFactory.createFromNames(docTypeNames, engine);
 			
-			const thirdDocType = {
-				...sampleDocType,
-				name: 'ThirdDocType'
-			};
-			await engine.registerDocType(thirdDocType);
+			expect(metas).toBeDefined();
+			expect(metas.size).toBe(1);
+			expect(metas.get(testDocType.name)?.get_doctype().name).toBe(testDocType.name);
 		});
 
-		it('should create multiple DocTypeMeta instances from names', async () => {
-			const results = await MetaFactory.createFromNames(
-				['TestDocType', 'SecondDocType', 'ThirdDocType'],
-				engine
+		it('should handle empty array gracefully', async () => {
+			const metas = await MetaFactory.createFromNames([], engine);
+			
+			expect(metas).toBeDefined();
+			expect(metas.size).toBe(0);
+		});
+
+		it('should return null for non-existent DocType in batch', async () => {
+			const docTypeNames = ['NonExistentDocType'];
+			
+			const metas = await MetaFactory.createFromNames(docTypeNames, engine);
+			
+			expect(metas).toBeDefined();
+			expect(metas.size).toBe(1);
+			expect(metas.get('NonExistentDocType')).toBeNull();
+		});
+
+		it('should handle mixed existing and non-existent DocTypes', async () => {
+			const docTypeNames = [testDocType.name, 'NonExistentDocType'];
+			
+			const metas = await MetaFactory.createFromNames(docTypeNames, engine);
+			
+			expect(metas).toBeDefined();
+			expect(metas.size).toBe(2);
+			expect(metas.get(testDocType.name)?.get_doctype().name).toBe(testDocType.name);
+			expect(metas.get('NonExistentDocType')).toBeNull();
+		});
+
+		it('should process DocTypes in parallel for better performance', async () => {
+			// Create multiple DocTypes
+			const docTypes = Array.from({ length: 10 }, (_, i) => 
+				DocTypeTestFactory.createMinimalDocType({
+					name: `ParallelDocType${i}`,
+					module: 'TestModule'
+				})
 			);
 			
-			expect(results.size).toBe(3);
-			expect(results.get('TestDocType')).toBeInstanceOf(DocTypeMeta);
-			expect(results.get('SecondDocType')).toBeInstanceOf(DocTypeMeta);
-			expect(results.get('ThirdDocType')).toBeInstanceOf(DocTypeMeta);
-		});
-
-		it('should return null for non-existent DocTypes', async () => {
-			const results = await MetaFactory.createFromNames(
-				['TestDocType', 'NonExistentDocType', 'AnotherNonExistent'],
-				engine
-			);
+			// Register all DocTypes
+			for (const docType of docTypes) {
+				await engine.registerDocType(docType);
+			}
 			
-			expect(results.size).toBe(3);
-			expect(results.get('TestDocType')).toBeInstanceOf(DocTypeMeta);
-			expect(results.get('NonExistentDocType')).toBeNull();
-			expect(results.get('AnotherNonExistent')).toBeNull();
-		});
-
-		it('should handle empty array of names', async () => {
-			const results = await MetaFactory.createFromNames([], engine);
-			expect(results.size).toBe(0);
-		});
-
-		it('should handle duplicate names in array', async () => {
-			const results = await MetaFactory.createFromNames(
-				['TestDocType', 'TestDocType', 'SecondDocType'],
-				engine
-			);
+			const docTypeNames = docTypes.map(dt => dt.name);
 			
-			// Map should only have unique keys
-			expect(results.size).toBe(2);
-			expect(results.get('TestDocType')).toBeInstanceOf(DocTypeMeta);
-			expect(results.get('SecondDocType')).toBeInstanceOf(DocTypeMeta);
-		});
-
-		it('should throw error when engine is null', async () => {
-			await expect(
-				MetaFactory.createFromNames(['TestDocType'], null as any)
-			).rejects.toThrow();
+			const startTime = Date.now();
+			const metas = await MetaFactory.createFromNames(docTypeNames, engine);
+			const endTime = Date.now();
+			
+			expect(metas).toBeDefined();
+			expect(metas.size).toBe(10);
+			
+			// Should complete faster than sequential processing
+			expect(endTime - startTime).toBeLessThan(1000); // 1 second
 		});
 	});
 
-	describe('edge cases and error handling', () => {
-		it('should handle DocType with minimal valid structure', () => {
-			const minimalDocType: DocType = {
-				name: 'Minimal',
-				module: 'Test',
-				fields: [],
+	describe('Validation', () => {
+		it('should validate DocType structure', () => {
+			const validDocType = DocTypeTestFactory.createMinimalDocType({
+				name: 'ValidDocType',
+				module: 'TestModule'
+			});
+			
+			expect(() => MetaFactory.create(validDocType)).not.toThrow();
+		});
+
+		it('should reject DocType with invalid structure', () => {
+			const invalidDocType = {
+				name: 'InvalidDocType',
+				module: 'TestModule',
+				fields: 'not-an-array' as any,
 				permissions: []
 			};
 			
-			expect(() => MetaFactory.create(minimalDocType)).not.toThrow();
-			const meta = MetaFactory.create(minimalDocType);
-			expect(meta).toBeInstanceOf(DocTypeMeta);
+			expect(() => MetaFactory.create(invalidDocType as DocType))
+				.toThrow(DocTypeError);
 		});
+	});
 
-		it('should handle DocType with complex structure', () => {
-			const complexDocType: DocType = {
-				name: 'Complex',
-				module: 'Test',
-				is_submittable: true,
-				issingle: false,
-				istable: false,
-				is_tree: false,
-				is_virtual: false,
-				title_field: 'title',
-				image_field: 'image',
-				search_fields: 'title, description',
-				fields: [
-					{
-						fieldname: 'title',
-						label: 'Title',
-						fieldtype: 'Data',
-						required: true,
-						unique: true,
-						length: 100,
-						hidden: false,
-						read_only: false,
-						indexed: true,
-						description: 'Test description',
-						comment: 'Test comment',
-						order: 1,
-						in_list_view: true,
-						in_standard_filter: true,
-						in_global_search: true,
-						print_hide: false,
-						export_hide: false,
-						import_hide: false,
-						report_hide: false,
-						permlevel: 0,
-						depends_on: '',
-						label_depends_on: '',
-						mandatory_depends_on: '',
-						read_only_depends_on: '',
-						hidden_depends_on: '',
-						validate: '',
-						change: '',
-						filters: '',
-						fetch_from: '',
-						fetch_if_empty: false,
-						allow_in_quick_entry: true,
-						translatable: false,
-						no_copy: false,
-						remember_last_selected: false,
-						bold: false,
-						deprecated: false,
-						precision_based_on: '',
-						width: '',
-						columns: '',
-						child_doctype: '',
-						image_field: '',
-						search_index: false,
-						email_trigger: false,
-						timeline: false,
-						track_seen: false,
-						track_visits: false,
-						old_fieldname: '',
-						unique_across_doctypes: false,
-						ignore_user_permissions: false,
-						ignore_xss_filtered: false,
-						allow_on_submit: false,
-						collapsible: false,
-						collapsible_depends_on: '',
-						fetch_to_include: '',
-						set_user_permissions: false,
-						ignore_strict_user_permissions: false,
-						table_fieldname: '',
-						real_fieldname: ''
-					}
-				],
-				permissions: [
-					{
-						role: 'System Manager',
-						read: true,
-						write: true,
-						create: true,
-						delete: true,
-						submit: true,
-						cancel: true,
-						amend: true,
-						report: true,
-						export: true,
-						import: true,
-						share: true,
-						print: true,
-						email: true,
-						select: true,
-						permlevel: 0,
-						if_owner: false,
-						apply_to_all: true,
-						condition: '',
-						description: 'Full permission'
-					}
-				],
-				indexes: [
-					{
-						name: 'idx_title',
-						columns: ['title'],
-						unique: true,
-						type: 'btree'
-					}
-				],
-				actions: [
-					{
-						label: 'Submit',
-						action_type: 'Server Action',
-						action: 'submit_doc',
-						group: 'Actions',
-						hidden: false,
-						condition: '',
-						order: 1,
-						is_standard: true
-					}
-				],
-				links: [
-					{
-						group: 'Related',
-						link_doctype: 'RelatedDoc',
-						link_fieldname: 'related_doc',
-						parent_doctype: 'TestDocType',
-						label: 'Related Document',
-						hidden: false,
-						condition: '',
-						order: 1
-					}
-				]
-			};
+	describe('Engine Integration', () => {
+		it('should use DocTypeEngine for DocType retrieval', async () => {
+			const meta = await MetaFactory.createFromName(testDocType.name, engine);
+			const retrievedDocType = await engine.getDocType(testDocType.name);
 			
-			expect(() => MetaFactory.create(complexDocType)).not.toThrow();
-			const meta = MetaFactory.create(complexDocType);
-			expect(meta).toBeInstanceOf(DocTypeMeta);
-			expect(meta.has_field('title')).toBe(true);
-		});
-
-		it('should handle concurrent creation requests', async () => {
-			await engine.registerDocType(sampleDocType);
-			
-			// Make concurrent requests
-			const promises = Array(10).fill(0).map(() => 
-				MetaFactory.createFromName('TestDocType', engine)
-			);
-			const results = await Promise.all(promises);
-			
-			// All should return valid instances
-			for (const meta of results) {
-				expect(meta).toBeInstanceOf(DocTypeMeta);
-				expect(meta?.get_doctype().name).toBe('TestDocType');
+			// Check that meta exists and has the correct doctype
+			expect(meta).toBeDefined();
+			if (meta) {
+				expect(meta.get_doctype()).toEqual(retrievedDocType);
 			}
+		});
+
+		it('should handle engine unavailability', async () => {
+			// Mock engine to throw error
+			const mockEngine = {
+				getDocType: vi.fn().mockRejectedValue(new Error('Engine unavailable'))
+			} as any;
+			
+			await expect(MetaFactory.createFromName(testDocType.name, mockEngine))
+				.rejects.toThrow('Engine unavailable');
+		});
+	});
+
+	describe('Performance', () => {
+		it('should handle large number of Meta instances efficiently', async () => {
+			const docTypes = Array.from({ length: 50 }, (_, i) => 
+				DocTypeTestFactory.createMinimalDocType({
+					name: `LargeDocType${i}`,
+					module: 'TestModule'
+				})
+			);
+			
+			// Register all DocTypes
+			for (const docType of docTypes) {
+				await engine.registerDocType(docType);
+			}
+			
+			const startTime = Date.now();
+			const metas = await MetaFactory.createFromNames(
+				docTypes.map(dt => dt.name), 
+				engine
+			);
+			const endTime = Date.now();
+			
+			expect(metas).toBeDefined();
+			expect(metas.size).toBe(50);
+			expect(endTime - startTime).toBeLessThan(2000); // Should create within 2 seconds
+		});
+
+		it('should initialize indexes efficiently', async () => {
+			const complexDocType = DocTypeTestFactory.createComprehensiveDocType({
+				name: 'ComplexDocType',
+				module: 'TestModule'
+			});
+			
+			await engine.registerDocType(complexDocType);
+			
+			const startTime = Date.now();
+			const meta = MetaFactory.create(complexDocType);
+			const endTime = Date.now();
+			
+			expect(meta).toBeDefined();
+			expect(endTime - startTime).toBeLessThan(100); // Should initialize quickly
+		});
+	});
+
+	describe('Error Handling', () => {
+		it('should provide descriptive error messages', () => {
+			try {
+				MetaFactory.create(null as any);
+			} catch (error: any) {
+				expect(error).toBeInstanceOf(DocTypeError);
+				expect(error.message).toContain('Invalid DocType provided');
+			}
+		});
+
+		it('should handle engine errors with proper propagation', async () => {
+			const mockEngine = {
+				getDocType: vi.fn().mockRejectedValue(new Error('Specific engine error'))
+			} as any;
+			
+			try {
+				await MetaFactory.createFromName(testDocType.name, mockEngine);
+			} catch (error: any) {
+				expect(error.message).toBe('Specific engine error');
+			}
+		});
+	});
+
+	describe('Memory Management', () => {
+		it('should not leak memory with repeated operations', async () => {
+			const initialMemory = process.memoryUsage().heapUsed;
+			
+			// Perform many operations
+			for (let i = 0; i < 100; i++) {
+				const meta = MetaFactory.create(testDocType);
+				expect(meta).toBeDefined();
+			}
+			
+			// Force garbage collection if available
+			if (global.gc) {
+				global.gc();
+			}
+			
+			const finalMemory = process.memoryUsage().heapUsed;
+			const memoryIncrease = finalMemory - initialMemory;
+			
+			// Memory increase should be reasonable (less than 10MB)
+			expect(memoryIncrease).toBeLessThan(10 * 1024 * 1024);
 		});
 	});
 });

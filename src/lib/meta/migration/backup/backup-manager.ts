@@ -59,14 +59,15 @@ export class MigrationBackupManager {
 		doctypeName: string,
 		backupType: BackupType = this.options.defaultType
 	): Promise<string> {
+		console.log('DEBUG: createBackup called with backupType:', backupType);
 		const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
 		const fileName = this.options.namingPattern
 			.replace('{doctype}', doctypeName)
 			.replace('{timestamp}', timestamp)
 			.replace('{type}', backupType.toLowerCase());
-		
+
 		const backupPath = path.join(this.options.storagePath, `${fileName}.json`);
-		
+
 		try {
 			let backupData: any;
 
@@ -90,6 +91,7 @@ export class MigrationBackupManager {
 				default:
 					throw new Error(`Unsupported backup type: ${backupType}`);
 			}
+			console.log('DEBUG: backupData created:', JSON.stringify(backupData, null, 2));
 
 			// Add metadata to backup
 			const backupInfo: BackupInfo = {
@@ -140,8 +142,7 @@ export class MigrationBackupManager {
 
 		} catch (error) {
 			throw new Error(
-				`Failed to create backup for ${doctypeName}: ${
-					error instanceof Error ? error.message : String(error)
+				`Failed to create backup for ${doctypeName}: ${error instanceof Error ? error.message : String(error)
 				}`
 			);
 		}
@@ -159,14 +160,14 @@ export class MigrationBackupManager {
 			.replace('{doctype}', doctypeName)
 			.replace('{timestamp}', timestamp)
 			.replace('{type}', `column_${columnName}`);
-		
+
 		const backupPath = path.join(this.options.storagePath, `${fileName}.json`);
-		
+
 		try {
 			// Get table info to verify column exists
 			const tableInfo = await this.database.get_table_info(doctypeName);
 			const column = tableInfo.columns.find(c => c.name === columnName);
-			
+
 			if (!column) {
 				throw new Error(`Column '${columnName}' not found in table '${doctypeName}'`);
 			}
@@ -176,6 +177,7 @@ export class MigrationBackupManager {
 			const records = await this.database.sql(query);
 
 			const backupData = {
+				type: BackupType.COLUMN,
 				table: doctypeName,
 				column: columnName,
 				columnInfo: column,
@@ -230,8 +232,7 @@ export class MigrationBackupManager {
 
 		} catch (error) {
 			throw new Error(
-				`Failed to create column backup for ${doctypeName}.${columnName}: ${
-					error instanceof Error ? error.message : String(error)
+				`Failed to create column backup for ${doctypeName}.${columnName}: ${error instanceof Error ? error.message : String(error)
 				}`
 			);
 		}
@@ -262,7 +263,7 @@ export class MigrationBackupManager {
 			if (this.options.verifyIntegrity) {
 				const expectedChecksum = backup.info.checksum;
 				const actualChecksum = this.calculateChecksum(backupContent);
-				
+
 				if (expectedChecksum !== actualChecksum) {
 					errors.push(`Backup integrity check failed: checksum mismatch`);
 					return {
@@ -279,16 +280,16 @@ export class MigrationBackupManager {
 
 			// Restore based on backup type
 			switch (backup.info.type) {
-				case 'FULL':
+				case BackupType.FULL:
 					recordCount = await this.restoreFullBackup(backup.data);
 					break;
-				case 'COLUMN':
+				case BackupType.COLUMN:
 					recordCount = await this.restoreColumnBackup(backup.data);
 					break;
-				case 'SCHEMA':
+				case BackupType.SCHEMA:
 					recordCount = await this.restoreSchemaBackup(backup.data);
 					break;
-				case 'INCREMENTAL':
+				case BackupType.INCREMENTAL:
 					recordCount = await this.restoreFullBackup(backup.data);
 					break;
 				default:
@@ -302,7 +303,7 @@ export class MigrationBackupManager {
 					backup.data
 				);
 				validated = validation.valid;
-				
+
 				if (!validation.valid) {
 					warnings.push(...validation.warnings);
 					errors.push(...validation.errors);
@@ -349,9 +350,12 @@ export class MigrationBackupManager {
 			for (const file of backupFiles) {
 				try {
 					const filePath = path.join(this.options.storagePath, file);
+					console.log('DEBUG: listBackups reading file:', filePath);
 					const content = await fs.readFile(filePath, 'utf8');
+					console.log('DEBUG: listBackups content:', content ? content.substring(0, 50) + '...' : 'undefined');
 					const backup = JSON.parse(content);
 					const backupInfo = backup.info as BackupInfo;
+					backupInfo.createdAt = new Date(backupInfo.createdAt);
 
 					// Filter by doctype if specified
 					if (!doctypeName || backupInfo.doctype === doctypeName) {
@@ -364,14 +368,13 @@ export class MigrationBackupManager {
 			}
 
 			// Sort by creation date (newest first)
-			return backups.sort((a, b) => 
+			return backups.sort((a, b) =>
 				b.createdAt.getTime() - a.createdAt.getTime()
 			);
 
 		} catch (error) {
 			throw new Error(
-				`Failed to list backups: ${
-					error instanceof Error ? error.message : String(error)
+				`Failed to list backups: ${error instanceof Error ? error.message : String(error)
 				}`
 			);
 		}
@@ -406,8 +409,7 @@ export class MigrationBackupManager {
 
 		} catch (error) {
 			throw new Error(
-				`Failed to cleanup old backups: ${
-					error instanceof Error ? error.message : String(error)
+				`Failed to cleanup old backups: ${error instanceof Error ? error.message : String(error)
 				}`
 			);
 		}
@@ -421,12 +423,12 @@ export class MigrationBackupManager {
 	private async createFullBackup(doctypeName: string): Promise<any> {
 		// Get table structure
 		const tableInfo = await this.database.get_table_info(doctypeName);
-		
+
 		// Get all data
 		const records = await this.database.sql(`SELECT * FROM ${doctypeName}`);
 
 		return {
-			type: 'FULL',
+			type: BackupType.FULL,
 			table: doctypeName,
 			structure: {
 				columns: tableInfo.columns,
@@ -453,7 +455,7 @@ export class MigrationBackupManager {
 		const tableInfo = await this.database.get_table_info(doctypeName);
 
 		return {
-			type: 'SCHEMA',
+			type: BackupType.SCHEMA,
 			table: doctypeName,
 			structure: {
 				columns: tableInfo.columns,
@@ -544,15 +546,15 @@ export class MigrationBackupManager {
 		// Build CREATE TABLE statement
 		const columnDefs = columns.map((col: ColumnInfo) => {
 			let def = `${col.name} ${col.type}`;
-			
+
 			if (!col.nullable) {
 				def += ' NOT NULL';
 			}
-			
+
 			if (col.default_value !== undefined && col.default_value !== null) {
 				def += ` DEFAULT ${col.default_value}`;
 			}
-			
+
 			return def;
 		});
 
@@ -645,8 +647,8 @@ export class MigrationBackupManager {
 					columnCount: currentTableInfo.columns.length,
 					expectedColumnCount: backupStructure.columns.length,
 					recordCount: backupData.records ? backupData.records.length : 0,
-					currentRecordCount: backupData.records 
-						? (await this.database.sql(`SELECT COUNT(*) as count FROM ${doctypeName}`))[0].count 
+					currentRecordCount: backupData.records
+						? (await this.database.sql(`SELECT COUNT(*) as count FROM ${doctypeName}`))[0].count
 						: 0
 				}
 			};
@@ -678,15 +680,14 @@ export class MigrationBackupManager {
 			// Checksum verification
 			const expectedChecksum = backup.info.checksum;
 			const actualChecksum = this.calculateChecksum(content);
-			
+
 			if (expectedChecksum !== actualChecksum) {
 				throw new Error('Backup checksum mismatch');
 			}
 
 		} catch (error) {
 			throw new Error(
-				`Backup verification failed: ${
-					error instanceof Error ? error.message : String(error)
+				`Backup verification failed: ${error instanceof Error ? error.message : String(error)
 				}`
 			);
 		}

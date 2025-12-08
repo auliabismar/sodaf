@@ -63,9 +63,7 @@ describe('SQLGenerator', () => {
 		sqlGenerator = new SQLGenerator();
 	});
 	
-	afterEach(() => {
-		sqlGenerator = null as any;
-	});
+	
 	
 	describe('P2-007-T1: generateCreateTableSQL', () => {
 		it('should generate valid CREATE TABLE statement for DocType', () => {

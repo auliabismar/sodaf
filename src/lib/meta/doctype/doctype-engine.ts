@@ -16,6 +16,7 @@ import {
 import type { ValidationResult } from './errors';
 import { MetaCache } from './meta-cache';
 import type { DocTypeMeta } from './meta';
+import { CustomFieldManager } from '../custom';
 
 // Re-export error classes for convenience
 export {
@@ -36,11 +37,14 @@ export class DocTypeEngine {
 	private doctypes: Map<string, DocType> = new Map();
 	private moduleIndex: Map<string, Set<string>> = new Map();
 	private registrationLock: Promise<void> = Promise.resolve();
+	private customFieldManager: CustomFieldManager;
 
 	/**
 	 * Private constructor for singleton pattern
 	 */
-	private constructor() {}
+	private constructor() {
+		this.customFieldManager = CustomFieldManager.getInstance();
+	}
 
 	/**
 	 * Get the singleton instance of DocTypeEngine
@@ -57,7 +61,15 @@ export class DocTypeEngine {
 	 * Reset the singleton instance (for testing purposes)
 	 */
 	public static resetInstance(): void {
+		if (DocTypeEngine.instance) {
+			// Clear internal state before resetting
+			DocTypeEngine.instance.doctypes.clear();
+			DocTypeEngine.instance.moduleIndex.clear();
+		}
 		DocTypeEngine.instance = null;
+		
+		// Also reset the MetaCache singleton
+		MetaCache.resetInstance();
 	}
 
 	/**
@@ -126,12 +138,8 @@ export class DocTypeEngine {
 			}
 
 			// Invalidate cache for this DocType
-			try {
-				const cache = MetaCache.getInstance(this);
-				cache.invalidateMeta(doctypeName);
-			} catch {
-				// Cache not initialized yet, ignore
-			}
+			// Note: We don't directly invalidate cache here to avoid circular dependencies
+			// The cache should be invalidated by the caller if needed
 		});
 	}
 
@@ -269,39 +277,275 @@ export class DocTypeEngine {
 	}
 
 	/**
-		* Get DocTypeMeta instance for a DocType
-		* @param doctypeName Name of the DocType to get Meta for
-		* @returns Promise resolving to DocTypeMeta instance or null if not found
-		*/
-	public async getDocTypeMeta(doctypeName: string): Promise<DocTypeMeta | null> {
+	 * Get DocTypeMeta instance for a DocType
+	 * @param doctypeName Name of the DocType to get Meta for
+	 * @param includeCustomFields Whether to include custom fields in the meta
+	 * @returns Promise resolving to DocTypeMeta instance or null if not found
+	 */
+	public async getDocTypeMeta(doctypeName: string, includeCustomFields: boolean = true): Promise<DocTypeMeta | null> {
 		const cache = this.getMetaCache();
-		return cache.getMeta(doctypeName);
+		return cache.getMeta(doctypeName, includeCustomFields);
 	}
 
 	/**
-		* Reload DocTypeMeta instance for a DocType
-		* @param doctypeName Name of the DocType to reload Meta for
-		* @returns Promise resolving to DocTypeMeta instance or null if not found
-		*/
-	public async reloadDocTypeMeta(doctypeName: string): Promise<DocTypeMeta | null> {
+	 * Reload DocTypeMeta instance for a DocType
+	 * @param doctypeName Name of the DocType to reload Meta for
+	 * @param includeCustomFields Whether to include custom fields in the meta
+	 * @returns Promise resolving to DocTypeMeta instance or null if not found
+	 */
+	public async reloadDocTypeMeta(doctypeName: string, includeCustomFields: boolean = true): Promise<DocTypeMeta | null> {
 		const cache = this.getMetaCache();
-		return cache.reloadMeta(doctypeName);
+		return cache.reloadMeta(doctypeName, includeCustomFields);
 	}
 
 	/**
-		* Invalidate DocTypeMeta cache for a DocType
-		* @param doctypeName Name of the DocType to invalidate cache for
-		*/
+	* Invalidate DocTypeMeta cache for a DocType
+	* @param doctypeName Name of the DocType to invalidate cache for
+	*/
 	public invalidateDocTypeMeta(doctypeName: string): void {
 		const cache = this.getMetaCache();
 		cache.invalidateMeta(doctypeName);
 	}
 
 	/**
-		* Clear all DocTypeMeta cache
-		*/
+	* Clear all DocTypeMeta cache
+	*/
 	public clearDocTypeMetaCache(): void {
 		const cache = this.getMetaCache();
 		cache.clearCache();
+	}
+
+	// =============================================================================
+	// Virtual DocType Support
+	// =============================================================================
+
+	/**
+	* Check if a DocType is virtual
+	* @param doctypeName Name of the DocType to check
+	* @returns True if DocType is virtual
+	*/
+	public async isVirtualDocType(doctypeName: string): Promise<boolean> {
+		const doctype = await this.getDocType(doctypeName);
+		return doctype?.is_virtual || false;
+	}
+
+	/**
+	* Get Virtual DocType manager instance
+	* @returns Virtual DocType manager instance
+	*/
+	public getVirtualDocTypeManager(): any {
+		try {
+			// Import VirtualDocTypeManager dynamically to avoid circular dependencies
+			const { VirtualDocTypeManager } = require('./virtual-manager');
+			return VirtualDocTypeManager.getInstance();
+		} catch (error) {
+			console.warn('Failed to get Virtual DocType manager:', error);
+			return null;
+		}
+	}
+
+	/**
+	* Register a Virtual DocType
+	* @param virtualDocType Virtual DocType to register
+	*/
+	public async registerVirtualDocType(virtualDocType: any): Promise<void> {
+		const virtualManager = this.getVirtualDocTypeManager();
+		if (virtualManager) {
+			await virtualManager.registerVirtualDocType(virtualDocType);
+		} else {
+			throw new Error('Virtual DocType manager not available');
+		}
+	}
+
+	/**
+	* Unregister a Virtual DocType
+	* @param doctypeName Name of the Virtual DocType to unregister
+	*/
+	public async unregisterVirtualDocType(doctypeName: string): Promise<void> {
+		const virtualManager = this.getVirtualDocTypeManager();
+		if (virtualManager) {
+			await virtualManager.unregisterVirtualDocType(doctypeName);
+		} else {
+			throw new Error('Virtual DocType manager not available');
+		}
+	}
+
+	/**
+	* Get a Virtual DocType
+	* @param doctypeName Name of the Virtual DocType to get
+	* @returns Virtual DocType or null
+	*/
+	public async getVirtualDocType(doctypeName: string): Promise<any> {
+		const virtualManager = this.getVirtualDocTypeManager();
+		if (virtualManager) {
+			return await virtualManager.getVirtualDocType(doctypeName);
+		} else {
+			throw new Error('Virtual DocType manager not available');
+		}
+	}
+
+	/**
+	* Query a Virtual DocType
+	* @param doctypeName Name of the Virtual DocType to query
+	* @param options Query options
+	* @returns Query result
+	*/
+	public async queryVirtualDocType(doctypeName: string, options: any): Promise<any> {
+		const virtualManager = this.getVirtualDocTypeManager();
+		if (virtualManager) {
+			return await virtualManager.queryVirtualDocType(doctypeName, options);
+		} else {
+			throw new Error('Virtual DocType manager not available');
+		}
+	}
+
+	/**
+	* Refresh a Virtual DocType
+	* @param doctypeName Name of the Virtual DocType to refresh
+	*/
+	public async refreshVirtualDocType(doctypeName: string): Promise<void> {
+		const virtualManager = this.getVirtualDocTypeManager();
+		if (virtualManager) {
+			await virtualManager.refreshVirtualDocType(doctypeName);
+		} else {
+			throw new Error('Virtual DocType manager not available');
+		}
+	}
+
+	// =============================================================================
+	// Custom Field Support
+	// =============================================================================
+
+	/**
+	 * Get CustomFieldManager instance
+	 * @returns CustomFieldManager instance
+	 */
+	public getCustomFieldManager(): CustomFieldManager {
+		return this.customFieldManager;
+	}
+
+	/**
+	 * Get a DocType with custom fields merged
+	 * @param doctypeName Name of the DocType to get
+	 * @returns Promise resolving to DocType with custom fields merged or null if not found
+	 */
+	public async getDocTypeWithCustomFields(doctypeName: string): Promise<DocType | null> {
+		const doctype = await this.getDocType(doctypeName);
+		if (!doctype) {
+			return null;
+		}
+
+		return await this.customFieldManager.mergeCustomFields(doctype);
+	}
+
+	/**
+	 * Create a custom field for a DocType
+	 * @param doctypeName Name of the DocType to add custom field to
+	 * @param options Custom field creation options
+	 * @returns Promise resolving to created custom field
+	 */
+	public async createCustomField(doctypeName: string, options: any): Promise<any> {
+		// Check if DocType exists
+		const doctype = await this.getDocType(doctypeName);
+		if (!doctype) {
+			throw new DocTypeNotFoundError(doctypeName);
+		}
+
+		// Get existing field names
+		const existingFields = doctype.fields.map(f => f.fieldname);
+
+		// Create custom field with DocType context
+		const customFieldOptions = {
+			...options,
+			dt: doctypeName
+		};
+
+		const customField = await this.customFieldManager.createCustomField(customFieldOptions, existingFields);
+
+		// Invalidate cache for this DocType
+		this.invalidateDocTypeMeta(doctypeName);
+
+		return customField;
+	}
+
+	/**
+	 * Update a custom field for a DocType
+	 * @param doctypeName Name of the DocType
+	 * @param fieldname Name of the field to update
+	 * @param options Update options
+	 * @returns Promise resolving to updated custom field
+	 */
+	public async updateCustomField(doctypeName: string, fieldname: string, options: any): Promise<any> {
+		// Check if DocType exists
+		const doctype = await this.getDocType(doctypeName);
+		if (!doctype) {
+			throw new DocTypeNotFoundError(doctypeName);
+		}
+
+		// Get existing field names
+		const existingFields = doctype.fields.map(f => f.fieldname);
+
+		// Update custom field
+		const customField = await this.customFieldManager.updateCustomField(doctypeName, fieldname, options, existingFields);
+
+		// Invalidate cache for this DocType
+		this.invalidateDocTypeMeta(doctypeName);
+
+		return customField;
+	}
+
+	/**
+	 * Delete a custom field for a DocType
+	 * @param doctypeName Name of the DocType
+	 * @param fieldname Name of the field to delete
+	 * @returns Promise resolving when deletion is complete
+	 */
+	public async deleteCustomField(doctypeName: string, fieldname: string): Promise<void> {
+		// Check if DocType exists
+		const doctype = await this.getDocType(doctypeName);
+		if (!doctype) {
+			throw new DocTypeNotFoundError(doctypeName);
+		}
+
+		// Delete custom field
+		await this.customFieldManager.deleteCustomField(doctypeName, fieldname);
+
+		// Invalidate cache for this DocType
+		this.invalidateDocTypeMeta(doctypeName);
+	}
+
+	/**
+	 * Get custom fields for a DocType
+	 * @param doctypeName Name of the DocType
+	 * @param options Query options
+	 * @returns Promise resolving to array of custom fields
+	 */
+	public async getCustomFields(doctypeName: string, options?: any): Promise<any[]> {
+		return await this.customFieldManager.getCustomFields(doctypeName, options);
+	}
+
+	/**
+	 * Get all DocTypes that have custom fields
+	 * @returns Promise resolving to array of DocType names
+	 */
+	public async getDocTypesWithCustomFields(): Promise<string[]> {
+		const docTypesWithCustomFields = await this.customFieldManager.getDocTypesWithCustomFields();
+		
+		// Filter to only include registered DocTypes
+		return docTypesWithCustomFields.filter(doctypeName => this.doctypes.has(doctypeName));
+	}
+
+	/**
+	 * Refresh custom fields for all DocTypes
+	 * @returns Promise resolving when refresh is complete
+	 */
+	public async refreshCustomFields(): Promise<void> {
+		// Get all DocTypes with custom fields
+		const docTypesWithCustomFields = await this.getDocTypesWithCustomFields();
+		
+		// Invalidate cache for all DocTypes with custom fields
+		for (const doctypeName of docTypesWithCustomFields) {
+			this.invalidateDocTypeMeta(doctypeName);
+		}
 	}
 }

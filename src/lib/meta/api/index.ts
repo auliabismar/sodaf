@@ -62,3 +62,10 @@ export type {
 export { APIGenerator } from './api-generator';
 export type { APIGeneratorOptions, GeneratedRoute } from './api-generator';
 
+// =============================================================================
+// Custom Field API Integration Exports
+// =============================================================================
+
+// The API Generator has been enhanced with custom field support
+// Custom field API types are handled through the existing route generation system
+

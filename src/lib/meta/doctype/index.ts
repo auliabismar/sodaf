@@ -44,7 +44,7 @@ export { MetaCache } from './meta-cache';
 export { MetaFactory } from './meta-factory';
 
 // P2-002: Validation types
-export type { ValidationResult } from './errors';
+export type { ValidationResult as DocTypeValidationResult } from './errors';
 export type { ValidationError } from './errors';// P2-015: Single DocType Implementation
 export {
 SingleDocument,
@@ -55,3 +55,45 @@ is_single_doctype,
 get_single_doc
 } from './single-document';
 export type { SingleDocumentOptions, SinglesTableRow } from './single-document';
+
+// P2-020: Custom Field Integration
+export { CustomFieldManager } from '../custom';
+export type {
+	CustomField,
+	CreateCustomFieldOptions,
+	UpdateCustomFieldOptions,
+	CustomFieldQueryOptions,
+	CustomFieldValidationResult,
+	CustomFieldManagerConfig
+} from '../custom';
+export {
+	CustomFieldError,
+	CustomFieldExistsError,
+	CustomFieldNotFoundError,
+	CustomFieldValidationError,
+	CustomFieldOperationNotSupportedError,
+	CustomFieldDependencyNotFoundError,
+	CustomFieldTypeNotSupportedError,
+	CustomFieldOperationError,
+	CustomFieldDatabaseError,
+	CustomFieldCacheError,
+	CustomFieldConfigurationError,
+	CustomFieldMigrationError,
+	CustomFieldApiError,
+	type ValidationResult,
+	createValidationResult,
+	createSuccessValidationResult,
+	createFailureValidationResult
+} from '../custom';
+export {
+	validateFieldName,
+	validateFieldLabel,
+	validateFieldType,
+	validateFieldOptions,
+	validateFieldLength,
+	validateFieldDefaultValue,
+	validateFieldDependencies,
+	validateCustomField,
+	validateCreateCustomFieldOptions,
+	validateUpdateCustomFieldOptions
+} from '../custom';

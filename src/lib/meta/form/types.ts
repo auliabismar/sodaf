@@ -247,6 +247,12 @@ export interface FormLayout {
 		/** Animation easing */
 		easing?: string;
 	};
+
+	/** Virtual DocType source type (for Virtual DocTypes) */
+	virtual_source?: string;
+
+	/** Whether the form is read-only (for Virtual DocTypes) */
+	read_only?: boolean;
 }
 
 /**

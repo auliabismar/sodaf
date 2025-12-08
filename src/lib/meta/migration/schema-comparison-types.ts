@@ -32,6 +32,9 @@ export interface SchemaComparisonOptions {
 	/** Whether to validate field type compatibility */
 	validateTypeCompatibility?: boolean;
 	
+	/** Whether to include custom fields in comparison */
+	includeCustomFields?: boolean;
+	
 	/** Custom field type mappings */
 	fieldTypeMappings?: Record<string, string>;
 	

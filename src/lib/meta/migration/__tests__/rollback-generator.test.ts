@@ -16,9 +16,7 @@ describe('RollbackGenerator', () => {
 		rollbackGenerator = new RollbackGenerator();
 	});
 	
-	afterEach(() => {
-		rollbackGenerator = null as any;
-	});
+	
 	
 	describe('generateRollbackMigration', () => {
 		it('should generate rollback statements for CREATE TABLE', () => {

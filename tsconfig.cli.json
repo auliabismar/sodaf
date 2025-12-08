@@ -1,0 +1,28 @@
+{
+	"extends": "./tsconfig.json",
+	"compilerOptions": {
+		"outDir": "./dist/cli",
+		"rootDir": "./src/lib/cli",
+		"module": "CommonJS",
+		"target": "ES2020",
+		"moduleResolution": "node",
+		"esModuleInterop": true,
+		"allowSyntheticDefaultImports": true,
+		"skipLibCheck": true,
+		"strict": true,
+		"declaration": true,
+		"sourceMap": true,
+		"removeComments": false,
+		"noImplicitAny": true,
+		"noImplicitReturns": false,
+		"noImplicitThis": false,
+		"noUnusedLocals": false,
+		"exactOptionalPropertyTypes": false,
+		"noImplicitOverride": true,
+		"noPropertyAccessFromIndexSignature": false,
+		"noUncheckedIndexedAccess": true,
+		"forceConsistentCasingInFileNames": true
+	},
+	"include": ["**/*.ts"],
+	"exclude": ["**/*.test.ts", "**/__tests__/**/*"]
+}

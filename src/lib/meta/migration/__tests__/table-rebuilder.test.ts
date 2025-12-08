@@ -32,9 +32,7 @@ describe('TableRebuilder', () => {
 		};
 	});
 	
-	afterEach(() => {
-		tableRebuilder = null as any;
-	});
+	
 	
 	describe('buildDropColumnRebuild', () => {
 		it('should generate SQL to drop a column using table rebuild', () => {

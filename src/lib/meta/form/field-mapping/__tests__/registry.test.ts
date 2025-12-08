@@ -238,6 +238,11 @@ describe('P2-011: FieldMappingRegistry', () => {
     });
 
     describe('mapField', () => {
+        beforeEach(() => {
+            // Get a fresh registry for each mapField test
+            registry = createFieldMappingRegistry();
+        });
+
         it('should return complete mapping result with props', () => {
             const field: FormField = {
                 fieldname: 'test_field',

@@ -22,7 +22,7 @@ export class TableRebuilder {
 	private typeMapper: FieldTypeMapper;
 	private constraintBuilder: ConstraintBuilder;
 	private options: Required<SQLOptions>;
-	
+
 	constructor(options: SQLOptions = {}) {
 		this.options = {
 			typeMappings: {},
@@ -46,11 +46,11 @@ export class TableRebuilder {
 			validateSQL: false,
 			...options
 		};
-		
+
 		this.typeMapper = new FieldTypeMapper(this.options.typeMappings);
 		this.constraintBuilder = new ConstraintBuilder(this.options);
 	}
-	
+
 	/**
 	 * Build table rebuild SQL for column modifications
 	 */
@@ -61,7 +61,7 @@ export class TableRebuilder {
 	): SQLStatement[] {
 		const statements: SQLStatement[] = [];
 		const tempTableName = this.generateTempTableName(tableName, strategy);
-		
+
 		// 1. Create temporary table with new schema
 		const createTempSQL = this.buildCreateTempTableSQL(tableName, tempTableName, changes);
 		statements.push({
@@ -71,7 +71,7 @@ export class TableRebuilder {
 			table: tempTableName,
 			comment: `Create temporary table for rebuild: ${tempTableName}`
 		});
-		
+
 		// 2. Copy data from original table to temporary table
 		const copyDataSQL = this.buildCopyDataSQL(tableName, tempTableName, changes);
 		statements.push({
@@ -81,7 +81,7 @@ export class TableRebuilder {
 			table: tempTableName,
 			comment: `Copy data from ${tableName} to ${tempTableName}`
 		});
-		
+
 		// 3. Drop original table
 		const dropOriginalSQL = this.buildDropOriginalSQL(tableName);
 		statements.push({
@@ -91,7 +91,7 @@ export class TableRebuilder {
 			table: tableName,
 			comment: `Drop original table: ${tableName}`
 		});
-		
+
 		// 4. Rename temporary table to original name
 		const renameTempSQL = this.buildRenameTempSQL(tempTableName, tableName);
 		statements.push({
@@ -101,7 +101,7 @@ export class TableRebuilder {
 			table: tableName,
 			comment: `Rename ${tempTableName} to ${tableName}`
 		});
-		
+
 		// 5. Recreate indexes if needed
 		if (strategy.preserveIndexes) {
 			const recreateIndexesSQL = this.buildRecreateIndexesSQL(tableName);
@@ -115,10 +115,10 @@ export class TableRebuilder {
 				});
 			}
 		}
-		
+
 		return statements;
 	}
-	
+
 	/**
 	 * Build table rebuild SQL for dropping a column
 	 */
@@ -127,9 +127,17 @@ export class TableRebuilder {
 		columnName: string,
 		strategy: TableRebuildStrategy
 	): SQLStatement[] {
+		// Validate inputs
+		if (!tableName || tableName.trim() === '') {
+			throw new Error('Table name is required');
+		}
+		if (!columnName || columnName.trim() === '') {
+			throw new Error('Column name is required');
+		}
+
 		const statements: SQLStatement[] = [];
 		const tempTableName = this.generateTempTableName(tableName, strategy);
-		
+
 		// 1. Create temporary table without the column
 		const createTempSQL = this.buildCreateTempTableWithoutColumnSQL(
 			tableName,
@@ -143,7 +151,7 @@ export class TableRebuilder {
 			table: tempTableName,
 			comment: `Create temporary table without column: ${columnName}`
 		});
-		
+
 		// 2. Copy data excluding the column
 		const copyDataSQL = this.buildCopyDataWithoutColumnSQL(
 			tableName,
@@ -157,7 +165,7 @@ export class TableRebuilder {
 			table: tempTableName,
 			comment: `Copy data excluding column: ${columnName}`
 		});
-		
+
 		// 3. Drop original table
 		const dropOriginalSQL = this.buildDropOriginalSQL(tableName);
 		statements.push({
@@ -167,7 +175,7 @@ export class TableRebuilder {
 			table: tableName,
 			comment: `Drop original table: ${tableName}`
 		});
-		
+
 		// 4. Rename temporary table to original name
 		const renameTempSQL = this.buildRenameTempSQL(tempTableName, tableName);
 		statements.push({
@@ -177,10 +185,10 @@ export class TableRebuilder {
 			table: tableName,
 			comment: `Rename ${tempTableName} to ${tableName}`
 		});
-		
+
 		return statements;
 	}
-	
+
 	/**
 	 * Build table rebuild SQL for modifying a column
 	 */
@@ -191,7 +199,7 @@ export class TableRebuilder {
 	): SQLStatement[] {
 		const statements: SQLStatement[] = [];
 		const tempTableName = this.generateTempTableName(tableName, strategy);
-		
+
 		// 1. Create temporary table with modified column
 		const createTempSQL = this.buildCreateTempTableWithModifiedColumnSQL(
 			tableName,
@@ -205,7 +213,7 @@ export class TableRebuilder {
 			table: tempTableName,
 			comment: `Create temporary table with modified column: ${change.fieldname}`
 		});
-		
+
 		// 2. Copy data with column transformation if needed
 		const copyDataSQL = this.buildCopyDataWithModifiedColumnSQL(
 			tableName,
@@ -219,7 +227,7 @@ export class TableRebuilder {
 			table: tempTableName,
 			comment: `Copy data with modified column: ${change.fieldname}`
 		});
-		
+
 		// 3. Drop original table
 		const dropOriginalSQL = this.buildDropOriginalSQL(tableName);
 		statements.push({
@@ -229,7 +237,7 @@ export class TableRebuilder {
 			table: tableName,
 			comment: `Drop original table: ${tableName}`
 		});
-		
+
 		// 4. Rename temporary table to original name
 		const renameTempSQL = this.buildRenameTempSQL(tempTableName, tableName);
 		statements.push({
@@ -239,22 +247,22 @@ export class TableRebuilder {
 			table: tableName,
 			comment: `Rename ${tempTableName} to ${tableName}`
 		});
-		
+
 		return statements;
 	}
-	
+
 	/**
 	 * Generate temporary table name
 	 */
 	generateTempTableName(table: string, strategy: TableRebuildStrategy): string {
 		const pattern = strategy.tempTablePattern;
 		const timestamp = Date.now();
-		
+
 		return pattern
 			.replace('{table}', table)
 			.replace('{timestamp}', String(timestamp));
 	}
-	
+
 	/**
 	 * Build copy data SQL
 	 */
@@ -265,13 +273,13 @@ export class TableRebuilder {
 	): string {
 		const quotedFromTable = this.quoteIdentifier(fromTable);
 		const quotedToTable = this.quoteIdentifier(toTable);
-		
+
 		// Build column list for copy
 		const columns = this.buildColumnListForCopy(changes);
-		
+
 		return `INSERT INTO ${quotedToTable} (${columns})\nSELECT ${columns} FROM ${quotedFromTable}`;
 	}
-	
+
 	/**
 	 * Build drop original table SQL
 	 */
@@ -279,17 +287,17 @@ export class TableRebuilder {
 		const quotedTable = this.quoteIdentifier(table);
 		return `DROP TABLE ${quotedTable}`;
 	}
-	
+
 	/**
 	 * Build rename temporary table SQL
 	 */
 	buildRenameTempSQL(tempTable: string, originalTable: string): string {
 		const quotedTempTable = this.quoteIdentifier(tempTable);
 		const quotedOriginalTable = this.quoteIdentifier(originalTable);
-		
+
 		return `ALTER TABLE ${quotedTempTable} RENAME TO ${quotedOriginalTable}`;
 	}
-	
+
 	/**
 	 * Build create temporary table SQL
 	 */
@@ -301,10 +309,10 @@ export class TableRebuilder {
 		// This would need access to original table schema and new schema
 		// For now, return a placeholder that would be implemented with actual schema access
 		const quotedTempTable = this.quoteIdentifier(tempTable);
-		
+
 		return `CREATE TABLE ${quotedTempTable} (\n\t-- New schema with modifications\n\tid INTEGER PRIMARY KEY\n\t-- ... other columns\n)`;
 	}
-	
+
 	/**
 	 * Build create temporary table without column SQL
 	 */
@@ -314,10 +322,10 @@ export class TableRebuilder {
 		excludedColumn: string
 	): string {
 		const quotedTempTable = this.quoteIdentifier(tempTable);
-		
+
 		return `CREATE TABLE ${quotedTempTable} AS\nSELECT * FROM ${this.quoteIdentifier(originalTable)} WHERE 1=0`;
 	}
-	
+
 	/**
 	 * Build create temporary table with modified column SQL
 	 */
@@ -327,10 +335,10 @@ export class TableRebuilder {
 		change: FieldChange
 	): string {
 		const quotedTempTable = this.quoteIdentifier(tempTable);
-		
+
 		return `CREATE TABLE ${quotedTempTable} (\n\t-- Schema with modified column: ${change.fieldname}\n\tid INTEGER PRIMARY KEY\n\t-- ... other columns\n)`;
 	}
-	
+
 	/**
 	 * Build copy data without column SQL
 	 */
@@ -342,10 +350,10 @@ export class TableRebuilder {
 		const quotedFromTable = this.quoteIdentifier(fromTable);
 		const quotedToTable = this.quoteIdentifier(toTable);
 		const quotedExcludedColumn = this.quoteIdentifier(excludedColumn);
-		
+
 		return `INSERT INTO ${quotedToTable}\nSELECT * FROM ${quotedFromTable} WHERE ${quotedExcludedColumn} IS NOT NULL`;
 	}
-	
+
 	/**
 	 * Build copy data with modified column SQL
 	 */
@@ -357,19 +365,19 @@ export class TableRebuilder {
 		const quotedFromTable = this.quoteIdentifier(fromTable);
 		const quotedToTable = this.quoteIdentifier(toTable);
 		const quotedColumn = this.quoteIdentifier(change.fieldname);
-		
+
 		// Handle type conversion if needed
 		let columnExpression = quotedColumn;
-		
+
 		if (change.changes.type) {
 			// Add type conversion logic here
 			const { from, to } = change.changes.type;
 			columnExpression = this.buildTypeConversionExpression(quotedColumn, from, to);
 		}
-		
+
 		return `INSERT INTO ${quotedToTable}\nSELECT *, ${columnExpression} AS ${quotedColumn} FROM ${quotedFromTable}`;
 	}
-	
+
 	/**
 	 * Build recreate indexes SQL
 	 */
@@ -378,7 +386,7 @@ export class TableRebuilder {
 		// For now, return a placeholder
 		return `-- Recreate indexes for ${this.quoteIdentifier(tableName)}\n-- Index recreation would go here`;
 	}
-	
+
 	/**
 	 * Build column list for copy operation
 	 */
@@ -387,7 +395,7 @@ export class TableRebuilder {
 		// For now, return a placeholder
 		return '*';
 	}
-	
+
 	/**
 	 * Build type conversion expression
 	 */
@@ -400,23 +408,23 @@ export class TableRebuilder {
 		if (fromType.toUpperCase() === 'INTEGER' && toType.toUpperCase() === 'TEXT') {
 			return `CAST(${column} AS TEXT)`;
 		}
-		
+
 		if (fromType.toUpperCase() === 'TEXT' && toType.toUpperCase() === 'INTEGER') {
 			return `CAST(${column} AS INTEGER)`;
 		}
-		
+
 		if (fromType.toUpperCase() === 'REAL' && toType.toUpperCase() === 'INTEGER') {
 			return `CAST(${column} AS INTEGER)`;
 		}
-		
+
 		if (fromType.toUpperCase() === 'INTEGER' && toType.toUpperCase() === 'REAL') {
 			return `CAST(${column} AS REAL)`;
 		}
-		
+
 		// Default to no conversion
 		return column;
 	}
-	
+
 	/**
 	 * Quote identifier according to options
 	 */

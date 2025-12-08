@@ -30,9 +30,7 @@ describe('SQL Generation Integration', () => {
 		});
 	});
 	
-	afterEach(() => {
-		sqlGenerator = null as any;
-	});
+	
 	
 	describe('Complete workflow integration', () => {
 		it('should generate complete migration SQL for complex schema diff', () => {

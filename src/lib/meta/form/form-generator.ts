@@ -19,6 +19,7 @@ import type {
     ValidationType
 } from './types';
 import type { DocType, DocField, FieldType } from '../doctype/types';
+import type { VirtualDocType } from '../doctype/virtual-doctype';
 import { docFieldToFormField } from './utils';
 import { ERROR_MESSAGES } from './constants';
 
@@ -106,7 +107,7 @@ export class FormGenerator {
      * @param doctype - The DocType to convert
      * @returns FormSchema with sections, validation, and layout
      */
-    generateFormSchema(doctype: DocType): FormSchema {
+    generateFormSchema(doctype: DocType | VirtualDocType): FormSchema {
         const result = this.generateFormSchemaWithResult(doctype);
         return result.schema;
     }
@@ -116,10 +117,15 @@ export class FormGenerator {
      * @param doctype - The DocType to convert
      * @returns FormGenerationResult with schema and metadata
      */
-    generateFormSchemaWithResult(doctype: DocType): FormGenerationResult {
+    generateFormSchemaWithResult(doctype: DocType | VirtualDocType): FormGenerationResult {
         const hiddenFields: string[] = [];
         const readOnlyFields: string[] = [];
         let fieldCount = 0;
+
+        // Handle Virtual DocType
+        if ((doctype as any).is_virtual) {
+            return this.generateVirtualFormSchema(doctype as VirtualDocType);
+        }
 
         // Determine if we have tabs
         const hasTabs = doctype.fields.some(f => f.fieldtype === 'Tab Break');
@@ -516,6 +522,89 @@ export class FormGenerator {
     }
 
     /**
+     * Generate form schema for Virtual DocTypes
+     * @param virtualDocType - The Virtual DocType to convert
+     * @returns FormGenerationResult with schema and metadata
+     */
+    private generateVirtualFormSchema(virtualDocType: VirtualDocType): FormGenerationResult {
+        const hiddenFields: string[] = [];
+        const readOnlyFields: string[] = [];
+        let fieldCount = 0;
+
+        // Determine if we have tabs
+        const hasTabs = virtualDocType.fields.some(f => f.fieldtype === 'Tab Break');
+
+        // Initialize form schema
+        const schema: FormSchema = {
+            doctype: virtualDocType.name,
+            layout: this.createVirtualFormLayout(virtualDocType)
+        };
+
+        if (hasTabs) {
+            schema.tabs = this.processFieldsWithTabs(
+                virtualDocType.fields,
+                hiddenFields,
+                readOnlyFields,
+                () => fieldCount++
+            );
+        } else {
+            schema.sections = this.processFieldsWithSections(
+                virtualDocType.fields,
+                hiddenFields,
+                readOnlyFields,
+                () => fieldCount++
+            );
+        }
+
+        // Extract default values
+        const defaults = this.generateVirtualDefaultValues(virtualDocType);
+
+        return {
+            schema,
+            defaults,
+            hiddenFields,
+            readOnlyFields,
+            fieldCount
+        };
+    }
+
+    /**
+     * Create form layout configuration for Virtual DocTypes
+     * @param virtualDocType - The Virtual DocType
+     * @returns FormLayout configuration
+     */
+    private createVirtualFormLayout(virtualDocType: VirtualDocType): FormLayout {
+        const hasTabs = virtualDocType.fields.some(f => f.fieldtype === 'Tab Break');
+
+        return {
+            has_tabs: hasTabs
+        };
+    }
+
+    /**
+     * Generate default values for Virtual DocType fields
+     * @param virtualDocType - The Virtual DocType
+     * @returns Record of default values
+     */
+    private generateVirtualDefaultValues(virtualDocType: VirtualDocType): Record<string, any> {
+        const defaults: Record<string, any> = {};
+
+        for (const field of virtualDocType.fields) {
+            if (field.default !== undefined && field.default !== null) {
+                defaults[field.fieldname] = field.default;
+            }
+        }
+
+        // Add virtual-specific defaults
+        if (virtualDocType.virtual_config.source_type === 'computed') {
+            // For computed fields, defaults might be empty initially
+            defaults._computed = true;
+        }
+
+        return defaults;
+    }
+
+    /**
      * Generate default values object from DocType fields
      * @param doctype - The DocType to extract defaults from
      * @returns Object mapping fieldnames to their default values
@@ -629,94 +718,129 @@ export class FormGenerator {
         }
 
         // Check depends_on condition
-        const dependsOn = field.depends_on;
-        if (!dependsOn) {
-            return true;
+        if (field.depends_on) {
+            return this.evaluateCondition(field.depends_on, doc);
         }
 
-        return this.evaluateCondition(dependsOn, doc);
+        return true;
     }
 
     /**
-     * Apply condition evaluation to a FormSchema
-     * Filters out fields/sections/tabs that don't meet their conditions
-     * @param schema - The FormSchema to process
-     * @param doc - The document data
-     * @returns New FormSchema with conditions applied
+     * Apply conditions to a FormSchema and return a filtered schema
+     * @param schema - The FormSchema to filter
+     * @param doc - The document data to evaluate conditions against
+     * @returns A new FormSchema with only visible fields/sections/tabs
      */
     applyConditions(schema: FormSchema, doc: Record<string, any>): FormSchema {
-        const result: FormSchema = {
-            ...schema,
-            layout: { ...schema.layout }
-        };
+        // Create a deep copy of the schema to avoid mutating the original
+        const filteredSchema: FormSchema = JSON.parse(JSON.stringify(schema));
 
-        if (schema.tabs) {
-            result.tabs = schema.tabs
-                .filter(tab => !tab.condition || this.evaluateCondition(tab.condition, doc))
-                .map(tab => ({
-                    ...tab,
-                    sections: this.filterSections(tab.sections, doc)
-                }));
+        // Handle tabs-based form
+        if (filteredSchema.tabs) {
+            filteredSchema.tabs = filteredSchema.tabs
+                .map(tab => this.filterTab(tab, doc))
+                .filter(tab => tab.sections.length > 0);
         }
 
-        if (schema.sections) {
-            result.sections = this.filterSections(schema.sections, doc);
+        // Handle sections-based form
+        if (filteredSchema.sections) {
+            filteredSchema.sections = filteredSchema.sections
+                .map(section => this.filterSection(section, doc))
+                .filter(section =>
+                    (section.fields && section.fields.length > 0) ||
+                    (section.columns && section.columns.some(col => col.fields.length > 0))
+                );
         }
 
-        return result;
+        return filteredSchema;
     }
 
     /**
-     * Filter sections based on conditions
+     * Filter a tab based on conditions
+     * @param tab - The tab to filter
+     * @param doc - The document data
+     * @returns A filtered tab
      */
-    private filterSections(sections: FormSection[], doc: Record<string, any>): FormSection[] {
-        return sections
-            .filter(section => !section.condition || this.evaluateCondition(section.condition, doc))
-            .map(section => {
-                const filteredSection: FormSection = { ...section };
+    private filterTab(tab: FormTab, doc: Record<string, any>): FormTab {
+        // Check if tab itself should be visible
+        if (tab.depends_on && !this.evaluateCondition(tab.depends_on, doc)) {
+            return { ...tab, sections: [] };
+        }
 
-                if (section.fields) {
-                    filteredSection.fields = section.fields.filter(
-                        field => !field.condition || this.evaluateCondition(field.condition, doc)
-                    );
-                }
+        // Filter sections within the tab
+        return {
+            ...tab,
+            sections: tab.sections
+                .map(section => this.filterSection(section, doc))
+                .filter(section =>
+                    (section.fields && section.fields.length > 0) ||
+                    (section.columns && section.columns.some(col => col.fields.length > 0))
+                )
+        };
+    }
 
-                if (section.columns) {
-                    filteredSection.columns = section.columns.map(column => ({
-                        ...column,
-                        fields: column.fields.filter(
-                            field => !field.condition || this.evaluateCondition(field.condition, doc)
-                        )
-                    }));
-                }
+    /**
+     * Filter a section based on conditions
+     * @param section - The section to filter
+     * @param doc - The document data
+     * @returns A filtered section
+     */
+    private filterSection(section: FormSection, doc: Record<string, any>): FormSection {
+        // Check if section itself should be visible
+        if (section.depends_on && !this.evaluateCondition(section.depends_on, doc)) {
+            return { ...section, fields: [], columns: [] };
+        }
 
-                return filteredSection;
-            });
+        // Filter fields directly in section
+        let filteredFields: FormField[] = [];
+        if (section.fields) {
+            filteredFields = section.fields.filter(field => this.isFieldVisible(field, doc));
+        }
+
+        // Filter fields in columns
+        let filteredColumns: FormColumn[] = [];
+        if (section.columns) {
+            filteredColumns = section.columns.map(column => ({
+                ...column,
+                fields: column.fields.filter(field => this.isFieldVisible(field, doc))
+            })).filter(column => column.fields.length > 0);
+        }
+
+        return {
+            ...section,
+            fields: filteredFields,
+            columns: filteredColumns
+        };
     }
 }
 
 /**
- * Create a FormGenerator instance with default options
+ * Factory function to create a FormGenerator instance with options
+ * @param options - Configuration options for the FormGenerator
+ * @returns A new FormGenerator instance
  */
-export function createFormGenerator(options?: FormGeneratorOptions): FormGenerator {
-    return new FormGenerator(options);
+export function createFormGenerator(options: FormGeneratorOptions = {}): FormGenerator {
+	return new FormGenerator(options);
 }
 
 /**
- * Convenience function to generate FormSchema from DocType
+ * Convenience function to generate a FormSchema using default options
+ * @param doctype - The DocType to convert
+ * @returns FormSchema with sections, validation, and layout
  */
-export function generateFormSchema(doctype: DocType, options?: FormGeneratorOptions): FormSchema {
-    const generator = new FormGenerator(options);
-    return generator.generateFormSchema(doctype);
+export function generateFormSchema(doctype: DocType | VirtualDocType): FormSchema {
+	const generator = new FormGenerator();
+	return generator.generateFormSchema(doctype);
 }
 
 /**
- * Convenience function to generate FormSchema with full result
+ * Convenience function to generate a FormSchema with result using default options
+ * @param doctype - The DocType to convert
+ * @returns FormGenerationResult with schema and metadata
  */
 export function generateFormSchemaWithResult(
-    doctype: DocType,
-    options?: FormGeneratorOptions
+	doctype: DocType | VirtualDocType
 ): FormGenerationResult {
-    const generator = new FormGenerator(options);
-    return generator.generateFormSchemaWithResult(doctype);
+	const generator = new FormGenerator();
+	return generator.generateFormSchemaWithResult(doctype);
 }

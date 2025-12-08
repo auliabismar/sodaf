@@ -1,0 +1,1257 @@
+
+> sodaf@0.0.1 test
+> vitest run
+
+
+[1m[46m RUN [49m[22m [36mv4.0.15 [39m[90mD:/workspace/sodaf[39m
+
+ [31mΓ¥»[39m src/lib/meta/migration/__tests__/field-type-mapper.test.ts [2m([22m[2m44 tests[22m[2m | [22m[31m38 failed[39m[2m)[22m[32m 78[2mms[22m[39m
+[31m       [31m├ù[31m should map Data field to varchar[39m[32m 29[2mms[22m[39m
+[31m       [31m├ù[31m should map Int field to integer[39m[32m 29[2mms[22m[39m
+[31m       [31m├ù[31m should map Float field to real[39m[32m 29[2mms[22m[39m
+[31m       [31m├ù[31m should map Currency field to real[39m[32m 29[2mms[22m[39m
+[31m       [31m├ù[31m should map Percent field to real[39m[32m 29[2mms[22m[39m
+[31m       [31m├ù[31m should map Check field to integer[39m[32m 7[2mms[22m[39m
+[31m       [31m├ù[31m should map Date field to datetime[39m[32m 7[2mms[22m[39m
+[31m       [31m├ù[31m should map Datetime field to datetime[39m[32m 7[2mms[22m[39m
+[31m       [31m├ù[31m should map Time field to time[39m[32m 7[2mms[22m[39m
+[31m       [31m├ù[31m should map Text Editor field to text[39m[32m 6[2mms[22m[39m
+[31m       [31m├ù[31m should map Long Text field to text[39m[32m 5[2mms[22m[39m
+[31m       [31m├ù[31m should map Small Text field to text[39m[32m 5[2mms[22m[39m
+[31m       [31m├ù[31m should map Select field to varchar[39m[32m 5[2mms[22m[39m
+[31m       [31m├ù[31m should map Link field to varchar with foreign key[39m[32m 5[2mms[22m[39m
+[31m       [31m├ù[31m should map Dynamic Link field to varchar[39m[32m 5[2mms[22m[39m
+[31m       [31m├ù[31m should map Password field to varchar[39m[32m 4[2mms[22m[39m
+[31m       [31m├ù[31m should map Read Only field to text (no column)[39m[32m 4[2mms[22m[39m
+[31m       [31m├ù[31m should map HTML field to text[39m[32m 4[2mms[22m[39m
+[31m       [31m├ù[31m should map Markdown Editor field to text[39m[32m 4[2mms[22m[39m
+[31m       [31m├ù[31m should map Code field to text[39m[32m 4[2mms[22m[39m
+[31m       [31m├ù[31m should map Attach field to varchar[39m[32m 5[2mms[22m[39m
+[31m       [31m├ù[31m should map Attach Image field to varchar[39m[32m 5[2mms[22m[39m
+[31m       [31m├ù[31m should map Signature field to varchar[39m[32m 5[2mms[22m[39m
+[31m       [31m├ù[31m should map Color field to varchar[39m[32m 5[2mms[22m[39m
+[31m       [31m├ù[31m should map Rating field to integer[39m[32m 5[2mms[22m[39m
+[31m       [31m├ù[31m should map Duration field to varchar[39m[32m 4[2mms[22m[39m
+[31m       [31m├ù[31m should map Geolocation field to varchar[39m[32m 4[2mms[22m[39m
+[31m       [31m├ù[31m should throw LayoutFieldError for Section Break[39m[32m 3[2mms[22m[39m
+[31m       [31m├ù[31m should throw LayoutFieldError for Column Break[39m[32m 3[2mms[22m[39m
+[31m       [31m├ù[31m should throw LayoutFieldError for Tab Break[39m[32m 3[2mms[22m[39m
+[31m       [31m├ù[31m should throw LayoutFieldError for HTML (layout)[39m[32m 1[2mms[22m[39m
+       [32mΓ£ô[39m should throw UnsupportedFieldTypeError for unknown field type[32m 1[2mms[22m[39m
+       [32mΓ£ô[39m should handle required fields (NOT NULL)[32m 1[2mms[22m[39m
+       [32mΓ£ô[39m should handle optional fields (NULLABLE)[32m 1[2mms[22m[39m
+       [32mΓ£ô[39m should handle unique fields[32m 1[2mms[22m[39m
+[31m       [31m├ù[31m should handle default values[39m[32m 5[2mms[22m[39m
+[31m       [31m├ù[31m should handle numeric default values[39m[32m 5[2mms[22m[39m
+[31m       [31m├ù[31m should handle boolean default values for Check fields[39m[32m 5[2mms[22m[39m
+       [32mΓ£ô[39m should use custom type mappings when provided[32m 5[2mms[22m[39m
+[31m       [31m├ù[31m should fall back to default mappings for unmapped types[39m[32m 5[2mms[22m[39m
+       [32mΓ£ô[39m should provide default mappings for all standard field types[32m 13[2mms[22m[39m
+[31m       [31m├ù[31m should handle name field as primary key[39m[32m 12[2mms[22m[39m
+[31m       [31m├ù[31m should handle table name generation for Link fields[39m[32m 12[2mms[22m[39m
+[31m       [31m├ù[31m should handle table name with custom table_name in options[39m[32m 12[2mms[22m[39m
+ [31mΓ¥»[39m src/lib/api/virtual/__tests__/handlers.test.ts [2m([22m[2m15 tests[22m[2m | [22m[31m14 failed[39m[2m)[22m[32m 79[2mms[22m[39m
+[31m       [31m├ù[31m should handle query request successfully[39m[32m 55[2mms[22m[39m
+[31m       [31m├ù[31m should handle query request with parameters[39m[32m 55[2mms[22m[39m
+[31m       [31m├ù[31m should handle non-existent Virtual DocType[39m[32m 54[2mms[22m[39m
+[31m       [31m├ù[31m should handle controller errors[39m[32m 54[2mms[22m[39m
+[31m       [31m├ù[31m should handle refresh request successfully[39m[32m 54[2mms[22m[39m
+[31m       [31m├ù[31m should handle refresh request for non-existent Virtual DocType[39m[32m 5[2mms[22m[39m
+[31m       [31m├ù[31m should handle schema request successfully[39m[32m 5[2mms[22m[39m
+[31m       [31m├ù[31m should handle schema request for non-existent Virtual DocType[39m[32m 5[2mms[22m[39m
+[31m       [31m├ù[31m should handle list request successfully[39m[32m 5[2mms[22m[39m
+       [32mΓ£ô[39m should handle list request with source type filter[32m 5[2mms[22m[39m
+[31m       [31m├ù[31m should handle test connection request successfully[39m[32m 15[2mms[22m[39m
+[31m       [31m├ù[31m should handle test connection request for non-existent Virtual DocType[39m[32m 15[2mms[22m[39m
+[31m       [31m├ù[31m should handle fetch errors gracefully[39m[32m 15[2mms[22m[39m
+[31m       [31m├ù[31m should handle malformed query parameters[39m[32m 15[2mms[22m[39m
+[31m       [31m├ù[31m should return consistent response format[39m[32m 15[2mms[22m[39m
+ [31mΓ¥»[39m src/lib/meta/migration/__tests__/history-manager.test.ts [2m([22m[2m18 tests[22m[2m | [22m[31m12 failed[39m[2m)[22m[32m 86[2mms[22m[39m
+       [32mΓ£ô[39m should create migration history table if not exists[32m 43[2mms[22m[39m
+[31m       [31m├ù[31m should not recreate table if already initialized[39m[32m 42[2mms[22m[39m
+       [32mΓ£ô[39m should record migration in history table[32m 43[2mms[22m[39m
+[31m       [31m├ù[31m should initialize table before recording[39m[32m 42[2mms[22m[39m
+[31m       [31m├ù[31m should update migration status in history table[39m[32m 43[2mms[22m[39m
+[31m       [31m├ù[31m should return migration history for specific DocType[39m[32m 17[2mms[22m[39m
+[31m       [31m├ù[31m should return all migration history when no DocType specified[39m[32m 17[2mms[22m[39m
+[31m       [31m├ù[31m should limit results when limit specified[39m[32m 17[2mms[22m[39m
+[31m       [31m├ù[31m should return specific migration by ID[39m[32m 17[2mms[22m[39m
+       [32mΓ£ô[39m should return null when migration not found[32m 16[2mms[22m[39m
+[31m       [31m├ù[31m should return latest applied migration for DocType[39m[32m 16[2mms[22m[39m
+[31m       [31m├ù[31m should return null when no applied migration found[39m[32m 16[2mms[22m[39m
+[31m       [31m├ù[31m should return true when migration is applied[39m[32m 15[2mms[22m[39m
+       [32mΓ£ô[39m should return false when migration is not applied[32m 15[2mms[22m[39m
+       [32mΓ£ô[39m should clear history for specific DocType[32m 15[2mms[22m[39m
+       [32mΓ£ô[39m should clear all history when no DocType specified[32m 6[2mms[22m[39m
+[31m       [31m├ù[31m should return migration statistics for specific DocType[39m[32m 6[2mms[22m[39m
+[31m       [31m├ù[31m should return overall statistics when no DocType specified[39m[32m 6[2mms[22m[39m
+[90mstdout[2m | src/lib/api/virtual/__tests__/middleware.test.ts[2m > [22m[2mVirtual API Middleware
+[22m[39m[Virtual API Request] {
+  timestamp: [32m'2025-12-08T05:56:30.475Z'[39m,
+  request_id: [32m'req_1765173390475_pcb1f3f58'[39m,
+  method: [32m'GET'[39m,
+  url: [32m'/api/test'[39m,
+  user_agent: [90mundefined[39m,
+  ip: [32m'10.0.0.1'[39m,
+  headers: { [32m'x-real-ip'[39m: [32m'10.0.0.1'[39m }
+}
+[Virtual API Request] {
+  timestamp: [32m'2025-12-08T05:56:30.478Z'[39m,
+  request_id: [32m'req_1765173390478_vcpd9t8rn'[39m,
+  method: [32m'GET'[39m,
+  url: [32m'/api/test'[39m,
+  user_agent: [90mundefined[39m,
+  ip: [32m'10.0.0.1'[39m
+}
+[Virtual API Response] {
+  timestamp: [32m'2025-12-08T05:56:30.478Z'[39m,
+  request_id: [32m'req_1765173390475_pcb1f3f58'[39m,
+  status: [33m200[39m,
+  duration_ms: [33m3[39m
+}
+
+[90mstdout[2m | src/lib/api/virtual/__tests__/middleware.test.ts[2m > [22m[2mVirtual API Middleware[2m > [22m[2mLogging Middleware[2m > [22m[2mshould include headers when logHeaders is true
+[22m[39m[Virtual API Response] {
+  timestamp: [32m'2025-12-08T05:56:30.489Z'[39m,
+  request_id: [32m'req_1765173390478_vcpd9t8rn'[39m,
+  status: [33m200[39m,
+  duration_ms: [33m11[39m
+}
+
+[90mstdout[2m | src/lib/api/virtual/__tests__/middleware.test.ts[2m > [22m[2mVirtual API Middleware[2m > [22m[2mLogging Middleware[2m > [22m[2mshould include headers when logHeaders is true
+[22m[39m[Virtual API Request] {
+  timestamp: [32m'2025-12-08T05:56:30.498Z'[39m,
+  request_id: [32m'req_1765173390497_5bftozzvi'[39m,
+  method: [32m'GET'[39m,
+  url: [32m'/api/test'[39m,
+  user_agent: [90mundefined[39m,
+  ip: [32m'unknown'[39m,
+  headers: {
+    authorization: [32m'Bearer token123'[39m,
+    [32m'content-type'[39m: [32m'application/json'[39m
+  }
+}
+
+[90mstdout[2m | src/lib/api/virtual/__tests__/middleware.test.ts[2m > [22m[2mVirtual API Middleware[2m > [22m[2mLogging Middleware[2m > [22m[2mshould include headers when logHeaders is true
+[22m[39m[Virtual API Response] {
+  timestamp: [32m'2025-12-08T05:56:30.498Z'[39m,
+  request_id: [32m'req_1765173390497_5bftozzvi'[39m,
+  status: [33m200[39m,
+  duration_ms: [33m1[39m
+}
+
+[90mstdout[2m | src/lib/api/virtual/__tests__/middleware.test.ts[2m > [22m[2mVirtual API Middleware
+[22m[39m[Virtual API Request] {
+  timestamp: [32m'2025-12-08T05:56:30.500Z'[39m,
+  request_id: [32m'req_1765173390500_x4if5306t'[39m,
+  method: [32m'GET'[39m,
+  url: [32m'/api/test'[39m,
+  user_agent: [90mundefined[39m,
+  ip: [32m'unknown'[39m,
+  body: { test: [32m'data'[39m }
+}
+[Virtual API Request] {
+  timestamp: [32m'2025-12-08T05:56:30.501Z'[39m,
+  request_id: [32m'req_1765173390501_3nmx5yjwb'[39m,
+  method: [32m'GET'[39m,
+  url: [32m'/api/test'[39m,
+  user_agent: [90mundefined[39m,
+  ip: [32m'unknown'[39m
+}
+[Virtual API Request] {
+  timestamp: [32m'2025-12-08T05:56:30.501Z'[39m,
+  request_id: [32m'req_1765173390501_qr7mhksv0'[39m,
+  method: [32m'GET'[39m,
+  url: [32m'/api/test'[39m,
+  user_agent: [90mundefined[39m,
+  ip: [32m'unknown'[39m
+}
+[Virtual API Response] {
+  timestamp: [32m'2025-12-08T05:56:30.502Z'[39m,
+  request_id: [32m'req_1765173390500_x4if5306t'[39m,
+  status: [33m200[39m,
+  duration_ms: [33m2[39m
+}
+[Virtual API Response] {
+  timestamp: [32m'2025-12-08T05:56:30.502Z'[39m,
+  request_id: [32m'req_1765173390501_3nmx5yjwb'[39m,
+  status: [33m200[39m,
+  duration_ms: [33m1[39m
+}
+[Virtual API Response] {
+  timestamp: [32m'2025-12-08T05:56:30.502Z'[39m,
+  request_id: [32m'req_1765173390501_qr7mhksv0'[39m,
+  status: [33m200[39m,
+  duration_ms: [33m1[39m
+}
+[Virtual API Request] {
+  timestamp: [32m'2025-12-08T05:56:30.503Z'[39m,
+  request_id: [32m'req_1765173390503_msmo550hb'[39m,
+  method: [32m'GET'[39m,
+  url: [32m'/api/test'[39m,
+  user_agent: [90mundefined[39m,
+  ip: [32m'unknown'[39m
+}
+
+[90mstdout[2m | src/lib/api/virtual/__tests__/middleware.test.ts[2m > [22m[2mVirtual API Middleware[2m > [22m[2mLogging Middleware[2m > [22m[2mshould generate unique request IDs
+[22m[39m[Virtual API Request] {
+  timestamp: [32m'2025-12-08T05:56:30.506Z'[39m,
+  request_id: [32m'req_1765173390506_fr7t020n8'[39m,
+  method: [32m'GET'[39m,
+  url: [32m'/api/test'[39m,
+  user_agent: [90mundefined[39m,
+  ip: [32m'unknown'[39m
+}
+
+[90mstdout[2m | src/lib/api/virtual/__tests__/middleware.test.ts[2m > [22m[2mVirtual API Middleware[2m > [22m[2mLogging Middleware[2m > [22m[2mshould generate unique request IDs
+[22m[39m[Virtual API Response] {
+  timestamp: [32m'2025-12-08T05:56:30.506Z'[39m,
+  request_id: [32m'req_1765173390506_fr7t020n8'[39m,
+  status: [33m200[39m,
+  duration_ms: [33m0[39m
+}
+
+[90mstdout[2m | src/lib/api/virtual/__tests__/middleware.test.ts[2m > [22m[2mVirtual API Middleware[2m > [22m[2mLogging Middleware[2m > [22m[2mshould generate unique request IDs
+[22m[39m[Virtual API Request] {
+  timestamp: [32m'2025-12-08T05:56:30.506Z'[39m,
+  request_id: [32m'req_1765173390506_qdqlcbtw1'[39m,
+  method: [32m'GET'[39m,
+  url: [32m'/api/test'[39m,
+  user_agent: [90mundefined[39m,
+  ip: [32m'unknown'[39m
+}
+
+[90mstdout[2m | src/lib/api/virtual/__tests__/middleware.test.ts[2m > [22m[2mVirtual API Middleware[2m > [22m[2mLogging Middleware[2m > [22m[2mshould generate unique request IDs
+[22m[39m[Virtual API Response] {
+  timestamp: [32m'2025-12-08T05:56:30.506Z'[39m,
+  request_id: [32m'req_1765173390506_qdqlcbtw1'[39m,
+  status: [33m200[39m,
+  duration_ms: [33m0[39m
+}
+
+[90mstdout[2m | src/lib/api/virtual/__tests__/middleware.test.ts[2m > [22m[2mVirtual API Middleware[2m > [22m[2mLogging Middleware[2m > [22m[2mshould generate unique request IDs
+[22m[39m[Virtual API Request] {
+  timestamp: [32m'2025-12-08T05:56:30.507Z'[39m,
+  request_id: [32m'req_1765173390507_hm7ckrv2s'[39m,
+  method: [32m'GET'[39m,
+  url: [32m'/api/test'[39m,
+  user_agent: [90mundefined[39m,
+  ip: [32m'unknown'[39m
+}
+
+[90mstdout[2m | src/lib/api/virtual/__tests__/middleware.test.ts[2m > [22m[2mVirtual API Middleware[2m > [22m[2mLogging Middleware
+[22m[39m[Virtual API Response] {
+  timestamp: [32m'2025-12-08T05:56:30.507Z'[39m,
+  request_id: [32m'req_1765173390507_hm7ckrv2s'[39m,
+  status: [33m200[39m,
+  duration_ms: [33m0[39m
+}
+
+[90mstdout[2m | src/lib/api/virtual/__tests__/middleware.test.ts[2m > [22m[2mVirtual API Middleware[2m > [22m[2mLogging Middleware
+[22m[39m[Virtual API Request] {
+  timestamp: [32m'2025-12-08T05:56:30.507Z'[39m,
+  request_id: [32m'req_1765173390507_e3p1n1rot'[39m,
+  method: [32m'GET'[39m,
+  url: [32m'/api/test'[39m,
+  user_agent: [90mundefined[39m,
+  ip: [32m'unknown'[39m
+}
+
+[90mstdout[2m | src/lib/api/virtual/__tests__/middleware.test.ts[2m > [22m[2mVirtual API Middleware[2m > [22m[2mLogging Middleware
+[22m[39m[Virtual API Response] {
+  timestamp: [32m'2025-12-08T05:56:30.507Z'[39m,
+  request_id: [32m'req_1765173390507_e3p1n1rot'[39m,
+  status: [33m200[39m,
+  duration_ms: [33m0[39m
+}
+
+[90mstdout[2m | src/lib/api/virtual/__tests__/middleware.test.ts[2m > [22m[2mVirtual API Middleware[2m > [22m[2mLogging Middleware
+[22m[39m[Virtual API Request] {
+  timestamp: [32m'2025-12-08T05:56:30.507Z'[39m,
+  request_id: [32m'req_1765173390507_phrp9ik5q'[39m,
+  method: [32m'GET'[39m,
+  url: [32m'/api/test'[39m,
+  user_agent: [90mundefined[39m,
+  ip: [32m'unknown'[39m
+}
+
+[90mstdout[2m | src/lib/api/virtual/__tests__/middleware.test.ts[2m > [22m[2mVirtual API Middleware[2m > [22m[2mLogging Middleware
+[22m[39m[Virtual API Response] {
+  timestamp: [32m'2025-12-08T05:56:30.508Z'[39m,
+  request_id: [32m'req_1765173390507_phrp9ik5q'[39m,
+  status: [33m200[39m,
+  duration_ms: [33m1[39m
+}
+
+[90mstdout[2m | src/lib/api/virtual/__tests__/middleware.test.ts[2m > [22m[2mVirtual API Middleware[2m > [22m[2mPerformance[2m > [22m[2mshould handle high request volume efficiently
+[22m[39m[Virtual API Request] {
+  timestamp: [32m'2025-12-08T05:56:30.509Z'[39m,
+  request_id: [32m'req_1765173390509_hnzjz4ylz'[39m,
+  method: [32m'GET'[39m,
+  url: [32m'/api/test'[39m,
+  user_agent: [90mundefined[39m,
+  ip: [32m'unknown'[39m
+}
+[Virtual API Request] {
+  timestamp: [32m'2025-12-08T05:56:30.510Z'[39m,
+  request_id: [32m'req_1765173390510_ajqv6sxr0'[39m,
+  method: [32m'GET'[39m,
+  url: [32m'/api/test'[39m,
+  user_agent: [90mundefined[39m,
+  ip: [32m'unknown'[39m
+}
+
+[90mstdout[2m | src/lib/api/virtual/__tests__/middleware.test.ts[2m > [22m[2mVirtual API Middleware
+[22m[39m[Virtual API Response] {
+  timestamp: [32m'2025-12-08T05:56:30.615Z'[39m,
+  request_id: [32m'req_1765173390509_hnzjz4ylz'[39m,
+  status: [33m500[39m,
+  duration_ms: [33m106[39m
+}
+
+ [31mΓ¥»[39m src/lib/api/virtual/__tests__/middleware.test.ts [2m([22m[2m24 tests[22m[2m | [22m[31m14 failed[39m[2m)[22m[32m 189[2mms[22m[39m
+       [32mΓ£ô[39m should pass authentication to next middleware[32m 32[2mms[22m[39m
+[31m       [31m├ù[31m should return 401 when authentication fails[39m[32m 32[2mms[22m[39m
+[31m       [31m├ù[31m should handle authentication errors[39m[32m 31[2mms[22m[39m
+       [32mΓ£ô[39m should pass when user has required role[32m 31[2mms[22m[39m
+[31m       [31m├ù[31m should return 403 when user lacks required role[39m[32m 31[2mms[22m[39m
+[31m       [31m├ù[31m should return 401 when no user in request[39m[32m 8[2mms[22m[39m
+       [32mΓ£ô[39m should pass when user has required permission[32m 9[2mms[22m[39m
+[31m       [31m├ù[31m should return 403 when user lacks required permission[39m[32m 8[2mms[22m[39m
+[31m       [31m├ù[31m should pass when under rate limit[39m[32m 10[2mms[22m[39m
+[31m       [31m├ù[31m should return 429 when rate limit exceeded[39m[32m 8[2mms[22m[39m
+[31m       [31m├ù[31m should handle different client IPs separately[39m[32m 27[2mms[22m[39m
+       [32mΓ£ô[39m should use x-real-ip header when available[32m 27[2mms[22m[39m
+[31m       [31m├ù[31m should log requests at info level[39m[32m 27[2mms[22m[39m
+       [32mΓ£ô[39m should log requests at debug level[32m 27[2mms[22m[39m
+       [32mΓ£ô[39m should include headers when logHeaders is true[32m 5[2mms[22m[39m
+       [32mΓ£ô[39m should include body when logBody is true[32m 8[2mms[22m[39m
+[31m       [31m├ù[31m should not include headers when logHeaders is false[39m[32m 8[2mms[22m[39m
+[31m       [31m├ù[31m should not include body when logBody is false[39m[32m 8[2mms[22m[39m
+       [32mΓ£ô[39m should log errors at error level[32m 8[2mms[22m[39m
+[31m       [31m├ù[31m should generate unique request IDs[39m[32m 7[2mms[22m[39m
+[31m       [31m├ù[31m should measure request duration[39m[32m 108[2mms[22m[39m
+       [32mΓ£ô[39m should work with multiple middleware[32m 4[2mms[22m[39m
+[31m       [31m├ù[31m should handle middleware errors gracefully[39m[32m 4[2mms[22m[39m
+       [32mΓ£ô[39m should handle high request volume efficiently[32m 5[2mms[22m[39m
+ [31mΓ¥»[39m src/lib/meta/migration/__tests__/sql-formatter.test.ts [2m([22m[2m33 tests[22m[2m | [22m[31m26 failed[39m[2m)[22m[32m 85[2mms[22m[39m
+[31m       [31m├ù[31m should format CREATE TABLE statement with proper indentation[39m[32m 29[2mms[22m[39m
+[31m       [31m├ù[31m should format CREATE TABLE with single column[39m[32m 29[2mms[22m[39m
+       [32mΓ£ô[39m should format CREATE TABLE without constraints[32m 29[2mms[22m[39m
+       [32mΓ£ô[39m should format CREATE TABLE with mixed constraints[32m 29[2mms[22m[39m
+[31m       [31m├ù[31m should format ALTER TABLE ADD COLUMN statement[39m[32m 29[2mms[22m[39m
+       [32mΓ£ô[39m should format ALTER TABLE DROP COLUMN statement[32m 12[2mms[22m[39m
+[31m       [31m├ù[31m should format ALTER TABLE MODIFY COLUMN statement[39m[32m 12[2mms[22m[39m
+[31m       [31m├ù[31m should format ALTER TABLE RENAME COLUMN statement[39m[32m 12[2mms[22m[39m
+[31m       [31m├ù[31m should format ALTER TABLE RENAME TO statement[39m[32m 12[2mms[22m[39m
+[31m       [31m├ù[31m should format CREATE INDEX statement[39m[32m 11[2mms[22m[39m
+[31m       [31m├ù[31m should format CREATE UNIQUE INDEX statement[39m[32m 5[2mms[22m[39m
+[31m       [31m├ù[31m should format CREATE INDEX with single column[39m[32m 5[2mms[22m[39m
+[31m       [31m├ù[31m should format CREATE INDEX with DESC order[39m[32m 5[2mms[22m[39m
+[31m       [31m├ù[31m should format CREATE INDEX with WHERE clause[39m[32m 5[2mms[22m[39m
+[31m       [31m├ù[31m should format DROP INDEX statement[39m[32m 5[2mms[22m[39m
+[31m       [31m├ù[31m should format INSERT statement with single column[39m[32m 15[2mms[22m[39m
+[31m       [31m├ù[31m should format INSERT statement with multiple columns[39m[32m 15[2mms[22m[39m
+[31m       [31m├ù[31m should format INSERT with SELECT subquery[39m[32m 15[2mms[22m[39m
+[31m       [31m├ù[31m should format UPDATE statement with SET clause[39m[32m 15[2mms[22m[39m
+[31m       [31m├ù[31m should format UPDATE statement without WHERE clause[39m[32m 15[2mms[22m[39m
+[31m       [31m├ù[31m should format UPDATE with complex SET clause[39m[32m 5[2mms[22m[39m
+[31m       [31m├ù[31m should format DELETE statement with WHERE clause[39m[32m 5[2mms[22m[39m
+[31m       [31m├ù[31m should format DELETE statement without WHERE clause[39m[32m 5[2mms[22m[39m
+       [32mΓ£ô[39m should add comments to SQL statements[32m 5[2mms[22m[39m
+[31m       [31m├ù[31m should add multiple comments[39m[32m 5[2mms[22m[39m
+       [32mΓ£ô[39m should add comments with default prefix[32m 9[2mms[22m[39m
+[31m       [31m├ù[31m should use custom identifier quote[39m[32m 9[2mms[22m[39m
+       [32mΓ£ô[39m should use custom max line length[32m 9[2mms[22m[39m
+       [32mΓ£ô[39m should use custom max line length[32m 9[2mms[22m[39m
+[31m       [31m├ù[31m should disable formatting when disabled[39m[32m 8[2mms[22m[39m
+[31m       [31m├ù[31m should handle empty SQL[39m[32m 6[2mms[22m[39m
+[31m       [31m├ù[31m should handle null SQL[39m[32m 6[2mms[22m[39m
+[31m       [31m├ù[31m should handle SQL with only whitespace[39m[32m 6[2mms[22m[39m
+ [31mΓ¥»[39m src/lib/meta/doctype/__tests__/single-document.test.ts [2m([22m[2m29 tests[22m[2m | [22m[31m23 failed[39m[2m)[22m[32m 94[2mms[22m[39m
+       [32mΓ£ô[39m should create SingleDocument instance with valid DocType[32m 30[2mms[22m[39m
+[31m       [31m├ù[31m should mark as not new and not unsaved[39m[32m 28[2mms[22m[39m
+[31m       [31m├ù[31m should load document from database[39m[32m 28[2mms[22m[39m
+[31m       [31m├ù[31m should update document data using set method[39m[32m 28[2mms[22m[39m
+[31m       [31m├ù[31m should save document changes to database[39m[32m 28[2mms[22m[39m
+[31m       [31m├ù[31m should reload document from storage[39m[32m 11[2mms[22m[39m
+[31m       [31m├ù[31m should not save if no changes made[39m[32m 10[2mms[22m[39m
+[31m       [31m├ù[31m should not allow insert operation[39m[32m 10[2mms[22m[39m
+[31m       [31m├ù[31m should not allow delete operation[39m[32m 10[2mms[22m[39m
+[31m       [31m├ù[31m should parse string values correctly[39m[32m 10[2mms[22m[39m
+[31m       [31m├ù[31m should parse integer values correctly[39m[32m 12[2mms[22m[39m
+[31m       [31m├ù[31m should parse float values correctly[39m[32m 4[2mms[22m[39m
+[31m       [31m├ù[31m should parse JSON values correctly[39m[32m 4[2mms[22m[39m
+[31m       [31m├ù[31m should parse null values correctly[39m[32m 9[2mms[22m[39m
+[31m       [31m├ù[31m should create Singles table if not exists[39m[32m 9[2mms[22m[39m
+[31m       [31m├ù[31m should upsert values correctly[39m[32m 14[2mms[22m[39m
+[31m       [31m├ù[31m should update modified timestamp on save[39m[32m 5[2mms[22m[39m
+[31m       [31m├ù[31m should update modified_by on save[39m[32m 25[2mms[22m[39m
+       [32mΓ£ô[39m should handle database errors gracefully[32m 27[2mms[22m[39m
+       [32mΓ£ô[39m should handle reload errors gracefully[32m 26[2mms[22m[39m
+       [32mΓ£ô[39m should provide descriptive error messages for insert[32m 26[2mms[22m[39m
+       [32mΓ£ô[39m should provide descriptive error messages for delete[32m 7[2mms[22m[39m
+[31m       [31m├ù[31m should handle large document data efficiently[39m[32m 5[2mms[22m[39m
+[31m       [31m├ù[31m should handle multiple field updates efficiently[39m[32m 6[2mms[22m[39m
+[31m       [31m├ù[31m should execute validate hook before save[39m[32m 6[2mms[22m[39m
+[31m       [31m├ù[31m should execute before_save hook before save[39m[32m 6[2mms[22m[39m
+[31m       [31m├ù[31m should execute after_save hook after save[39m[32m 6[2mms[22m[39m
+       [32mΓ£ô[39m should execute on_reload hook after reload[32m 4[2mms[22m[39m
+[31m       [31m├ù[31m should load document using static load method[39m[32m 3[2mms[22m[39m
+ [31mΓ¥»[39m src/lib/meta/migration/__tests__/integration.test.ts [2m([22m[2m15 tests[22m[2m | [22m[31m9 failed[39m[2m)[22m[32m 88[2mms[22m[39m
+[31m     [31m├ù[31m should perform complete schema comparison workflow[39m[32m 48[2mms[22m[39m
+[31m     [31m├ù[31m should compare multiple DocTypes[39m[32m 47[2mms[22m[39m
+     [32mΓ£ô[39m should handle batch comparison with progress tracking[32m 48[2mms[22m[39m
+     [32mΓ£ô[39m should handle DocType not found error[32m 47[2mms[22m[39m
+[31m     [31m├ù[31m should handle table not found error[39m[32m 53[2mms[22m[39m
+[31m     [31m├ù[31m should respect comparison options[39m[32m 15[2mms[22m[39m
+     [32mΓ£ô[39m should handle complex schema differences[32m 15[2mms[22m[39m
+[31m     [31m├ù[31m should integrate schema validation[39m[32m 10[2mms[22m[39m
+[31m     [31m├ù[31m should cache database schema information[39m[32m 13[2mms[22m[39m
+[31m     [31m├ù[31m should clear cache when requested[39m[32m 11[2mms[22m[39m
+     [32mΓ£ô[39m should handle large schema comparison efficiently[32m 7[2mms[22m[39m
+     [32mΓ£ô[39m should handle concurrent comparisons safely[32m 21[2mms[22m[39m
+[31m     [31m├ù[31m should integrate with FieldComparator correctly[39m[32m 6[2mms[22m[39m
+[31m     [31m├ù[31m should integrate with IndexComparator correctly[39m[32m 5[2mms[22m[39m
+     [32mΓ£ô[39m should integrate with SchemaDiffAnalyzer correctly[32m 4[2mms[22m[39m
+ [31mΓ¥»[39m src/lib/meta/migration/__tests__/edge-cases.test.ts [2m([22m[2m13 tests[22m[2m | [22m[31m9 failed[39m[2m)[22m[32m 76[2mms[22m[39m
+[31m     [31m├ù[31m should handle empty DocType[39m[32m 41[2mms[22m[39m
+[31m     [31m├ù[31m should handle empty table schema[39m[32m 40[2mms[22m[39m
+[31m     [31m├ù[31m should handle special characters in field names[39m[32m 40[2mms[22m[39m
+[31m     [31m├ù[31m should handle reserved words as field names[39m[32m 40[2mms[22m[39m
+     [32mΓ£ô[39m should handle very long field names[32m 40[2mms[22m[39m
+[31m     [31m├ù[31m should handle extreme field values[39m[32m 14[2mms[22m[39m
+[31m     [31m├ù[31m should handle unicode characters in field names[39m[32m 14[2mms[22m[39m
+[31m     [31m├ù[31m should handle case sensitivity edge cases[39m[32m 14[2mms[22m[39m
+     [32mΓ£ô[39m should handle null and undefined values gracefully[32m 14[2mms[22m[39m
+[31m     [31m├ù[31m should handle database connection errors gracefully[39m[32m 15[2mms[22m[39m
+[31m     [31m├ù[31m should handle invalid DocType structure gracefully[39m[32m 6[2mms[22m[39m
+     [32mΓ£ô[39m should handle missing indexes array[32m 6[2mms[22m[39m
+     [32mΓ£ô[39m should handle circular references in DocType[32m 6[2mms[22m[39m
+ [31mΓ¥»[39m src/lib/cli/__tests__/services.test.ts [2m([22m[2m20 tests[22m[2m | [22m[31m10 failed[39m[2m)[22m[33m 921[2mms[22m[39m
+       [32mΓ£ô[39m should create migration service instance[32m 11[2mms[22m[39m
+[31m       [31m├ù[31m should run migrations successfully[39m[33m 917[2mms[22m[39m
+[31m       [31m├ù[31m should handle migration failures[39m[32m 196[2mms[22m[39m
+       [32mΓ£ô[39m should perform dry run migrations[32m 10[2mms[22m[39m
+[31m       [31m├ù[31m should get migration status[39m[32m 196[2mms[22m[39m
+[31m       [31m├ù[31m should rollback migrations successfully[39m[32m 186[2mms[22m[39m
+[31m       [31m├ù[31m should handle rollback when no migrations to rollback[39m[32m 185[2mms[22m[39m
+       [32mΓ£ô[39m should create site service instance[32m 13[2mms[22m[39m
+[31m       [31m├ù[31m should get site info[39m[32m 12[2mms[22m[39m
+[31m       [31m├ù[31m should validate site[39m[32m 12[2mms[22m[39m
+       [32mΓ£ô[39m should reject invalid site config[32m 15[2mms[22m[39m
+       [32mΓ£ô[39m should create config service instance[32m 5[2mms[22m[39m
+       [32mΓ£ô[39m should get config[32m 5[2mms[22m[39m
+       [32mΓ£ô[39m should validate config[32m 5[2mms[22m[39m
+       [32mΓ£ô[39m should reject invalid config[32m 5[2mms[22m[39m
+       [32mΓ£ô[39m should reject invalid output format[32m 9[2mms[22m[39m
+       [32mΓ£ô[39m should reject invalid log level[32m 9[2mms[22m[39m
+[31m       [31m├ù[31m should handle service dependencies correctly[39m[32m 11[2mms[22m[39m
+[31m       [31m├ù[31m should handle database connection errors[39m[32m 7[2mms[22m[39m
+[31m       [31m├ù[31m should complete service operations quickly[39m[32m 3[2mms[22m[39m
+ [31mΓ¥»[39m src/lib/meta/doctype/__tests__/integration.test.ts [2m([22m[2m5 tests[22m[2m | [22m[31m1 failed[39m[2m)[22m[32m 51[2mms[22m[39m
+       [32mΓ£ô[39m should complete full workflow: create ΓåÆ serialize ΓåÆ parse ΓåÆ register ΓåÆ validate[32m 25[2mms[22m[39m
+       [32mΓ£ô[39m should handle file-based workflow: save ΓåÆ load ΓåÆ register ΓåÆ retrieve[32m 48[2mms[22m[39m
+[31m       [31m├ù[31m should handle batch loading from directory[39m[32m 43[2mms[22m[39m
+       [32mΓ£ô[39m should handle error propagation correctly[32m 25[2mms[22m[39m
+       [32mΓ£ô[39m should preserve all DocType properties through round-trip[32m 25[2mms[22m[39m
+ [31mΓ¥»[39m src/lib/meta/migration/__tests__/sql-generation-integration.test.ts [2m([22m[2m11 tests[22m[2m | [22m[31m6 failed[39m[2m)[22m[32m 75[2mms[22m[39m
+       [32mΓ£ô[39m should generate complete migration SQL for complex schema diff[32m 42[2mms[22m[39m
+       [32mΓ£ô[39m should handle empty schema diff[32m 41[2mms[22m[39m
+[31m       [31m├ù[31m should generate proper SQL for table creation[39m[32m 41[2mms[22m[39m
+[31m       [31m├ù[31m should generate proper SQL for column addition[39m[32m 41[2mms[22m[39m
+[31m       [31m├ù[31m should generate proper SQL for index creation[39m[32m 41[2mms[22m[39m
+[31m       [31m├ù[31m should generate proper SQL for column modification[39m[32m 20[2mms[22m[39m
+[31m       [31m├ù[31m should generate proper SQL for column rename[39m[32m 20[2mms[22m[39m
+[31m       [31m├ù[31m should integrate all components properly[39m[32m 20[2mms[22m[39m
+       [32mΓ£ô[39m should handle invalid DocType gracefully[32m 20[2mms[22m[39m
+       [32mΓ£ô[39m should handle null values in options[32m 20[2mms[22m[39m
+       [32mΓ£ô[39m should handle large schema diffs efficiently[32m 10[2mms[22m[39m
+ [31mΓ¥»[39m src/lib/meta/migration/__tests__/constraint-builder.test.ts [2m([22m[2m31 tests[22m[2m | [22m[31m19 failed[39m[2m)[22m[32m 63[2mms[22m[39m
+[31m       [31m├ù[31m should build constraints for required field[39m[32m 18[2mms[22m[39m
+[31m       [31m├ù[31m should build constraints for optional field[39m[32m 18[2mms[22m[39m
+[31m       [31m├ù[31m should build constraints for unique field[39m[32m 18[2mms[22m[39m
+       [32mΓ£ô[39m should build constraints for required and unique field[32m 18[2mms[22m[39m
+       [32mΓ£ô[39m should build constraints for field with string default[32m 18[2mms[22m[39m
+       [32mΓ£ô[39m should build constraints for field with numeric default[32m 14[2mms[22m[39m
+       [32mΓ£ô[39m should build constraints for field with boolean default[32m 14[2mms[22m[39m
+[31m       [31m├ù[31m should build constraints for field with null default[39m[32m 13[2mms[22m[39m
+[31m       [31m├ù[31m should build constraints for Link field with foreign key[39m[32m 13[2mms[22m[39m
+[31m       [31m├ù[31m should handle Link field with custom table name[39m[32m 13[2mms[22m[39m
+       [32mΓ£ô[39m should escape string default values properly[32m 5[2mms[22m[39m
+[31m       [31m├ù[31m should build complete column definition[39m[32m 4[2mms[22m[39m
+       [32mΓ£ô[39m should build column definition with NOT NULL[32m 4[2mms[22m[39m
+[31m       [31m├ù[31m should build column definition with UNIQUE[39m[32m 4[2mms[22m[39m
+       [32mΓ£ô[39m should build column definition with PRIMARY KEY[32m 4[2mms[22m[39m
+[31m       [31m├ù[31m should build column definition with FOREIGN KEY[39m[32m 8[2mms[22m[39m
+[31m       [31m├ù[31m should build column definition with CHECK constraint[39m[32m 8[2mms[22m[39m
+       [32mΓ£ô[39m should build column definition with COLLATE[32m 8[2mms[22m[39m
+[31m       [31m├ù[31m should build column definition with all constraints[39m[32m 8[2mms[22m[39m
+       [32mΓ£ô[39m should handle text type without length[32m 8[2mms[22m[39m
+[31m       [31m├ù[31m should handle numeric type with precision[39m[32m 7[2mms[22m[39m
+       [32mΓ£ô[39m should build empty constraints for no columns[32m 7[2mms[22m[39m
+[31m       [31m├ù[31m should build primary key constraint for single primary key column[39m[32m 7[2mms[22m[39m
+       [32mΓ£ô[39m should build composite primary key constraint[32m 7[2mms[22m[39m
+[31m       [31m├ù[31m should build unique constraints for unique columns[39m[32m 7[2mms[22m[39m
+[31m       [31m├ù[31m should build foreign key constraints[39m[32m 8[2mms[22m[39m
+[31m       [31m├ù[31m should build check constraints[39m[32m 8[2mms[22m[39m
+[31m       [31m├ù[31m should build mixed constraints[39m[32m 8[2mms[22m[39m
+[31m       [31m├ù[31m should throw InvalidConstraintError for invalid foreign key[39m[32m 8[2mms[22m[39m
+[31m       [31m├ù[31m should throw InvalidConstraintError for invalid check constraint[39m[32m 8[2mms[22m[39m
+       [32mΓ£ô[39m should use custom identifier quote character[32m 1[2mms[22m[39m
+ [31mΓ¥»[39m src/lib/meta/migration/__tests__/apply-errors.test.ts [2m([22m[2m16 tests[22m[2m | [22m[31m12 failed[39m[2m)[22m[32m 103[2mms[22m[39m
+       [32mΓ£ô[39m should create base migration error with correct properties[32m 25[2mms[22m[39m
+       [32mΓ£ô[39m should serialize to JSON correctly[32m 25[2mms[22m[39m
+[31m       [31m├ù[31m should create validation error with validation details[39m[32m 24[2mms[22m[39m
+[31m       [31m├ù[31m should create execution error with statement and original error[39m[32m 24[2mms[22m[39m
+[31m       [31m├ù[31m should create rollback error with migration ID and original error[39m[32m 24[2mms[22m[39m
+[31m       [31m├ù[31m should create data loss risk error with risks[39m[32m 20[2mms[22m[39m
+[31m       [31m├ù[31m should create timeout error with migration ID and operation[39m[32m 20[2mms[22m[39m
+[31m       [31m├ù[31m should create backup error with path and original error[39m[32m 20[2mms[22m[39m
+[31m       [31m├ù[31m should create restore error with path and original error[39m[32m 20[2mms[22m[39m
+[31m       [31m├ù[31m should create dependency error with migration ID and dependencies[39m[32m 20[2mms[22m[39m
+[31m       [31m├ù[31m should create conflict error with migration ID and conflicts[39m[32m 35[2mms[22m[39m
+       [32mΓ£ô[39m should attempt recovery from validation error[32m 34[2mms[22m[39m
+[31m       [31m├ù[31m should attempt recovery from execution error[39m[32m 34[2mms[22m[39m
+[31m       [31m├ù[31m should attempt recovery from rollback error[39m[32m 34[2mms[22m[39m
+       [32mΓ£ô[39m should handle recovery failure[32m 34[2mms[22m[39m
+[31m       [31m├ù[31m should determine correct recovery strategy[39m[32m 20[2mms[22m[39m
+ [31mΓ¥»[39m src/lib/meta/migration/__tests__/backup-manager.test.ts [2m([22m[2m12 tests[22m[2m | [22m[31m9 failed[39m[2m)[22m[32m 57[2mms[22m[39m
+[31m       [31m├ù[31m should create full backup with table structure and data[39m[32m 35[2mms[22m[39m
+[31m       [31m├ù[31m should create column backup for specific column[39m[32m 35[2mms[22m[39m
+       [32mΓ£ô[39m should throw error when column not found[32m 36[2mms[22m[39m
+[31m       [31m├ù[31m should create schema-only backup[39m[32m 35[2mms[22m[39m
+[31m       [31m├ù[31m should restore data from full backup[39m[32m 35[2mms[22m[39m
+[31m       [31m├ù[31m should restore column from column backup[39m[32m 15[2mms[22m[39m
+       [32mΓ£ô[39m should fail when backup file does not exist[32m 15[2mms[22m[39m
+       [32mΓ£ô[39m should fail when backup integrity check fails[32m 14[2mms[22m[39m
+[31m       [31m├ù[31m should list all backups[39m[32m 14[2mms[22m[39m
+[31m       [31m├ù[31m should filter backups by DocType[39m[32m 12[2mms[22m[39m
+[31m       [31m├ù[31m should delete backups older than retention period[39m[32m 4[2mms[22m[39m
+[31m       [31m├ù[31m should use custom retention period when provided[39m[32m 4[2mms[22m[39m
+ [31mΓ¥»[39m src/lib/meta/migration/__tests__/schema-comparison-engine.test.ts [2m([22m[2m23 tests[22m[2m | [22m[31m14 failed[39m[2m)[22m[32m 68[2mms[22m[39m
+[31m     [31m├ù[31m P2-006-T1: should compare schema when table does not exist[39m[32m 35[2mms[22m[39m
+[31m     [31m├ù[31m P2-006-T2: should compare schema when schema matches DocType definition[39m[32m 32[2mms[22m[39m
+[31m     [31m├ù[31m P2-006-T3: should detect new field in DocType[39m[32m 32[2mms[22m[39m
+[31m     [31m├ù[31m P2-006-T4: should detect field removed from DocType[39m[32m 32[2mms[22m[39m
+[31m     [31m├ù[31m P2-006-T5: should detect field type changes[39m[32m 32[2mms[22m[39m
+[31m     [31m├ù[31m P2-006-T6: should detect field length changes[39m[32m 9[2mms[22m[39m
+[31m     [31m├ù[31m P2-006-T7: should detect required constraint changes[39m[32m 9[2mms[22m[39m
+[31m     [31m├ù[31m P2-006-T8: should detect unique constraint changes[39m[32m 9[2mms[22m[39m
+[31m     [31m├ù[31m P2-006-T9: should detect default value changes[39m[32m 9[2mms[22m[39m
+     [32mΓ£ô[39m P2-006-T10: should detect new index in DocType[32m 9[2mms[22m[39m
+[31m     [31m├ù[31m P2-006-T11: should detect index removed from DocType[39m[32m 4[2mms[22m[39m
+[31m     [31m├ù[31m P2-006-T12: should detect index definition changes[39m[32m 4[2mms[22m[39m
+     [32mΓ£ô[39m P2-006-T13: hasChanges should return false for empty diff[32m 4[2mms[22m[39m
+     [32mΓ£ô[39m P2-006-T14: hasChanges should return true for non-empty diff[32m 4[2mms[22m[39m
+     [32mΓ£ô[39m P2-006-T15: requiresDataMigration should return true for type changes[32m 4[2mms[22m[39m
+     [32mΓ£ô[39m P2-006-T16: getTableColumns should return correct ColumnInfo array[32m 5[2mms[22m[39m
+     [32mΓ£ô[39m P2-006-T17: getTableIndexes should return correct IndexInfo array[32m 4[2mms[22m[39m
+       [32mΓ£ô[39m should throw DocTypeNotFoundError when DocType not found[32m 5[2mms[22m[39m
+[31m       [31m├ù[31m should throw TableNotFoundError when table not found[39m[32m 12[2mms[22m[39m
+       [32mΓ£ô[39m should handle schema validation errors[32m 12[2mms[22m[39m
+[31m       [31m├ù[31m should call progress callback with correct stages[39m[32m 9[2mms[22m[39m
+[31m       [31m├ù[31m should cache table columns and indexes[39m[32m 9[2mms[22m[39m
+       [32mΓ£ô[39m should clear cache when requested[32m 3[2mms[22m[39m
+ [31mΓ¥»[39m src/lib/meta/doctype/__tests__/virtual-manager.test.ts [2m([22m[2m22 tests[22m[2m | [22m[31m16 failed[39m[2m)[22m[32m 55[2mms[22m[39m
+       [32mΓ£ô[39m should register a Virtual DocType[32m 25[2mms[22m[39m
+       [32mΓ£ô[39m should get all Virtual DocTypes[32m 24[2mms[22m[39m
+       [32mΓ£ô[39m should unregister a Virtual DocType[32m 25[2mms[22m[39m
+       [32mΓ£ô[39m should handle duplicate registration[32m 27[2mms[22m[39m
+[31m       [31m├ù[31m should handle unregistering non-existent DocType[39m[32m 24[2mms[22m[39m
+[31m       [31m├ù[31m should get controller for Virtual DocType[39m[32m 6[2mms[22m[39m
+[31m       [31m├ù[31m should return null for non-existent DocType[39m[32m 6[2mms[22m[39m
+[31m       [31m├ù[31m should reuse existing controller[39m[32m 6[2mms[22m[39m
+[31m       [31m├ù[31m should query Virtual DocType[39m[32m 4[2mms[22m[39m
+[31m       [31m├ù[31m should handle query for non-existent DocType[39m[32m 5[2mms[22m[39m
+[31m       [31m├ù[31m should refresh Virtual DocType[39m[32m 8[2mms[22m[39m
+[31m       [31m├ù[31m should handle refresh for non-existent DocType[39m[32m 8[2mms[22m[39m
+       [32mΓ£ô[39m should validate valid configuration[32m 3[2mms[22m[39m
+       [32mΓ£ô[39m should reject invalid configuration[32m 7[2mms[22m[39m
+[31m       [31m├ù[31m should create API controller[39m[32m 8[2mms[22m[39m
+[31m       [31m├ù[31m should create file controller[39m[32m 5[2mms[22m[39m
+[31m       [31m├ù[31m should create computed controller[39m[32m 5[2mms[22m[39m
+[31m       [31m├ù[31m should throw error for unsupported source type[39m[32m 5[2mms[22m[39m
+[31m       [31m├ù[31m should cleanup all controllers[39m[32m 6[2mms[22m[39m
+[31m       [31m├ù[31m should handle controller creation errors[39m[32m 3[2mms[22m[39m
+[31m       [31m├ù[31m should handle query errors gracefully[39m[32m 6[2mms[22m[39m
+[31m       [31m├ù[31m should track manager performance[39m[32m 5[2mms[22m[39m
+ [31mΓ¥»[39m src/lib/meta/migration/__tests__/apply.test.ts [2m([22m[2m18 tests[22m[2m | [22m[31m13 failed[39m[2m)[22m[32m 79[2mms[22m[39m
+[31m       [31m├ù[31m should create table with all columns when table does not exist[39m[32m 34[2mms[22m[39m
+[31m       [31m├ù[31m should add column to existing table[39m[32m 33[2mms[22m[39m
+[31m       [31m├ù[31m should remove column from existing table with backup[39m[32m 34[2mms[22m[39m
+[31m       [31m├ù[31m should change column type with table rebuild[39m[32m 33[2mms[22m[39m
+       [32mΓ£ô[39m should create index on specified columns[32m 33[2mms[22m[39m
+[31m       [31m├ù[31m should ensure all or nothing on error[39m[32m 16[2mms[22m[39m
+[31m       [31m├ù[31m should sync all registered DocTypes[39m[32m 22[2mms[22m[39m
+[31m       [31m├ù[31m should handle mixed success and failure[39m[32m 22[2mms[22m[39m
+[31m       [31m├ù[31m should return SQL without executing[39m[32m 16[2mms[22m[39m
+[31m       [31m├ù[31m should return warnings for data loss risks[39m[32m 15[2mms[22m[39m
+       [32mΓ£ô[39m should execute migration SQL[32m 18[2mms[22m[39m
+       [32mΓ£ô[39m should record migration in history after successful execution[32m 18[2mms[22m[39m
+[31m       [31m├ù[31m should execute rollback SQL[39m[32m 18[2mms[22m[39m
+[31m       [31m├ù[31m should update migration history with rollback info[39m[32m 9[2mms[22m[39m
+[31m       [31m├ù[31m should return past migrations for DocType[39m[32m 9[2mms[22m[39m
+       [32mΓ£ô[39m should return unapplied migrations[32m 5[2mms[22m[39m
+[31m       [31m├ù[31m should create temp backup before dropping column[39m[32m 5[2mms[22m[39m
+       [32mΓ£ô[39m should convert data when changing column type[32m 5[2mms[22m[39m
+ [31mΓ¥»[39m src/lib/meta/migration/__tests__/rollback-generator.test.ts [2m([22m[2m18 tests[22m[2m | [22m[31m11 failed[39m[2m)[22m[32m 51[2mms[22m[39m
+       [32mΓ£ô[39m should generate rollback statements for CREATE TABLE[32m 29[2mms[22m[39m
+[31m       [31m├ù[31m should generate rollback statements for ALTER TABLE ADD COLUMN[39m[32m 29[2mms[22m[39m
+       [32mΓ£ô[39m should generate rollback statements for CREATE INDEX[32m 29[2mms[22m[39m
+       [32mΓ£ô[39m should generate rollback statements for CREATE UNIQUE INDEX[32m 28[2mms[22m[39m
+[31m       [31m├ù[31m should generate rollback statements for DROP TABLE[39m[32m 28[2mms[22m[39m
+[31m       [31m├ù[31m should generate rollback statements for DROP INDEX[39m[32m 12[2mms[22m[39m
+[31m       [31m├ù[31m should generate rollback statements for INSERT[39m[32m 10[2mms[22m[39m
+[31m       [31m├ù[31m should generate rollback statements for UPDATE[39m[32m 10[2mms[22m[39m
+[31m       [31m├ù[31m should generate rollback statements for DELETE[39m[32m 10[2mms[22m[39m
+[31m       [31m├ù[31m should handle multiple forward statements[39m[32m 10[2mms[22m[39m
+       [32mΓ£ô[39m should handle empty forward statements[32m 4[2mms[22m[39m
+       [32mΓ£ô[39m should handle unknown statement type[32m 4[2mms[22m[39m
+[31m       [31m├ù[31m should use custom identifier quote character[39m[32m 4[2mms[22m[39m
+[31m       [31m├ù[31m should include comments when enabled[39m[32m 4[2mms[22m[39m
+[31m       [31m├ù[31m should not include comments when disabled[39m[32m 4[2mms[22m[39m
+[31m       [31m├ù[31m should handle null forward statement[39m[32m 3[2mms[22m[39m
+       [32mΓ£ô[39m should handle empty SQL statement[32m 3[2mms[22m[39m
+       [32mΓ£ô[39m should handle malformed SQL statement[32m 3[2mms[22m[39m
+ [31mΓ¥»[39m src/lib/meta/doctype/__tests__/validator.test.ts [2m([22m[2m29 tests[22m[2m | [22m[31m4 failed[39m[2m)[22m[32m 82[2mms[22m[39m
+       [32mΓ£ô[39m should validate a complete DocType[32m 10[2mms[22m[39m
+       [32mΓ£ô[39m should reject DocType without name[32m 9[2mms[22m[39m
+       [32mΓ£ô[39m should reject DocType without module[32m 9[2mms[22m[39m
+       [32mΓ£ô[39m should reject DocType without fields array[32m 9[2mms[22m[39m
+       [32mΓ£ô[39m should reject DocType without permissions array[32m 9[2mms[22m[39m
+       [32mΓ£ô[39m should reject fields without fieldname[32m 4[2mms[22m[39m
+       [32mΓ£ô[39m should reject fields without label[32m 4[2mms[22m[39m
+       [32mΓ£ô[39m should reject fields without fieldtype[32m 4[2mms[22m[39m
+       [32mΓ£ô[39m should reject invalid field types[32m 4[2mms[22m[39m
+       [32mΓ£ô[39m should reject duplicate field names[32m 4[2mms[22m[39m
+       [32mΓ£ô[39m should require options for Link fields[32m 22[2mms[22m[39m
+       [32mΓ£ô[39m should require options for Table fields[32m 22[2mms[22m[39m
+       [32mΓ£ô[39m should validate Select fields with options[32m 22[2mms[22m[39m
+[31m       [31m├ù[31m should reject Select fields without options[39m[32m 22[2mms[22m[39m
+       [32mΓ£ô[39m should reject permissions without role[32m 22[2mms[22m[39m
+       [32mΓ£ô[39m should validate permission with all properties[32m 5[2mms[22m[39m
+       [32mΓ£ô[39m should validate permission with minimal properties[32m 5[2mms[22m[39m
+       [32mΓ£ô[39m should return proper validation result structure[32m 5[2mms[22m[39m
+       [32mΓ£ô[39m should include error details in validation errors[32m 5[2mms[22m[39m
+       [32mΓ£ô[39m should include severity levels in errors[32m 5[2mms[22m[39m
+       [32mΓ£ô[39m should handle empty DocType[32m 15[2mms[22m[39m
+[31m       [31m├ù[31m should handle null DocType[39m[32m 15[2mms[22m[39m
+[31m       [31m├ù[31m should handle undefined DocType[39m[32m 15[2mms[22m[39m
+       [32mΓ£ô[39m should handle empty fields array[32m 15[2mms[22m[39m
+       [32mΓ£ô[39m should handle empty permissions array[32m 14[2mms[22m[39m
+       [32mΓ£ô[39m should handle large DocType efficiently[32m 19[2mms[22m[39m
+       [32mΓ£ô[39m should handle many validation calls efficiently[32m 19[2mms[22m[39m
+[31m       [31m├ù[31m should work with engine-registered DocTypes[39m[32m 23[2mms[22m[39m
+       [32mΓ£ô[39m should prevent invalid DocTypes from being registered[32m 23[2mms[22m[39m
+ [31mΓ¥»[39m src/lib/meta/migration/__tests__/performance.test.ts [2m([22m[2m10 tests[22m[2m | [22m[31m6 failed[39m[2m)[22m[33m 2139[2mms[22m[39m
+[31m     [31m├ù[31m should handle large schema comparison efficiently (100 fields)[39m[32m 41[2mms[22m[39m
+[31m     [31m├ù[31m should handle very large schema comparison (500 fields)[39m[32m 41[2mms[22m[39m
+     [32mΓ£ô[39m should handle large schema with many differences efficiently[32m 40[2mms[22m[39m
+[31m     [31m├ù[31m should handle concurrent schema comparisons safely[39m[32m 41[2mms[22m[39m
+     [32mΓ£ô[39m should handle batch comparison efficiently[32m 100[2mms[22m[39m
+[31m     [31m├ù[31m should maintain reasonable memory usage with large schemas[39m[33m 2093[2mms[22m[39m
+[31m     [31m├ù[31m should maintain performance with different comparison options[39m[33m 2094[2mms[22m[39m
+[31m     [31m├ù[31m should improve performance with caching enabled[39m[32m 72[2mms[22m[39m
+     [32mΓ£ô[39m should handle performance degradation gracefully with complexity[32m 85[2mms[22m[39m
+     [33m[2mΓ£ô[22m[39m should handle timeout scenarios gracefully [33m 2014[2mms[22m[39m
+ [31mΓ¥»[39m src/lib/core/database/__tests__/query-builder.test.ts [2m([22m[2m42 tests[22m[2m | [22m[31m5 failed[39m[2m)[22m[32m 51[2mms[22m[39m
+       [32mΓ£ô[39m should select specific fields from table[32m 8[2mms[22m[39m
+       [32mΓ£ô[39m should select all fields when none specified[32m 8[2mms[22m[39m
+       [32mΓ£ô[39m should execute query and return results[32m 8[2mms[22m[39m
+       [32mΓ£ô[39m should add where condition with equals operator[32m 8[2mms[22m[39m
+       [32mΓ£ô[39m should support various operators[32m 8[2mms[22m[39m
+       [32mΓ£ô[39m should handle IN operator[32m 4[2mms[22m[39m
+       [32mΓ£ô[39m should handle BETWEEN operator[32m 4[2mms[22m[39m
+       [32mΓ£ô[39m should handle IS NULL operator[32m 4[2mms[22m[39m
+       [32mΓ£ô[39m should add OR condition[32m 4[2mms[22m[39m
+       [32mΓ£ô[39m should chain multiple AND conditions[32m 3[2mms[22m[39m
+       [32mΓ£ô[39m should add inner join[32m 2[2mms[22m[39m
+       [32mΓ£ô[39m should add left join[32m 2[2mms[22m[39m
+       [32mΓ£ô[39m should support multiple joins[32m 2[2mms[22m[39m
+       [32mΓ£ô[39m should group by single field[32m 2[2mms[22m[39m
+       [32mΓ£ô[39m should group by multiple fields[32m 2[2mms[22m[39m
+       [32mΓ£ô[39m should add having condition[32m 2[2mms[22m[39m
+       [32mΓ£ô[39m should order by field ascending (default)[32m 1[2mms[22m[39m
+       [32mΓ£ô[39m should order by field descending[32m 1[2mms[22m[39m
+       [32mΓ£ô[39m should support multiple order by[32m 1[2mms[22m[39m
+       [32mΓ£ô[39m should add limit clause[32m 1[2mms[22m[39m
+       [32mΓ£ô[39m should add offset clause[32m 18[2mms[22m[39m
+       [32mΓ£ô[39m should combine limit and offset for pagination[32m 18[2mms[22m[39m
+       [32mΓ£ô[39m should support subquery values in IN clause[32m 18[2mms[22m[39m
+       [32mΓ£ô[39m should execute count aggregate[32m 18[2mms[22m[39m
+[31m       [31m├ù[31m should count specific field[39m[32m 18[2mms[22m[39m
+[31m       [31m├ù[31m should execute sum aggregate[39m[32m 5[2mms[22m[39m
+[31m       [31m├ù[31m should execute avg aggregate[39m[32m 4[2mms[22m[39m
+[31m       [31m├ù[31m should execute min aggregate[39m[32m 4[2mms[22m[39m
+       [32mΓ£ô[39m should execute max aggregate[32m 4[2mms[22m[39m
+[31m       [31m├ù[31m should apply where conditions to aggregates[39m[32m 4[2mms[22m[39m
+       [32mΓ£ô[39m should select distinct values[32m 3[2mms[22m[39m
+       [32mΓ£ô[39m should chain all methods fluently[32m 3[2mms[22m[39m
+       [32mΓ£ô[39m should return QueryBuilder from all chainable methods[32m 3[2mms[22m[39m
+       [32mΓ£ô[39m should use parameterized queries for values[32m 3[2mms[22m[39m
+       [32mΓ£ô[39m should escape field names[32m 3[2mms[22m[39m
+       [32mΓ£ô[39m should escape table names[32m 4[2mms[22m[39m
+       [32mΓ£ô[39m should infer return type from generic[32m 4[2mms[22m[39m
+       [32mΓ£ô[39m should create query builder via createQueryBuilder[32m 4[2mms[22m[39m
+       [32mΓ£ô[39m should create query builder via from function[32m 4[2mms[22m[39m
+       [32mΓ£ô[39m should throw error when running without executor[32m 4[2mms[22m[39m
+       [32mΓ£ô[39m should throw error for aggregate without executor[32m 2[2mms[22m[39m
+       [32mΓ£ô[39m should return complete SQL with all clauses[32m 2[2mms[22m[39m
+ [31mΓ¥»[39m src/lib/meta/migration/__tests__/table-rebuilder.test.ts [2m([22m[2m24 tests[22m[2m | [22m[31m20 failed[39m[2m)[22m[32m 63[2mms[22m[39m
+[31m       [31m├ù[31m should generate SQL to drop a column using table rebuild[39m[32m 30[2mms[22m[39m
+[31m       [31m├ù[31m should generate temp table name with timestamp[39m[32m 29[2mms[22m[39m
+[31m       [31m├ù[31m should preserve all columns except the one being dropped[39m[32m 29[2mms[22m[39m
+[31m       [31m├ù[31m should handle dropping multiple columns[39m[32m 29[2mms[22m[39m
+[31m       [31m├ù[31m should handle custom temp table pattern[39m[32m 29[2mms[22m[39m
+       [32mΓ£ô[39m should generate SQL to modify a column using table rebuild[32m 11[2mms[22m[39m
+[31m       [31m├ù[31m should handle type conversion in data copy[39m[32m 11[2mms[22m[39m
+[31m       [31m├ù[31m should handle length change[39m[32m 11[2mms[22m[39m
+[31m       [31m├ù[31m should handle default value change[39m[32m 11[2mms[22m[39m
+[31m       [31m├ù[31m should handle nullable change[39m[32m 10[2mms[22m[39m
+[31m       [31m├ù[31m should handle unique constraint change[39m[32m 9[2mms[22m[39m
+[31m       [31m├ù[31m should generate SQL to rename a column using table rebuild[39m[32m 9[2mms[22m[39m
+[31m       [31m├ù[31m should generate temp table name with default pattern[39m[32m 9[2mms[22m[39m
+[31m       [31m├ù[31m should generate temp table name with custom pattern[39m[32m 8[2mms[22m[39m
+[31m       [31m├ù[31m should generate unique temp table names[39m[32m 8[2mms[22m[39m
+[31m       [31m├ù[31m should handle strategy without temp table[39m[32m 6[2mms[22m[39m
+       [32mΓ£ô[39m should handle single copy strategy[32m 6[2mms[22m[39m
+       [32mΓ£ô[39m should handle cursor copy strategy[32m 6[2mms[22m[39m
+[31m       [31m├ù[31m should handle strategy without dropping original table[39m[32m 6[2mms[22m[39m
+       [32mΓ£ô[39m should handle strategy without data verification[32m 6[2mms[22m[39m
+[31m       [31m├ù[31m should handle empty table name[39m[32m 5[2mms[22m[39m
+[31m       [31m├ù[31m should handle null table name[39m[32m 5[2mms[22m[39m
+[31m       [31m├ù[31m should handle empty field name[39m[32m 4[2mms[22m[39m
+[31m       [31m├ù[31m should handle null field name[39m[32m 4[2mms[22m[39m
+ [31mΓ¥»[39m src/lib/meta/migration/__tests__/migration-validator.test.ts [2m([22m[2m16 tests[22m[2m | [22m[31m9 failed[39m[2m)[22m[32m 52[2mms[22m[39m
+[31m       [31m├ù[31m should return valid for simple migration[39m[32m 30[2mms[22m[39m
+       [32mΓ£ô[39m should return invalid for migration with data loss risks[32m 29[2mms[22m[39m
+[31m       [31m├ù[31m should include recommendations for complex migrations[39m[32m 29[2mms[22m[39m
+       [32mΓ£ô[39m should return valid for simple schema diff[32m 29[2mms[22m[39m
+[31m       [31m├ù[31m should detect conflicting changes[39m[32m 28[2mms[22m[39m
+       [32mΓ£ô[39m should provide recommendations for destructive changes[32m 9[2mms[22m[39m
+       [32mΓ£ô[39m should return valid for correct SQL statements[32m 8[2mms[22m[39m
+[31m       [31m├ù[31m should detect syntax errors[39m[32m 8[2mms[22m[39m
+       [32mΓ£ô[39m should detect performance issues[32m 8[2mms[22m[39m
+[31m       [31m├ù[31m should detect security issues[39m[32m 8[2mms[22m[39m
+       [32mΓ£ô[39m should return possible for simple migration[32m 10[2mms[22m[39m
+       [32mΓ£ô[39m should return impossible for destructive operations[32m 10[2mms[22m[39m
+[31m       [31m├ù[31m should identify rollback risks[39m[32m 10[2mms[22m[39m
+[31m       [31m├ù[31m should identify column removal risks[39m[32m 9[2mms[22m[39m
+[31m       [31m├ù[31m should identify type conversion risks[39m[32m 9[2mms[22m[39m
+[31m       [31m├ù[31m should identify table rebuild risks[39m[32m 2[2mms[22m[39m
+ [31mΓ¥»[39m src/lib/meta/migration/__tests__/index-builder.test.ts [2m([22m[2m25 tests[22m[2m | [22m[31m15 failed[39m[2m)[22m[32m 58[2mms[22m[39m
+[31m       [31m├ù[31m should build basic index definition[39m[32m 24[2mms[22m[39m
+[31m       [31m├ù[31m should build unique index definition[39m[32m 23[2mms[22m[39m
+[31m       [31m├ù[31m should build composite index definition[39m[32m 24[2mms[22m[39m
+       [32mΓ£ô[39m should build partial index definition with WHERE clause[32m 24[2mms[22m[39m
+[31m       [31m├ù[31m should handle custom table name[39m[32m 23[2mms[22m[39m
+       [32mΓ£ô[39m should use default ASC order when not specified[32m 14[2mms[22m[39m
+[31m       [31m├ù[31m should handle empty columns array[39m[32m 14[2mms[22m[39m
+[31m       [31m├ù[31m should build basic CREATE INDEX statement[39m[32m 14[2mms[22m[39m
+[31m       [31m├ù[31m should build CREATE UNIQUE INDEX statement[39m[32m 14[2mms[22m[39m
+[31m       [31m├ù[31m should build CREATE INDEX for composite index[39m[32m 13[2mms[22m[39m
+[31m       [31m├ù[31m should build CREATE INDEX with WHERE clause[39m[32m 8[2mms[22m[39m
+[31m       [31m├ù[31m should handle index with collation[39m[32m 8[2mms[22m[39m
+       [32mΓ£ô[39m should handle index type specification[32m 8[2mms[22m[39m
+       [32mΓ£ô[39m should build basic DROP INDEX statement[32m 7[2mms[22m[39m
+       [32mΓ£ô[39m should handle IF EXISTS clause[32m 7[2mms[22m[39m
+       [32mΓ£ô[39m should use custom identifier quote character[32m 3[2mms[22m[39m
+[31m       [31m├ù[31m should use custom table naming strategy[39m[32m 3[2mms[22m[39m
+[31m       [31m├ù[31m should use custom table naming strategy with preserve[39m[32m 3[2mms[22m[39m
+       [32mΓ£ô[39m should handle invalid index name[32m 3[2mms[22m[39m
+       [32mΓ£ô[39m should handle null index name[32m 3[2mms[22m[39m
+[31m       [31m├ù[31m should handle empty columns array[39m[32m 5[2mms[22m[39m
+       [32mΓ£ô[39m should handle null columns array[32m 5[2mms[22m[39m
+       [32mΓ£ô[39m should build complex composite unique index with WHERE[32m 5[2mms[22m[39m
+[31m       [31m├ù[31m should build index with mixed order directions[39m[32m 5[2mms[22m[39m
+[31m       [31m├ù[31m should handle special characters in index name[39m[32m 5[2mms[22m[39m
+ [31mΓ¥»[39m src/lib/meta/migration/__tests__/migration-executor.test.ts [2m([22m[2m16 tests[22m[2m | [22m[31m11 failed[39m[2m)[22m[32m 70[2mms[22m[39m
+       [32mΓ£ô[39m should execute operations within transaction[32m 35[2mms[22m[39m
+       [32mΓ£ô[39m should rollback on error[32m 35[2mms[22m[39m
+[31m       [31m├ù[31m should handle transaction options[39m[32m 34[2mms[22m[39m
+[31m       [31m├ù[31m should execute migration SQL statements[39m[32m 34[2mms[22m[39m
+[31m       [31m├ù[31m should handle statement execution error[39m[32m 35[2mms[22m[39m
+[31m       [31m├ù[31m should continue on error when option is set[39m[32m 13[2mms[22m[39m
+[31m       [31m├ù[31m should create savepoints when requested[39m[32m 12[2mms[22m[39m
+[31m       [31m├ù[31m should rollback to savepoint on statement error[39m[32m 13[2mms[22m[39m
+[31m       [31m├ù[31m should execute rollback SQL statements[39m[32m 12[2mms[22m[39m
+[31m       [31m├ù[31m should handle rollback execution error[39m[32m 12[2mms[22m[39m
+       [32mΓ£ô[39m should create savepoint with correct properties[32m 17[2mms[22m[39m
+       [32mΓ£ô[39m should handle savepoint creation error[32m 18[2mms[22m[39m
+[31m       [31m├ù[31m should rollback to savepoint and update status[39m[32m 17[2mms[22m[39m
+[31m       [31m├ù[31m should handle rollback error[39m[32m 17[2mms[22m[39m
+[31m       [31m├ù[31m should release savepoint and update status[39m[32m 16[2mms[22m[39m
+       [32mΓ£ô[39m should handle release error[32m 1[2mms[22m[39m
+ [31mΓ¥»[39m src/lib/cache/__tests__/system-cache.test.ts [2m([22m[2m19 tests[22m[2m | [22m[31m7 failed[39m[2m)[22m[32m 42[2mms[22m[39m
+       [32mΓ£ô[39m P1-023-T1: getDocTypeMeta(doctype) first call - queries DB, caches result[32m 9[2mms[22m[39m
+       [32mΓ£ô[39m P1-023-T2: getDocTypeMeta(doctype) second call - returns cached, no DB query[32m 8[2mms[22m[39m
+       [32mΓ£ô[39m P1-023-T3: getAllWorkspaces() caches result[32m 8[2mms[22m[39m
+       [32mΓ£ô[39m P1-023-T4: getRolePermissions(doctype) caches[32m 8[2mms[22m[39m
+       [32mΓ£ô[39m P1-023-T5: getSystemSettings() returns cached[32m 8[2mms[22m[39m
+[31m       [31m├ù[31m P1-023-T6: invalidateDocType(name) clears cache - subsequent call queries DB[39m[32m 22[2mms[22m[39m
+[31m       [31m├ù[31m P1-023-T7: invalidateWorkspaces() clears cache - workspaces re-queried[39m[32m 22[2mms[22m[39m
+[31m       [31m├ù[31m P1-023-T8: invalidateAll() clears everything[39m[32m 22[2mms[22m[39m
+[31m       [31m├ù[31m P1-023-T9: Cache stats tracked - hits, misses counted[39m[32m 22[2mms[22m[39m
+[31m       [31m├ù[31m P1-023-T10: getStats() returns statistics - returns CacheStats object[39m[32m 21[2mms[22m[39m
+[31m       [31m├ù[31m P1-023-T11: Thread-safe access - concurrent access handled[39m[32m 6[2mms[22m[39m
+       [32mΓ£ô[39m P1-023-T12: Memory usage reasonable - large cache does not OOM[32m 9[2mms[22m[39m
+       [32mΓ£ô[39m createSystemCache creates a new instance[32m 6[2mms[22m[39m
+       [32mΓ£ô[39m createSystemCache accepts database and options[32m 6[2mms[22m[39m
+       [32mΓ£ô[39m returns null for non-existent DocType[32m 6[2mms[22m[39m
+       [32mΓ£ô[39m returns empty array for DocType with no permissions[32m 2[2mms[22m[39m
+       [32mΓ£ô[39m works without database (returns null/empty)[32m 2[2mms[22m[39m
+[31m       [31m├ù[31m resetStats clears hit/miss counters[39m[32m 2[2mms[22m[39m
+       [32mΓ£ô[39m manual setters work for pre-warming cache[32m 2[2mms[22m[39m
+ [31mΓ¥»[39m src/lib/cache/__tests__/user-cache.test.ts [2m([22m[2m18 tests[22m[2m | [22m[31m8 failed[39m[2m)[22m[32m 44[2mms[22m[39m
+[31m       [31m├ù[31m P1-024-T1: buildUserCache(user) populates cache - roles, permissions, workspaces loaded[39m[32m 18[2mms[22m[39m
+       [32mΓ£ô[39m P1-024-T2: getUserCache(sessionId) returns cache - returns UserSessionCache[32m 17[2mms[22m[39m
+       [32mΓ£ô[39m returns null for non-existent session[32m 10[2mms[22m[39m
+       [32mΓ£ô[39m P1-024-T3: getUserRoles(sessionId) returns roles - no DB query[32m 17[2mms[22m[39m
+       [32mΓ£ô[39m returns empty array for non-existent session[32m 10[2mms[22m[39m
+[31m       [31m├ù[31m P1-024-T4: getUserPermissions(sessionId) returns perms - no DB query[39m[32m 6[2mms[22m[39m
+[31m       [31m├ù[31m P1-024-T5: getVisibleWorkspaces(sessionId) returns list - pre-filtered workspaces[39m[32m 6[2mms[22m[39m
+[31m       [31m├ù[31m P1-024-T6: getUserDefaults(sessionId) returns defaults - default values cached[39m[32m 12[2mms[22m[39m
+       [32mΓ£ô[39m P1-024-T7: invalidateUserCache(user) clears cache - user cache cleared[32m 12[2mms[22m[39m
+[31m       [31m├ù[31m P1-024-T8: invalidateUserPermissions(user) partial clear - only permissions cleared[39m[32m 12[2mms[22m[39m
+[31m       [31m├ù[31m P1-024-T10: Multiple sessions per user - each session has own cache[39m[32m 10[2mms[22m[39m
+[31m       [31m├ù[31m P1-024-T11: clearAllUserCaches() clears all - all user caches cleared[39m[32m 8[2mms[22m[39m
+[31m       [31m├ù[31m P1-024-T12: Cache size limit - old sessions evicted[39m[32m 10[2mms[22m[39m
+       [32mΓ£ô[39m tracks cache hits and misses[32m 8[2mms[22m[39m
+       [32mΓ£ô[39m createUserCache creates a new instance[32m 4[2mms[22m[39m
+       [32mΓ£ô[39m createUserCache accepts database and options[32m 3[2mms[22m[39m
+       [32mΓ£ô[39m works without database (returns empty data)[32m 2[2mms[22m[39m
+       [32mΓ£ô[39m removeSession removes specific session[32m 2[2mms[22m[39m
+ [31mΓ¥»[39m src/lib/meta/doctype/__tests__/json-parser.test.ts [2m([22m[2m31 tests[22m[2m | [22m[31m6 failed[39m[2m)[22m[32m 57[2mms[22m[39m
+       [32mΓ£ô[39m should parse valid JSON DocType definition[32m 11[2mms[22m[39m
+       [32mΓ£ô[39m should parse comprehensive JSON DocType definition[32m 11[2mms[22m[39m
+       [32mΓ£ô[39m should parse child table DocType definition[32m 11[2mms[22m[39m
+       [32mΓ£ô[39m should parse single document DocType definition[32m 11[2mms[22m[39m
+       [32mΓ£ô[39m should parse virtual DocType definition[32m 11[2mms[22m[39m
+       [32mΓ£ô[39m should throw JSONParseError for invalid JSON syntax[32m 4[2mms[22m[39m
+       [32mΓ£ô[39m should throw JSONParseError for empty string[32m 4[2mms[22m[39m
+       [32mΓ£ô[39m should throw JSONParseError for null input[32m 4[2mms[22m[39m
+       [32mΓ£ô[39m should throw DocTypeValidationError for missing required fields[32m 4[2mms[22m[39m
+       [32mΓ£ô[39m should throw DocTypeValidationError for invalid field types[32m 4[2mms[22m[39m
+       [32mΓ£ô[39m should throw DocTypeValidationError for Link field without options[32m 13[2mms[22m[39m
+       [32mΓ£ô[39m should throw DocTypeValidationError for Table field without options[32m 13[2mms[22m[39m
+       [32mΓ£ô[39m should throw DocTypeValidationError for duplicate field names[32m 13[2mms[22m[39m
+[31m       [31m├ù[31m should validate field name format[39m[32m 13[2mms[22m[39m
+       [32mΓ£ô[39m should validate field label presence[32m 13[2mms[22m[39m
+       [32mΓ£ô[39m should validate permission role presence[32m 7[2mms[22m[39m
+[31m       [31m├ù[31m should validate index column names[39m[32m 7[2mms[22m[39m
+[31m       [31m├ù[31m should convert string numbers to numbers[39m[32m 7[2mms[22m[39m
+[31m       [31m├ù[31m should convert string booleans to booleans[39m[32m 7[2mms[22m[39m
+       [32mΓ£ô[39m should handle null values correctly[32m 7[2mms[22m[39m
+       [32mΓ£ô[39m should parse DocType with custom properties[32m 4[2mms[22m[39m
+       [32mΓ£ô[39m should parse DocType with field dependencies[32m 4[2mms[22m[39m
+       [32mΓ£ô[39m should parse DocType with field validation[32m 4[2mms[22m[39m
+       [32mΓ£ô[39m should handle large DocType definitions efficiently[32m 4[2mms[22m[39m
+[31m       [31m├ù[31m should provide descriptive error messages[39m[32m 4[2mms[22m[39m
+       [32mΓ£ô[39m should provide validation error details[32m 3[2mms[22m[39m
+       [32mΓ£ô[39m should serialize valid DocType to JSON[32m 3[2mms[22m[39m
+       [32mΓ£ô[39m should throw SerializationError for circular references[32m 3[2mms[22m[39m
+       [32mΓ£ô[39m should throw DocTypeValidationError for invalid DocType during serialization[32m 3[2mms[22m[39m
+       [32mΓ£ô[39m should throw FileNotFoundError for non-existent file[32m 11[2mms[22m[39m
+[31m       [31m├ù[31m should throw FileIOError for directory access errors[39m[32m 11[2mms[22m[39m
+ [31mΓ¥»[39m src/lib/__tests__/integration/api-endpoints.test.ts [2m([22m[2m12 tests[22m[2m | [22m[31m6 failed[39m[2m)[22m[32m 49[2mms[22m[39m
+       [32mΓ£ô[39m should generate standard CRUD endpoints[32m 19[2mms[22m[39m
+       [32mΓ£ô[39m should respect field permissions in API[32m 19[2mms[22m[39m
+       [32mΓ£ô[39m should handle field validation in API[32m 19[2mms[22m[39m
+[31m       [31m├ù[31m should generate list view endpoint[39m[32m 18[2mms[22m[39m
+[31m       [31m├ù[31m should generate report endpoints[39m[32m 18[2mms[22m[39m
+[31m       [31m├ù[31m should generate search endpoints[39m[32m 25[2mms[22m[39m
+[31m       [31m├ù[31m should generate Link field endpoints[39m[32m 25[2mms[22m[39m
+[31m       [31m├ù[31m should handle child table endpoints[39m[32m 25[2mms[22m[39m
+[31m       [31m├ù[31m should generate complete OpenAPI specification[39m[32m 25[2mms[22m[39m
+       [32mΓ£ô[39m should include authentication requirements[32m 25[2mms[22m[39m
+       [32mΓ£ô[39m should generate proper error responses[32m 2[2mms[22m[39m
+       [32mΓ£ô[39m should handle permission denied responses[32m 2[2mms[22m[39m
+ [31mΓ¥»[39m src/lib/meta/doctype/__tests__/meta.test.ts [2m([22m[2m35 tests[22m[2m | [22m[31m3 failed[39m[2m)[22m[32m 49[2mms[22m[39m
+       [32mΓ£ô[39m should initialize with valid DocType[32m 22[2mms[22m[39m
+[31m       [31m├ù[31m should throw error for null DocType[39m[32m 22[2mms[22m[39m
+[31m       [31m├ù[31m should throw error for undefined DocType[39m[32m 22[2mms[22m[39m
+       [32mΓ£ô[39m should get field by name[32m 22[2mms[22m[39m
+       [32mΓ£ô[39m should return null for non-existent field[32m 22[2mms[22m[39m
+       [32mΓ£ô[39m should get all fields[32m 5[2mms[22m[39m
+       [32mΓ£ô[39m should get required fields[32m 5[2mms[22m[39m
+       [32mΓ£ô[39m should get optional fields[32m 5[2mms[22m[39m
+       [32mΓ£ô[39m should get fields by type[32m 4[2mms[22m[39m
+       [32mΓ£ô[39m should check if field exists[32m 4[2mms[22m[39m
+       [32mΓ£ô[39m should get field label[32m 3[2mms[22m[39m
+       [32mΓ£ô[39m should get field type[32m 3[2mms[22m[39m
+       [32mΓ£ô[39m should get link fields[32m 3[2mms[22m[39m
+       [32mΓ£ô[39m should get table fields[32m 2[2mms[22m[39m
+       [32mΓ£ô[39m should get select fields[32m 2[2mms[22m[39m
+       [32mΓ£ô[39m should get unique fields[32m 2[2mms[22m[39m
+       [32mΓ£ô[39m should check if DocType is submittable[32m 2[2mms[22m[39m
+       [32mΓ£ô[39m should check if DocType is single[32m 2[2mms[22m[39m
+       [32mΓ£ô[39m should check if DocType is table[32m 2[2mms[22m[39m
+       [32mΓ£ô[39m should check if DocType is tree[32m 1[2mms[22m[39m
+       [32mΓ£ô[39m should check if DocType is virtual[32m 4[2mms[22m[39m
+       [32mΓ£ô[39m should get search fields[32m 4[2mms[22m[39m
+       [32mΓ£ô[39m should get title field[32m 4[2mms[22m[39m
+       [32mΓ£ô[39m should get image field[32m 4[2mms[22m[39m
+       [32mΓ£ô[39m should get valid columns[32m 4[2mms[22m[39m
+       [32mΓ£ô[39m should get field options[32m 6[2mms[22m[39m
+       [32mΓ£ô[39m should return null for field without options[32m 6[2mms[22m[39m
+       [32mΓ£ô[39m should return null for non-existent field[32m 6[2mms[22m[39m
+       [32mΓ£ô[39m should build indexes efficiently[32m 5[2mms[22m[39m
+[31m       [31m├ù[31m should cache computed properties[39m[32m 5[2mms[22m[39m
+       [32mΓ£ô[39m should handle empty DocType gracefully[32m 4[2mms[22m[39m
+       [32mΓ£ô[39m should handle DocType with special characters in name[32m 4[2mms[22m[39m
+       [32mΓ£ô[39m should handle fields with all types[32m 4[2mms[22m[39m
+       [32mΓ£ô[39m should work with DocTypeEngine[32m 3[2mms[22m[39m
+       [32mΓ£ô[39m should maintain consistency with original DocType[32m 3[2mms[22m[39m
+ [31mΓ¥»[39m src/lib/cli/__tests__/commands.test.ts [2m([22m[2m13 tests[22m[2m | [22m[31m11 failed[39m[2m)[22m[32m 51[2mms[22m[39m
+       [32mΓ£ô[39m should have correct command metadata[32m 25[2mms[22m[39m
+       [32mΓ£ô[39m should have correct examples[32m 25[2mms[22m[39m
+[31m       [31m├ù[31m should run migrations successfully[39m[32m 25[2mms[22m[39m
+[31m       [31m├ù[31m should handle migration failures[39m[32m 25[2mms[22m[39m
+[31m       [31m├ù[31m should perform dry run successfully[39m[32m 25[2mms[22m[39m
+[31m       [31m├ù[31m should show migration status[39m[32m 14[2mms[22m[39m
+[31m       [31m├ù[31m should rollback migrations successfully[39m[32m 14[2mms[22m[39m
+[31m       [31m├ù[31m should handle rollback failures[39m[32m 14[2mms[22m[39m
+[31m       [31m├ù[31m should parse site option correctly[39m[32m 14[2mms[22m[39m
+[31m       [31m├ù[31m should parse force option correctly[39m[32m 14[2mms[22m[39m
+[31m       [31m├ù[31m should parse multiple options correctly[39m[32m 8[2mms[22m[39m
+[31m       [31m├ù[31m should handle service unavailable error[39m[32m 8[2mms[22m[39m
+[31m       [31m├ù[31m should handle database locked error[39m[32m 8[2mms[22m[39m
+ [31mΓ¥»[39m src/lib/cache/__tests__/cache-manager.test.ts [2m([22m[2m22 tests[22m[2m | [22m[31m6 failed[39m[2m)[22m[32m 59[2mms[22m[39m
+       [32mΓ£ô[39m should create manager with all cache layers[32m 9[2mms[22m[39m
+       [32mΓ£ô[39m should work without database[32m 8[2mms[22m[39m
+       [32mΓ£ô[39m should create manager via factory function[32m 8[2mms[22m[39m
+       [32mΓ£ô[39m should set database for all layers[32m 9[2mms[22m[39m
+       [32mΓ£ô[39m should provide access to system cache[32m 9[2mms[22m[39m
+       [32mΓ£ô[39m should cache DocType metadata[32m 16[2mms[22m[39m
+[31m       [31m├ù[31m should provide access to user cache[39m[32m 16[2mms[22m[39m
+       [32mΓ£ô[39m should provide access to session store[32m 16[2mms[22m[39m
+       [32mΓ£ô[39m should cleanup user cache on session deletion[32m 15[2mms[22m[39m
+       [32mΓ£ô[39m should invalidate doctype cache on doctype_saved[32m 17[2mms[22m[39m
+[31m       [31m├ù[31m should invalidate workspace cache on workspace_saved[39m[32m 16[2mms[22m[39m
+[31m       [31m├ù[31m should invalidate role permissions on permission_changed[39m[32m 13[2mms[22m[39m
+[31m       [31m├ù[31m should invalidate specific user permissions on permission_changed[39m[32m 14[2mms[22m[39m
+       [32mΓ£ô[39m should clear all caches[32m 19[2mms[22m[39m
+       [32mΓ£ô[39m should subscribe to cache events[32m 10[2mms[22m[39m
+[31m       [31m├ù[31m should unsubscribe from events[39m[32m 8[2mms[22m[39m
+       [32mΓ£ô[39m should handle subscriber errors gracefully[32m 9[2mms[22m[39m
+[31m       [31m├ù[31m should return combined statistics[39m[32m 7[2mms[22m[39m
+       [32mΓ£ô[39m should reset cache statistics[32m 3[2mms[22m[39m
+       [32mΓ£ô[39m should end session and cleanup user cache[32m 5[2mms[22m[39m
+       [32mΓ£ô[39m should cleanup all resources[32m 4[2mms[22m[39m
+       [32mΓ£ô[39m should provide request cache scope[32m 4[2mms[22m[39m
+ [31mΓ¥»[39m src/lib/meta/doctype/__tests__/doctype-engine.test.ts [2m([22m[2m20 tests[22m[2m | [22m[31m6 failed[39m[2m)[22m[32m 45[2mms[22m[39m
+       [32mΓ£ô[39m should return the same instance[32m 15[2mms[22m[39m
+       [32mΓ£ô[39m should create a new instance after reset[32m 14[2mms[22m[39m
+       [32mΓ£ô[39m should register a valid DocType[32m 15[2mms[22m[39m
+[31m       [31m├ù[31m should throw DocTypeExistsError when registering duplicate[39m[32m 14[2mms[22m[39m
+       [32mΓ£ô[39m should throw DocTypeValidationError when validation fails[32m 17[2mms[22m[39m
+       [32mΓ£ô[39m should return null for non-existent DocType[32m 6[2mms[22m[39m
+[31m       [31m├ù[31m should return all registered DocTypes[39m[32m 19[2mms[22m[39m
+[31m       [31m├ù[31m should return DocTypes by module[39m[32m 19[2mms[22m[39m
+[31m       [31m├ù[31m should return correct registration status[39m[32m 17[2mms[22m[39m
+       [32mΓ£ô[39m should return correct DocType count[32m 19[2mms[22m[39m
+[31m       [31m├ù[31m should unregister a DocType[39m[32m 4[2mms[22m[39m
+       [32mΓ£ô[39m should throw DocTypeNotFoundError when unregistering non-existent[32m 3[2mms[22m[39m
+       [32mΓ£ô[39m should validate a valid DocType[32m 3[2mms[22m[39m
+       [32mΓ£ô[39m should return validation errors for invalid DocType[32m 3[2mms[22m[39m
+       [32mΓ£ô[39m should detect duplicate field names[32m 1[2mms[22m[39m
+       [32mΓ£ô[39m should detect invalid field types[32m 1[2mms[22m[39m
+       [32mΓ£ô[39m should detect missing options for Link fields[32m 1[2mms[22m[39m
+       [32mΓ£ô[39m should detect missing options for Table fields[32m 1[2mms[22m[39m
+       [32mΓ£ô[39m should return all modules[32m 2[2mms[22m[39m
+[31m       [31m├ù[31m should return DocType count by module[39m[32m 2[2mms[22m[39m
+ [31mΓ¥»[39m src/lib/meta/openapi/__tests__/security-generator.test.ts [2m([22m[2m19 tests[22m[2m | [22m[31m6 failed[39m[2m)[22m[32m 46[2mms[22m[39m
+       [32mΓ£ô[39m should generate security schemes[32m 16[2mms[22m[39m
+       [32mΓ£ô[39m should include only specified schemes[32m 15[2mms[22m[39m
+       [32mΓ£ô[39m should generate default security requirements[32m 15[2mms[22m[39m
+       [32mΓ£ô[39m should include specified default schemes[32m 15[2mms[22m[39m
+[31m       [31m├ù[31m should apply security to operation[39m[32m 15[2mms[22m[39m
+       [32mΓ£ô[39m should not apply security for public operations[32m 11[2mms[22m[39m
+[31m       [31m├ù[31m should add role-based security[39m[32m 11[2mms[22m[39m
+[31m       [31m├ù[31m should use operation-specific security[39m[32m 11[2mms[22m[39m
+       [32mΓ£ô[39m should register custom security scheme[32m 11[2mms[22m[39m
+       [32mΓ£ô[39m should return all registered security schemes[32m 11[2mms[22m[39m
+       [32mΓ£ô[39m should return true for public DocType[32m 5[2mms[22m[39m
+       [32mΓ£ô[39m should return true for operation with public permission[32m 5[2mms[22m[39m
+       [32mΓ£ô[39m should return false for private DocType[32m 5[2mms[22m[39m
+[31m       [31m├ù[31m should extract roles for operation[39m[32m 5[2mms[22m[39m
+       [32mΓ£ô[39m should return empty array for DocType without permissions[32m 5[2mms[22m[39m
+[31m       [31m├ù[31m should filter roles by permission type[39m[32m 10[2mms[22m[39m
+[31m       [31m├ù[31m should generate all security schemes[39m[32m 10[2mms[22m[39m
+       [32mΓ£ô[39m should generate security components with schemes and responses[32m 10[2mms[22m[39m
+       [32mΓ£ô[39m should generate security documentation[32m 10[2mms[22m[39m
+ [31mΓ¥»[39m src/lib/meta/openapi/__tests__/schema-generator.test.ts [2m([22m[2m26 tests[22m[2m | [22m[31m2 failed[39m[2m)[22m[32m 47[2mms[22m[39m
+       [32mΓ£ô[39m should generate complete schema for DocType[32m 21[2mms[22m[39m
+       [32mΓ£ô[39m should include all fields in schema properties[32m 21[2mms[22m[39m
+       [32mΓ£ô[39m should mark required fields as required[32m 21[2mms[22m[39m
+       [32mΓ£ô[39m should include schema metadata[32m 21[2mms[22m[39m
+[31m       [31m├ù[31m should generate schema for Data field[39m[32m 20[2mms[22m[39m
+       [32mΓ£ô[39m should generate schema for Int field[32m 4[2mms[22m[39m
+       [32mΓ£ô[39m should generate schema for Datetime field[32m 3[2mms[22m[39m
+       [32mΓ£ô[39m should generate schema for Check field[32m 3[2mms[22m[39m
+       [32mΓ£ô[39m should validate required fields[32m 3[2mms[22m[39m
+       [32mΓ£ô[39m should detect missing required fields[32m 3[2mms[22m[39m
+       [32mΓ£ô[39m should validate field types[32m 3[2mms[22m[39m
+       [32mΓ£ô[39m should transform data to match schema[32m 3[2mms[22m[39m
+       [32mΓ£ô[39m should generate create request body[32m 3[2mms[22m[39m
+       [32mΓ£ô[39m should generate update request body[32m 3[2mms[22m[39m
+       [32mΓ£ô[39m should generate read response[32m 3[2mms[22m[39m
+       [32mΓ£ô[39m should generate list response[32m 11[2mms[22m[39m
+       [32mΓ£ô[39m should generate create response[32m 11[2mms[22m[39m
+       [32mΓ£ô[39m should generate update response[32m 11[2mms[22m[39m
+       [32mΓ£ô[39m should generate delete response[32m 10[2mms[22m[39m
+[31m       [31m├ù[31m should generate submittable response[39m[32m 10[2mms[22m[39m
+       [32mΓ£ô[39m should generate error response[32m 4[2mms[22m[39m
+       [32mΓ£ô[39m should handle null DocType gracefully[32m 4[2mms[22m[39m
+       [32mΓ£ô[39m should handle empty fields array[32m 4[2mms[22m[39m
+       [32mΓ£ô[39m should handle invalid field types gracefully[32m 4[2mms[22m[39m
+       [32mΓ£ô[39m should generate schema quickly[32m 4[2mms[22m[39m
+       [32mΓ£ô[39m should handle large DocTypes efficiently[32m 1[2mms[22m[39m
+ [31mΓ¥»[39m src/lib/__tests__/integration/migration-workflow.test.ts [2m([22m[2m9 tests[22m[2m | [22m[31m8 failed[39m[2m)[22m[32m 44[2mms[22m[39m
+[31m       [31m├ù[31m should compare two DocType schemas and generate diff[39m[32m 33[2mms[22m[39m
+[31m       [31m├ù[31m should handle field modifications[39m[32m 32[2mms[22m[39m
+[31m       [31m├ù[31m should handle field removals[39m[32m 33[2mms[22m[39m
+[31m       [31m├ù[31m should execute migration successfully[39m[32m 33[2mms[22m[39m
+[31m       [31m├ù[31m should handle migration rollback[39m[32m 33[2mms[22m[39m
+[31m       [31m├ù[31m should track migration status[39m[32m 8[2mms[22m[39m
+[31m       [31m├ù[31m should validate migration before execution[39m[32m 8[2mms[22m[39m
+       [32mΓ£ô[39m should detect invalid DocType definitions[32m 8[2mms[22m[39m
+[31m       [31m├ù[31m should handle end-to-end migration process[39m[32m 6[2mms[22m[39m
+ [31mΓ¥»[39m src/lib/cache/__tests__/session-store.test.ts [2m([22m[2m26 tests[22m[2m | [22m[31m4 failed[39m[2m)[22m[32m 43[2mms[22m[39m
+       [32mΓ£ô[39m creates a new session[32m 20[2mms[22m[39m
+       [32mΓ£ô[39m gets session data[32m 19[2mms[22m[39m
+       [32mΓ£ô[39m updates session data[32m 19[2mms[22m[39m
+[31m       [31m├ù[31m deletes a session[39m[32m 19[2mms[22m[39m
+       [32mΓ£ô[39m returns false when deleting non-existent session[32m 20[2mms[22m[39m
+       [32mΓ£ô[39m returns null for non-existent session[32m 8[2mms[22m[39m
+       [32mΓ£ô[39m P1-024-T9: Session timeout clears cache - expired session removed[32m 8[2mms[22m[39m
+       [32mΓ£ô[39m session expiration calls onSessionExpire callback[32m 8[2mms[22m[39m
+       [32mΓ£ô[39m P1-024-T12: Cache size limit - old sessions evicted[32m 8[2mms[22m[39m
+[31m       [31m├ù[31m setMaxSessions evicts excess sessions[39m[32m 7[2mms[22m[39m
+       [32mΓ£ô[39m cleanupExpiredSessions removes expired sessions[32m 3[2mms[22m[39m
+       [32mΓ£ô[39m extendSession extends expiry time[32m 3[2mms[22m[39m
+       [32mΓ£ô[39m extendSession returns false for non-existent session[32m 3[2mms[22m[39m
+[31m       [31m├ù[31m getSessionsByUser returns all sessions for user[39m[32m 3[2mms[22m[39m
+       [32mΓ£ô[39m returns empty array for user with no sessions[32m 3[2mms[22m[39m
+       [32mΓ£ô[39m isValidSession returns true for valid session[32m 6[2mms[22m[39m
+       [32mΓ£ô[39m isValidSession returns false for non-existent session[32m 6[2mms[22m[39m
+       [32mΓ£ô[39m isValidSession returns false for expired session[32m 6[2mms[22m[39m
+[31m       [31m├ù[31m clearAllSessions removes all sessions[39m[32m 6[2mms[22m[39m
+       [32mΓ£ô[39m clearAllSessions calls onSessionExpire for each session[32m 6[2mms[22m[39m
+       [32mΓ£ô[39m tracks session statistics[32m 2[2mms[22m[39m
+       [32mΓ£ô[39m tracks expired sessions[32m 2[2mms[22m[39m
+       [32mΓ£ô[39m stores user preferences[32m 2[2mms[22m[39m
+       [32mΓ£ô[39m createSessionStore creates a new instance[32m 2[2mms[22m[39m
+       [32mΓ£ô[39m createSessionStore accepts options[32m 2[2mms[22m[39m
+       [32mΓ£ô[39m stopCleanupTimer stops the timer[32m 0[2mms[22m[39m
+ [31mΓ¥»[39m src/lib/meta/migration/__tests__/diff-analyzer.test.ts [2m([22m[2m26 tests[22m[2m | [22m[31m4 failed[39m[2m)[22m[32m 41[2mms[22m[39m
+     [32mΓ£ô[39m should return false for empty diff[32m 4[2mms[22m[39m
+     [32mΓ£ô[39m should return true for non-empty diff[32m 4[2mms[22m[39m
+     [32mΓ£ô[39m should return true for type changes[32m 4[2mms[22m[39m
+     [32mΓ£ô[39m should return true for column renames[32m 4[2mms[22m[39m
+     [32mΓ£ô[39m should return false for non-destructive changes[32m 4[2mms[22m[39m
+     [32mΓ£ô[39m should identify destructive column removal[32m 15[2mms[22m[39m
+     [32mΓ£ô[39m should identify destructive type changes[32m 15[2mms[22m[39m
+     [32mΓ£ô[39m should return false for non-destructive changes[32m 15[2mms[22m[39m
+[31m     [31m├ù[31m should calculate basic diff statistics[39m[32m 15[2mms[22m[39m
+     [32mΓ£ô[39m should return zero statistics for empty diff[32m 15[2mms[22m[39m
+     [32mΓ£ô[39m should calculate low complexity for simple changes[32m 2[2mms[22m[39m
+     [32mΓ£ô[39m should calculate high complexity for complex changes[32m 2[2mms[22m[39m
+     [32mΓ£ô[39m should assign high priority to destructive changes[32m 2[2mms[22m[39m
+     [32mΓ£ô[39m should identify safe online changes[32m 1[2mms[22m[39m
+     [32mΓ£ô[39m should identify unsafe online changes[32m 1[2mms[22m[39m
+     [32mΓ£ô[39m should estimate short execution time for simple diff[32m 5[2mms[22m[39m
+     [32mΓ£ô[39m should estimate longer execution time for complex diff[32m 5[2mms[22m[39m
+     [32mΓ£ô[39m should validate correct schema diff[32m 5[2mms[22m[39m
+     [32mΓ£ô[39m should detect invalid schema diff[32m 4[2mms[22m[39m
+     [32mΓ£ô[39m should generate warnings for destructive changes[32m 4[2mms[22m[39m
+     [32mΓ£ô[39m should recommend backup for destructive changes[32m 10[2mms[22m[39m
+     [32mΓ£ô[39m should recommend testing for data migration[32m 10[2mms[22m[39m
+[31m     [31m├ù[31m should recommend breaking down complex changes[39m[32m 10[2mms[22m[39m
+[31m     [31m├ù[31m should integrate with FieldComparator for analysis[39m[32m 10[2mms[22m[39m
+[31m     [31m├ù[31m should integrate with IndexComparator for analysis[39m[32m 10[2mms[22m[39m
+     [32mΓ£ô[39m should provide complete analysis workflow[32m 1[2mms[22m[39m
+ [31mΓ¥»[39m src/lib/meta/migration/__tests__/field-comparator.test.ts [2m([22m[2m24 tests[22m[2m | [22m[31m1 failed[39m[2m)[22m[32m 31[2mms[22m[39m
+     [32mΓ£ô[39m should compare identical field and column[32m 6[2mms[22m[39m
+     [32mΓ£ô[39m should detect type differences[32m 5[2mms[22m[39m
+     [32mΓ£ô[39m should detect length differences[32m 5[2mms[22m[39m
+     [32mΓ£ô[39m should detect required constraint differences[32m 5[2mms[22m[39m
+     [32mΓ£ô[39m should detect unique constraint differences[32m 5[2mms[22m[39m
+     [32mΓ£ô[39m should detect default value differences[32m 3[2mms[22m[39m
+     [32mΓ£ô[39m should find exact column match[32m 3[2mms[22m[39m
+     [32mΓ£ô[39m should return null when no matching column found[32m 3[2mms[22m[39m
+     [32mΓ£ô[39m should handle case insensitive matching[32m 3[2mms[22m[39m
+     [32mΓ£ô[39m should match using old field name[32m 2[2mms[22m[39m
+     [32mΓ£ô[39m should convert DocField to ColumnDefinition[32m 3[2mms[22m[39m
+     [32mΓ£ô[39m should convert ColumnInfo to ColumnDefinition[32m 3[2mms[22m[39m
+     [32mΓ£ô[39m should map standard field types to SQLite types[32m 3[2mms[22m[39m
+     [32mΓ£ô[39m should include length in mapped type for text fields[32m 3[2mms[22m[39m
+     [32mΓ£ô[39m should use custom field type mappings[32m 3[2mms[22m[39m
+     [32mΓ£ô[39m should identify compatible types[32m 2[2mms[22m[39m
+     [32mΓ£ô[39m should identify incompatible types[32m 2[2mms[22m[39m
+     [32mΓ£ô[39m should determine data migration requirement for type changes[32m 2[2mms[22m[39m
+     [32mΓ£ô[39m should identify destructive changes[32m 2[2mms[22m[39m
+     [32mΓ£ô[39m should calculate change complexity score[32m 2[2mms[22m[39m
+     [32mΓ£ô[39m should identify system fields[32m 14[2mms[22m[39m
+     [32mΓ£ô[39m should handle complex field comparison with multiple changes[32m 14[2mms[22m[39m
+[31m     [31m├ù[31m should handle precision for numeric fields[39m[32m 14[2mms[22m[39m
+     [32mΓ£ô[39m should handle comparison options correctly[32m 14[2mms[22m[39m
+ [31mΓ¥»[39m src/lib/meta/migration/__tests__/index-comparator.test.ts [2m([22m[2m26 tests[22m[2m | [22m[31m2 failed[39m[2m)[22m[32m 41[2mms[22m[39m
+     [32mΓ£ô[39m should compare identical indexes[32m 9[2mms[22m[39m
+     [32mΓ£ô[39m should detect uniqueness differences[32m 8[2mms[22m[39m
+     [32mΓ£ô[39m should detect column differences[32m 8[2mms[22m[39m
+     [32mΓ£ô[39m should detect column order differences[32m 8[2mms[22m[39m
+     [32mΓ£ô[39m should detect index type differences[32m 8[2mms[22m[39m
+     [32mΓ£ô[39m should find exact index match[32m 5[2mms[22m[39m
+     [32mΓ£ô[39m should return null when no matching index found[32m 5[2mms[22m[39m
+     [32mΓ£ô[39m should convert DocIndex to IndexDefinition[32m 5[2mms[22m[39m
+     [32mΓ£ô[39m should generate index name when not provided[32m 5[2mms[22m[39m
+     [32mΓ£ô[39m should convert IndexInfo to IndexDefinition[32m 5[2mms[22m[39m
+     [32mΓ£ô[39m should generate consistent index name[32m 17[2mms[22m[39m
+     [32mΓ£ô[39m should generate unique index name[32m 17[2mms[22m[39m
+[31m     [31m├ù[31m should truncate long index names[39m[32m 17[2mms[22m[39m
+     [32mΓ£ô[39m should handle special characters in names[32m 17[2mms[22m[39m
+     [32mΓ£ô[39m should normalize column order for comparison[32m 17[2mms[22m[39m
+     [32mΓ£ô[39m should identify non-destructive changes[32m 2[2mms[22m[39m
+     [32mΓ£ô[39m should identify destructive changes[32m 2[2mms[22m[39m
+     [32mΓ£ô[39m should identify column changes as destructive[32m 2[2mms[22m[39m
+     [32mΓ£ô[39m should calculate change complexity score[32m 2[2mms[22m[39m
+     [32mΓ£ô[39m should validate correct index names[32m 2[2mms[22m[39m
+     [32mΓ£ô[39m should reject invalid index names[32m 5[2mms[22m[39m
+[31m     [31m├ù[31m should sanitize invalid index names[39m[32m 5[2mms[22m[39m
+     [32mΓ£ô[39m should return correct priority for index types[32m 5[2mms[22m[39m
+     [32mΓ£ô[39m should handle complex index comparison scenarios[32m 4[2mms[22m[39m
+     [32mΓ£ô[39m should handle partial indexes[32m 4[2mms[22m[39m
+     [32mΓ£ô[39m should handle multi-column indexes correctly[32m 0[2mms[22m[39m
+ [31mΓ¥»[39m src/lib/core/defaults/__tests__/default-manager.test.ts [2m([22m[2m19 tests[22m[2m | [22m[31m5 failed[39m[2m)[22m[32m 33[2mms[22m[39m
+       [32mΓ£ô[39m P1-027-T1: setDefault("Company", "ABC Corp") global - default stored for all users[32m 17[2mms[22m[39m
+       [32mΓ£ô[39m P1-027-T2: setDefault("Company", "XYZ Inc", user) - user-specific default stored[32m 16[2mms[22m[39m
+       [32mΓ£ô[39m P1-027-T3: getDefault("Company") with user default - returns user value[32m 17[2mms[22m[39m
+[31m       [31m├ù[31m P1-027-T4: getDefault("Company") global only - returns global value[39m[32m 16[2mms[22m[39m
+       [32mΓ£ô[39m P1-027-T5: getDefault("Unknown") - returns undefined[32m 16[2mms[22m[39m
+[31m       [31m├ù[31m P1-027-T6: getDefaults(user) - returns all user defaults[39m[32m 8[2mms[22m[39m
+[31m       [31m├ù[31m P1-027-T7: clearDefault("Company", user) - removes user default[39m[32m 5[2mms[22m[39m
+       [32mΓ£ô[39m P1-027-T8: setSessionDefault("Warehouse", "Main") - session default set[32m 5[2mms[22m[39m
+       [32mΓ£ô[39m P1-027-T9: Session default overrides user - resolution order correct[32m 6[2mms[22m[39m
+[31m       [31m├ù[31m P1-027-T10: Role default hierarchy - role defaults applied[39m[32m 6[2mms[22m[39m
+[31m       [31m├ù[31m P1-027-T11: resolveDefault() full hierarchy - Session > User > Role > Global[39m[32m 4[2mms[22m[39m
+       [32mΓ£ô[39m P1-027-T12: Clear session defaults - session cleared[32m 3[2mms[22m[39m
+       [32mΓ£ô[39m createDefaultManager creates instance with database[32m 3[2mms[22m[39m
+       [32mΓ£ô[39m createDefaultManager works without database[32m 3[2mms[22m[39m
+       [32mΓ£ô[39m setUserContext updates user and roles[32m 3[2mms[22m[39m
+       [32mΓ£ô[39m works without database (session defaults only)[32m 1[2mms[22m[39m
+       [32mΓ£ô[39m setDefault does nothing without database[32m 1[2mms[22m[39m
+       [32mΓ£ô[39m clearDefault returns false without database[32m 1[2mms[22m[39m
+       [32mΓ£ô[39m first role match wins in role resolution[32m 1[2mms[22m[39m
+ [31mΓ¥»[39m src/lib/meta/doctype/__tests__/virtual-controller.test.ts [2m([22m[2m21 tests[22m[2m | [22m[31m1 failed[39m[2m)[22m[32m 37[2mms[22m[39m
+[31m       [31m├ù[31m should initialize with type and config[39m[32m 20[2mms[22m[39m
+       [32mΓ£ô[39m should initialize successfully[32m 19[2mms[22m[39m
+       [32mΓ£ô[39m should connect successfully[32m 19[2mms[22m[39m
+       [32mΓ£ô[39m should validate valid configuration[32m 19[2mms[22m[39m
+       [32mΓ£ô[39m should fetch data successfully[32m 20[2mms[22m[39m
+       [32mΓ£ô[39m should get schema successfully[32m 5[2mms[22m[39m
+       [32mΓ£ô[39m should track performance metrics[32m 4[2mms[22m[39m
+       [32mΓ£ô[39m should reset performance metrics[32m 3[2mms[22m[39m
+       [32mΓ£ô[39m should track last error[32m 3[2mms[22m[39m
+       [32mΓ£ô[39m should provide cache statistics[32m 2[2mms[22m[39m
+       [32mΓ£ô[39m should clear cache[32m 4[2mms[22m[39m
+       [32mΓ£ô[39m should require implementation of initialize[32m 4[2mms[22m[39m
+       [32mΓ£ô[39m should require implementation of testConnection[32m 4[2mms[22m[39m
+       [32mΓ£ô[39m should require implementation of fetchData[32m 3[2mms[22m[39m
+       [32mΓ£ô[39m should require implementation of getSchema[32m 1[2mms[22m[39m
+       [32mΓ£ô[39m should require implementation of validateConfig[32m 4[2mms[22m[39m
+       [32mΓ£ô[39m should require implementation of cleanup[32m 4[2mms[22m[39m
+       [32mΓ£ô[39m should update metrics correctly[32m 4[2mms[22m[39m
+       [32mΓ£ô[39m should generate cache key correctly[32m 3[2mms[22m[39m
+       [32mΓ£ô[39m should handle cache operations[32m 1[2mms[22m[39m
+       [32mΓ£ô[39m should cleanup successfully[32m 1[2mms[22m[39m
+ [31mΓ¥»[39m src/lib/meta/doctype/__tests__/meta-cache.test.ts [2m([22m[2m12 tests[22m[2m | [22m[31m5 failed[39m[2m)[22m[32m 29[2mms[22m[39m
+     [32mΓ£ô[39m P2-004-T23: should use cached meta on second access[32m 15[2mms[22m[39m
+[31m     [31m├ù[31m P2-004-T24: should refresh cached meta when reloadMeta is called[39m[32m 14[2mms[22m[39m
+[31m     [31m├ù[31m P2-004-T25: should clear all cached meta when clearMetaCache is called[39m[32m 14[2mms[22m[39m
+     [32mΓ£ô[39m should return null for non-existent DocType[32m 14[2mms[22m[39m
+[31m     [31m├ù[31m should invalidate specific DocType from cache[39m[32m 14[2mms[22m[39m
+[31m     [31m├ù[31m should handle preloadMetas for multiple DocTypes[39m[32m 10[2mms[22m[39m
+     [32mΓ£ô[39m should throw error when getInstance is called without engine on first call[32m 3[2mms[22m[39m
+     [32mΓ£ô[39m should return engine instance[32m 3[2mms[22m[39m
+[31m     [31m├ù[31m should handle concurrent access to same DocType[39m[32m 8[2mms[22m[39m
+     [32mΓ£ô[39m should handle reloadMeta for non-existent DocType[32m 8[2mms[22m[39m
+     [32mΓ£ô[39m should handle invalidateMeta for non-existent DocType[32m 2[2mms[22m[39m
+     [32mΓ£ô[39m should maintain cache size correctly[32m 3[2mms[22m[39m
+ [31mΓ¥»[39m src/lib/meta/form/field-mapping/__tests__/registry.test.ts [2m([22m[2m23 tests[22m[2m | [22m[31m3 failed[39m[2m)[22m[32m 42[2mms[22m[39m
+       [32mΓ£ô[39m should initialize with all default mappings[32m 8[2mms[22m[39m
+       [32mΓ£ô[39m should return all registered types[32m 8[2mms[22m[39m
+       [32mΓ£ô[39m should return correct mapping for Data field[32m 8[2mms[22m[39m
+       [32mΓ£ô[39m should return correct mapping for Int field[32m 8[2mms[22m[39m
+       [32mΓ£ô[39m should return correct mapping for Select field[32m 3[2mms[22m[39m
+       [32mΓ£ô[39m should return correct mapping for Date field[32m 3[2mms[22m[39m
+       [32mΓ£ô[39m should return correct mapping for Check field[32m 3[2mms[22m[39m
+       [32mΓ£ô[39m should return fallback for unknown field type in lenient mode[32m 3[2mms[22m[39m
+       [32mΓ£ô[39m should allow registering new mappings[32m 2[2mms[22m[39m
+       [32mΓ£ô[39m should respect priority when multiple mappings exist[32m 23[2mms[22m[39m
+[31m       [31m├ù[31m should apply conditional mapping when condition is met[39m[32m 23[2mms[22m[39m
+[31m       [31m├ù[31m should override existing mapping[39m[32m 23[2mms[22m[39m
+       [32mΓ£ô[39m should throw when overriding non-existent mapping in strict mode[32m 23[2mms[22m[39m
+[31m       [31m├ù[31m should return complete mapping result with props[39m[32m 23[2mms[22m[39m
+       [32mΓ£ô[39m should include validation errors in props[32m 2[2mms[22m[39m
+       [32mΓ£ô[39m should handle disabled state[32m 2[2mms[22m[39m
+       [32mΓ£ô[39m should handle read-only state[32m 2[2mms[22m[39m
+       [32mΓ£ô[39m should reset to default mappings[32m 2[2mms[22m[39m
+       [32mΓ£ô[39m should export all mappings[32m 2[2mms[22m[39m
+       [32mΓ£ô[39m should apply default size from config[32m 1[2mms[22m[39m
+       [32mΓ£ô[39m should return current config[32m 1[2mms[22m[39m
+       [32mΓ£ô[39m should update config[32m 1[2mms[22m[39m
+     [32mΓ£ô[39m should provide singleton instance[32m 9[2mms[22m[39m
+ [31mΓ¥»[39m src/lib/meta/doctype/__tests__/meta-example.test.ts [2m([22m[2m6 tests[22m[2m | [22m[31m4 failed[39m[2m)[22m[32m 24[2mms[22m[39m
+     [32mΓ£ô[39m should demonstrate DocTypeMeta field access methods[32m 20[2mms[22m[39m
+[31m     [31m├ù[31m should demonstrate DocTypeMeta property access methods[39m[32m 19[2mms[22m[39m
+[31m     [31m├ù[31m should demonstrate DocTypeMeta field metadata access[39m[32m 19[2mms[22m[39m
+[31m     [31m├ù[31m should demonstrate MetaCache functionality[39m[32m 19[2mms[22m[39m
+[31m     [31m├ù[31m should demonstrate DocTypeEngine integration[39m[32m 19[2mms[22m[39m
+     [32mΓ£ô[39m should demonstrate MetaFactory creation methods[32m 2[2mms[22m[39m
+ [32mΓ£ô[39m src/lib/meta/form/field-mapping/__tests__/prop-generators.test.ts [2m([22m[2m46 tests[22m[2m)[22m[32m 69[2mms[22m[39m
+ [32mΓ£ô[39m src/lib/api/__tests__/utils.test.ts [2m([22m[2m14 tests[22m[2m)[22m[32m 110[2mms[22m[39m
+ [32mΓ£ô[39m src/lib/meta/openapi/__tests__/generator.test.ts [2m([22m[2m27 tests[22m[2m)[22m[32m 57[2mms[22m[39m
+ [32mΓ£ô[39m src/lib/meta/doctype/__tests__/meta-factory.test.ts [2m([22m[2m23 tests[22m[2m)[22m[32m 40[2mms[22m[39m
+ [31mΓ¥»[39m src/lib/core/sodaf.test.ts [2m([22m[2m10 tests[22m[2m | [22m[31m3 failed[39m[2m)[22m[32m 27[2mms[22m[39m
+       [32mΓ£ô[39m P1-020-T1: Export SiteManager[32m 4[2mms[22m[39m
+       [32mΓ£ô[39m P1-020-T2: Export Database[32m 4[2mms[22m[39m
+       [32mΓ£ô[39m P1-020-T3: Export Document[32m 4[2mms[22m[39m
+       [32mΓ£ô[39m P1-020-T4: Export SchemaManager[32m 4[2mms[22m[39m
+       [32mΓ£ô[39m P1-020-T5: Export NamingManager[32m 3[2mms[22m[39m
+       [32mΓ£ô[39m P1-020-T6: sodaf.init('site')[32m 11[2mms[22m[39m
+[31m       [31m├ù[31m P1-020-T7: sodaf.db property[39m[32m 18[2mms[22m[39m
+[31m       [31m├ù[31m P1-020-T8: sodaf.site property[39m[32m 19[2mms[22m[39m
+[31m       [31m├ù[31m P1-020-T9: sodaf.schema property[39m[32m 20[2mms[22m[39m
+       [32mΓ£ô[39m P1-020-T10: Singleton pattern[32m 20[2mms[22m[39m
+ [32mΓ£ô[39m src/lib/meta/migration/__tests__/sql-generator.test.ts [2m([22m[2m34 tests[22m[2m)[22m[32m 35[2mms[22m[39m
+ [32mΓ£ô[39m src/lib/meta/form/__tests__/validators.test.ts [2m([22m[2m32 tests[22m[2m)[22m[32m 53[2mms[22m[39m
+ [32mΓ£ô[39m src/lib/meta/form/__tests__/form-generator.test.ts [2m([22m[2m37 tests[22m[2m)[22m[32m 34[2mms[22m[39m
+ [32mΓ£ô[39m src/lib/meta/openapi/__tests__/route-generator.test.ts [2m([22m[2m21 tests[22m[2m)[22m[32m 34[2mms[22m[39m
+ [32mΓ£ô[39m src/lib/meta/form/__tests__/utils.test.ts [2m([22m[2m54 tests[22m[2m)[22m[32m 31[2mms[22m[39m
+ [32mΓ£ô[39m src/lib/meta/form/field-mapping/__tests__/default-mappings.test.ts [2m([22m[2m48 tests[22m[2m)[22m[32m 35[2mms[22m[39m
+ [32mΓ£ô[39m src/lib/cli/__tests__/cli.test.ts [2m([22m[2m8 tests[22m[2m)[22m[32m 38[2mms[22m[39m
+ [32mΓ£ô[39m src/lib/meta/api/__tests__/api-generator.test.ts [2m([22m[2m39 tests[22m[2m)[22m[32m 29[2mms[22m[39m
+ [32mΓ£ô[39m src/lib/meta/migration/__tests__/schema-diff.test.ts [2m([22m[2m15 tests[22m[2m)[22m[32m 28[2mms[22m[39m
+ [32mΓ£ô[39m src/lib/cache/__tests__/request-cache.test.ts [2m([22m[2m35 tests[22m[2m)[22m[32m 29[2mms[22m[39m
+ [32mΓ£ô[39m src/lib/meta/form/__tests__/types.test.ts [2m([22m[2m24 tests[22m[2m)[22m[32m 27[2mms[22m[39m
+ [32mΓ£ô[39m src/lib/meta/migration/__tests__/types.test.ts [2m([22m[2m20 tests[22m[2m)[22m[32m 23[2mms[22m[39m
+ [32mΓ£ô[39m src/lib/meta/openapi/__tests__/field-mapper.test.ts [2m([22m[2m31 tests[22m[2m)[22m[32m 27[2mms[22m[39m
+ [32mΓ£ô[39m src/lib/meta/form/__tests__/doctype-form-adapter.test.ts [2m([22m[2m10 tests[22m[2m)[22m[32m 23[2mms[22m[39m
+ [32mΓ£ô[39m src/lib/__tests__/integration/doctype-lifecycle.test.ts [2m([22m[2m18 tests[22m[2m)[22m[32m 25[2mms[22m[39m
+ [32mΓ£ô[39m src/lib/meta/api/__tests__/types.test.ts [2m([22m[2m35 tests[22m[2m)[22m[32m 29[2mms[22m[39m
+ [32mΓ£ô[39m src/lib/meta/migration/__tests__/validation.test.ts [2m([22m[2m18 tests[22m[2m)[22m[32m 24[2mms[22m[39m
+ [32mΓ£ô[39m src/lib/meta/migration/__tests__/history.test.ts [2m([22m[2m11 tests[22m[2m)[22m[32m 21[2mms[22m[39m
+ [32mΓ£ô[39m src/lib/meta/migration/__tests__/sqlite-specific.test.ts [2m([22m[2m16 tests[22m[2m)[22m[32m 18[2mms[22m[39m
+ [32mΓ£ô[39m src/lib/meta/doctype/__tests__/virtual-doctype.test.ts [2m([22m[2m22 tests[22m[2m)[22m[32m 16[2mms[22m[39m
+ [32mΓ£ô[39m src/lib/api/__tests__/filters.test.ts [2m([22m[2m21 tests[22m[2m)[22m[32m 13[2mms[22m[39m
+ [32mΓ£ô[39m src/lib/meta/migration/__tests__/migration.test.ts [2m([22m[2m14 tests[22m[2m)[22m[32m 17[2mms[22m[39m
+ [32mΓ£ô[39m src/lib/meta/doctype/__tests__/types.test.ts [2m([22m[2m11 tests[22m[2m)[22m[32m 8[2mms[22m[39m
+ [32mΓ£ô[39m src/lib/meta/form/__tests__/form-state-manager.test.ts [2m([22m[2m21 tests[22m[2m)[22m[32m 9[2mms[22m[39m
+
+[2m Test Files [22m [1m[31m46 failed[39m[22m[2m | [22m[1m[32m28 passed[39m[22m[90m (74)[39m
+[2m      Tests [22m [1m[31m427 failed[39m[22m[2m | [22m[1m[32m1224 passed[39m[22m[90m (1651)[39m
+[2m   Start at [22m 12:56:29
+[2m   Duration [22m 7.91s[2m (transform 7.73s, setup 0ms, import 15.40s, tests 6.60s, environment 49ms)[22m
+

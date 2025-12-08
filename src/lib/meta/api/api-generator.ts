@@ -8,16 +8,19 @@
  */
 
 import type { DocType, DocField, DocPerm, FieldType } from '../doctype/types';
+import type { VirtualDocType } from '../doctype/virtual-doctype';
 import type {
-    RouteConfig,
-    RouteType,
-    HTTPMethod,
-    ValidationSchema,
-    FieldValidationRule,
-    RequestValidationType,
-    RouteMiddleware,
-    RoutePermissions
+	RouteConfig,
+	RouteType,
+	HTTPMethod,
+	ValidationSchema,
+	FieldValidationRule,
+	RequestValidationType,
+	RouteMiddleware,
+	RoutePermissions
 } from './types';
+import { generateOpenAPISpecification, generateOpenAPIJSON } from '../openapi';
+import { CustomFieldManager } from '../custom';
 
 // =============================================================================
 // Types and Interfaces
@@ -115,19 +118,21 @@ const LAYOUT_FIELD_TYPES: FieldType[] = [
  * based on DocType definitions.
  */
 export class APIGenerator {
-    private options: Required<APIGeneratorOptions>;
+	private options: Required<APIGeneratorOptions>;
+	private customFieldManager: CustomFieldManager;
 
     /**
      * Create a new APIGenerator instance
      * @param options Generator options
      */
     constructor(options: APIGeneratorOptions = {}) {
-        this.options = {
-            basePath: options.basePath ?? '/api/resource',
-            includeDeprecated: options.includeDeprecated ?? false,
-            customPermissionChecks: options.customPermissionChecks ?? [],
-            enableRateLimiting: options.enableRateLimiting ?? false
-        };
+    	this.options = {
+    		basePath: options.basePath ?? '/api/resource',
+    		includeDeprecated: options.includeDeprecated ?? false,
+    		customPermissionChecks: options.customPermissionChecks ?? [],
+    		enableRateLimiting: options.enableRateLimiting ?? false
+    	};
+    	this.customFieldManager = CustomFieldManager.getInstance();
     }
 
     // =========================================================================
@@ -141,8 +146,8 @@ export class APIGenerator {
      */
     generateRoutes(doctype: DocType): RouteConfig[] {
         // Virtual DocTypes get custom handler placeholders
-        if (doctype.is_virtual) {
-            return this.generateVirtualRoutes(doctype);
+        if ((doctype as any).is_virtual) {
+            return this.generateVirtualRoutes(doctype as VirtualDocType);
         }
 
         // Single DocTypes only have GET and PUT
@@ -657,6 +662,42 @@ export class APIGenerator {
             permission: 'amend',
             roles
         };
+    }
+
+    // =========================================================================
+    // OpenAPI Generation
+    // =========================================================================
+
+    /**
+     * Generate OpenAPI specification for DocTypes
+     * @param doctypes Array of DocType definitions
+     * @returns OpenAPI specification as JSON string
+     */
+    generateOpenAPISpecification(doctypes: (DocType | VirtualDocType)[]): string {
+        const options = {
+            baseUrl: this.options.basePath,
+            version: '1.0.0',
+            title: 'SODAF API',
+            description: 'SODAF (Frappe framework clone) REST API'
+        };
+
+        return generateOpenAPIJSON(doctypes, options);
+    }
+
+    /**
+     * Generate OpenAPI specification as JSON string
+     * @param doctypes Array of DocType definitions
+     * @returns OpenAPI specification as JSON string
+     */
+    generateOpenAPIJSON(doctypes: (DocType | VirtualDocType)[]): string {
+        const options = {
+            baseUrl: this.options.basePath,
+            version: '1.0.0',
+            title: 'SODAF API',
+            description: 'SODAF (Frappe framework clone) REST API'
+        };
+
+        return generateOpenAPIJSON(doctypes, options);
     }
 
     // =========================================================================

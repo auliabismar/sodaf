@@ -85,9 +85,9 @@ describe('SchemaComparisonEngine', () => {
 	 */
 	it('P2-006-T1: should compare schema when table does not exist', async () => {
 		// Arrange
-	(mockDocTypeEngine.getDocType as any).mockResolvedValue(testDocType);
-	(mockDatabase.get_columns as any).mockRejectedValue(new Error('Table not found'));
-	(mockDatabase.get_indexes as any).mockRejectedValue(new Error('Table not found'));
+		(mockDocTypeEngine.getDocType as any).mockResolvedValue(testDocType);
+		(mockDatabase.get_columns as any).mockRejectedValue(new TableNotFoundError('tabTestDocType'));
+		(mockDatabase.get_indexes as any).mockRejectedValue(new TableNotFoundError('tabTestDocType'));
 
 		// Act
 		const diff = await engine.compareSchema('TestDocType');
@@ -120,9 +120,9 @@ describe('SchemaComparisonEngine', () => {
 	 */
 	it('P2-006-T2: should compare schema when schema matches DocType definition', async () => {
 		// Arrange
-	(mockDocTypeEngine.getDocType as any).mockResolvedValue(testDocType);
-	(mockDatabase.get_columns as any).mockResolvedValue(testTableColumns);
-	(mockDatabase.get_indexes as any).mockResolvedValue(testTableIndexes);
+		(mockDocTypeEngine.getDocType as any).mockResolvedValue(testDocType);
+		(mockDatabase.get_columns as any).mockResolvedValue(testTableColumns);
+		(mockDatabase.get_indexes as any).mockResolvedValue(testTableIndexes);
 
 		// Act
 		const diff = await engine.compareSchema('TestDocType');
@@ -158,9 +158,9 @@ describe('SchemaComparisonEngine', () => {
 			]
 		};
 
-	(mockDocTypeEngine.getDocType as any).mockResolvedValue(docTypeWithNewField);
-	(mockDatabase.get_columns as any).mockResolvedValue(testTableColumns);
-	(mockDatabase.get_indexes as any).mockResolvedValue(testTableIndexes);
+		(mockDocTypeEngine.getDocType as any).mockResolvedValue(docTypeWithNewField);
+		(mockDatabase.get_columns as any).mockResolvedValue(testTableColumns);
+		(mockDatabase.get_indexes as any).mockResolvedValue(testTableIndexes);
 
 		// Act
 		const diff = await engine.compareSchema('TestDocType');
@@ -196,9 +196,9 @@ describe('SchemaComparisonEngine', () => {
 			}
 		];
 
-	(mockDocTypeEngine.getDocType as any).mockResolvedValue(testDocType);
-	(mockDatabase.get_columns as any).mockResolvedValue(tableWithExtraColumn);
-	(mockDatabase.get_indexes as any).mockResolvedValue(testTableIndexes);
+		(mockDocTypeEngine.getDocType as any).mockResolvedValue(testDocType);
+		(mockDatabase.get_columns as any).mockResolvedValue(tableWithExtraColumn);
+		(mockDatabase.get_indexes as any).mockResolvedValue(testTableIndexes);
 
 		// Act
 		const diff = await engine.compareSchema('TestDocType');
@@ -227,9 +227,9 @@ describe('SchemaComparisonEngine', () => {
 			return col;
 		});
 
-	(mockDocTypeEngine.getDocType as any).mockResolvedValue(testDocType);
-	(mockDatabase.get_columns as any).mockResolvedValue(tableWithDifferentType);
-	(mockDatabase.get_indexes as any).mockResolvedValue(testTableIndexes);
+		(mockDocTypeEngine.getDocType as any).mockResolvedValue(testDocType);
+		(mockDatabase.get_columns as any).mockResolvedValue(tableWithDifferentType);
+		(mockDatabase.get_indexes as any).mockResolvedValue(testTableIndexes);
 
 		// Act
 		const diff = await engine.compareSchema('TestDocType');
@@ -272,9 +272,9 @@ describe('SchemaComparisonEngine', () => {
 			return col;
 		});
 
-	(mockDocTypeEngine.getDocType as any).mockResolvedValue(docTypeWithDifferentLength);
-	(mockDatabase.get_columns as any).mockResolvedValue(tableWithDifferentLength);
-	(mockDatabase.get_indexes as any).mockResolvedValue(testTableIndexes);
+		(mockDocTypeEngine.getDocType as any).mockResolvedValue(docTypeWithDifferentLength);
+		(mockDatabase.get_columns as any).mockResolvedValue(tableWithDifferentLength);
+		(mockDatabase.get_indexes as any).mockResolvedValue(testTableIndexes);
 
 		// Act
 		const diff = await engine.compareSchema('TestDocType');
@@ -302,9 +302,9 @@ describe('SchemaComparisonEngine', () => {
 			return col;
 		});
 
-	(mockDocTypeEngine.getDocType as any).mockResolvedValue(testDocType);
-	(mockDatabase.get_columns as any).mockResolvedValue(tableWithDifferentNullable);
-	(mockDatabase.get_indexes as any).mockResolvedValue(testTableIndexes);
+		(mockDocTypeEngine.getDocType as any).mockResolvedValue(testDocType);
+		(mockDatabase.get_columns as any).mockResolvedValue(tableWithDifferentNullable);
+		(mockDatabase.get_indexes as any).mockResolvedValue(testTableIndexes);
 
 		// Act
 		const diff = await engine.compareSchema('TestDocType');
@@ -332,9 +332,9 @@ describe('SchemaComparisonEngine', () => {
 			return col;
 		});
 
-	(mockDocTypeEngine.getDocType as any).mockResolvedValue(testDocType);
-	(mockDatabase.get_columns as any).mockResolvedValue(tableWithDifferentUnique);
-	(mockDatabase.get_indexes as any).mockResolvedValue(testTableIndexes);
+		(mockDocTypeEngine.getDocType as any).mockResolvedValue(testDocType);
+		(mockDatabase.get_columns as any).mockResolvedValue(tableWithDifferentUnique);
+		(mockDatabase.get_indexes as any).mockResolvedValue(testTableIndexes);
 
 		// Act
 		const diff = await engine.compareSchema('TestDocType');
@@ -361,9 +361,9 @@ describe('SchemaComparisonEngine', () => {
 			return col;
 		});
 
-	(mockDocTypeEngine.getDocType as any).mockResolvedValue(testDocType);
-	(mockDatabase.get_columns as any).mockResolvedValue(tableWithDifferentDefault);
-	(mockDatabase.get_indexes as any).mockResolvedValue(testTableIndexes);
+		(mockDocTypeEngine.getDocType as any).mockResolvedValue(testDocType);
+		(mockDatabase.get_columns as any).mockResolvedValue(tableWithDifferentDefault);
+		(mockDatabase.get_indexes as any).mockResolvedValue(testTableIndexes);
 
 		// Act
 		const diff = await engine.compareSchema('TestDocType');
@@ -389,9 +389,9 @@ describe('SchemaComparisonEngine', () => {
 			]
 		};
 
-	(mockDocTypeEngine.getDocType as any).mockResolvedValue(docTypeWithNewIndex);
-	(mockDatabase.get_columns as any).mockResolvedValue(testTableColumns);
-	(mockDatabase.get_indexes as any).mockResolvedValue(testTableIndexes);
+		(mockDocTypeEngine.getDocType as any).mockResolvedValue(docTypeWithNewIndex);
+		(mockDatabase.get_columns as any).mockResolvedValue(testTableColumns);
+		(mockDatabase.get_indexes as any).mockResolvedValue(testTableIndexes);
 
 		// Act
 		const diff = await engine.compareSchema('TestDocType');
@@ -419,9 +419,9 @@ describe('SchemaComparisonEngine', () => {
 			}
 		];
 
-	(mockDocTypeEngine.getDocType as any).mockResolvedValue(testDocType);
-	(mockDatabase.get_columns as any).mockResolvedValue(testTableColumns);
-	(mockDatabase.get_indexes as any).mockResolvedValue(tableWithExtraIndex);
+		(mockDocTypeEngine.getDocType as any).mockResolvedValue(testDocType);
+		(mockDatabase.get_columns as any).mockResolvedValue(testTableColumns);
+		(mockDatabase.get_indexes as any).mockResolvedValue(tableWithExtraIndex);
 
 		// Act
 		const diff = await engine.compareSchema('TestDocType');
@@ -457,9 +457,9 @@ describe('SchemaComparisonEngine', () => {
 			]
 		};
 
-	(mockDocTypeEngine.getDocType as any).mockResolvedValue(docTypeWithDifferentIndex);
-	(mockDatabase.get_columns as any).mockResolvedValue(testTableColumns);
-	(mockDatabase.get_indexes as any).mockResolvedValue(tableWithDifferentIndex);
+		(mockDocTypeEngine.getDocType as any).mockResolvedValue(docTypeWithDifferentIndex);
+		(mockDatabase.get_columns as any).mockResolvedValue(testTableColumns);
+		(mockDatabase.get_indexes as any).mockResolvedValue(tableWithDifferentIndex);
 
 		// Act
 		const diff = await engine.compareSchema('TestDocType');
@@ -560,7 +560,7 @@ describe('SchemaComparisonEngine', () => {
 	 */
 	it('P2-006-T16: getTableColumns should return correct ColumnInfo array', async () => {
 		// Arrange
-	(mockDatabase.get_columns as any).mockResolvedValue(testTableColumns);
+		(mockDatabase.get_columns as any).mockResolvedValue(testTableColumns);
 
 		// Act
 		const columns = await engine.getTableColumns('tabTestDocType');
@@ -584,7 +584,7 @@ describe('SchemaComparisonEngine', () => {
 	 */
 	it('P2-006-T17: getTableIndexes should return correct IndexInfo array', async () => {
 		// Arrange
-	(mockDatabase.get_indexes as any).mockResolvedValue(testTableIndexes);
+		(mockDatabase.get_indexes as any).mockResolvedValue(testTableIndexes);
 
 		// Act
 		const indexes = await engine.getTableIndexes('tabTestDocType');

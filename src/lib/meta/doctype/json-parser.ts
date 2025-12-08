@@ -166,8 +166,32 @@ export class DocTypeJSONParser {
 			
 		} catch (error) {
 			if (error instanceof SyntaxError) {
-				// Convert native JSON error to our custom error
-				throw JSONParseError.fromNativeError(error, jsonString);
+				// Convert native JSON error to our custom error with line/column info
+				const jsonError = JSONParseError.fromNativeError(error, jsonString);
+				
+				// Try to extract line and column from the error message
+				const message = error.message;
+				const lineMatch = message.match(/line (\d+)/i);
+				const columnMatch = message.match(/column (\d+)/i);
+				
+				// If we couldn't extract line/column from the message, try to calculate them
+				if (!jsonError.line || !jsonError.column) {
+					const position = (error as any).position || 0;
+					const lines = jsonString.substring(0, position).split('\n');
+					const line = lines.length;
+					const column = lines[lines.length - 1].length + 1;
+					
+					// Create a new error with the calculated line and column
+					throw new JSONParseError(
+						jsonError.message,
+						position,
+						line,
+						column,
+						jsonString
+					);
+				}
+				
+				throw jsonError;
 			}
 			
 			if (error instanceof DocTypeError) {
@@ -484,6 +508,59 @@ export class DocTypeJSONParser {
 			}
 		}
 
+		// Validate field names if fields array exists
+		if (Array.isArray(json.fields)) {
+			for (const field of json.fields) {
+				if (field.fieldname && typeof field.fieldname !== 'string') {
+					errors.push({
+						type: 'invalid_format',
+						field: 'fieldname',
+						message: 'Field name must be a string',
+						severity: 'error'
+					});
+				}
+				
+				if (field.fieldname && !/^[a-zA-Z][a-zA-Z0-9_]*$/.test(field.fieldname)) {
+					errors.push({
+						type: 'invalid_format',
+						field: 'fieldname',
+						message: 'Field name must contain only letters, numbers, and underscores, and cannot start with a number',
+						severity: 'error'
+					});
+				}
+			}
+		}
+
+		// Validate index column names if indexes array exists
+		if (Array.isArray(json.indexes)) {
+			for (const index of json.indexes) {
+				if (index.columns && Array.isArray(index.columns)) {
+					for (const column of index.columns) {
+						if (typeof column !== 'string') {
+							errors.push({
+								type: 'invalid_format',
+								field: 'index.columns',
+								message: 'Index column names must be strings',
+								severity: 'error'
+							});
+						} else {
+							// Check if column exists in fields
+							const fieldExists = Array.isArray(json.fields) &&
+								json.fields.some((field: any) => field.fieldname === column);
+							if (!fieldExists) {
+								errors.push({
+									type: 'invalid_format',
+									field: 'index.columns',
+									message: `Index column '${column}' does not exist in fields`,
+									severity: 'error'
+								});
+							}
+						}
+					}
+				}
+			}
+		}
+
 		return {
 			valid: errors.filter(e => e.severity === 'error').length === 0,
 			errors
@@ -512,10 +589,19 @@ export class DocTypeJSONParser {
 		} as DocType;
 
 		// Apply field defaults
-		completeDocType.fields = completeDocType.fields.map(field => ({
-			...DEFAULT_DOCFIELD,
-			...field
-		}));
+		completeDocType.fields = completeDocType.fields.map(field => {
+			const defaults = { ...DEFAULT_DOCFIELD, ...field };
+			
+			// Convert string values to proper types
+			if (typeof defaults.precision === 'string') {
+				defaults.precision = parseInt(defaults.precision, 10);
+			}
+			if (typeof defaults.required === 'string') {
+				defaults.required = defaults.required === 'true' || defaults.required === true;
+			}
+			
+			return defaults;
+		});
 
 		// Apply permission defaults
 		completeDocType.permissions = completeDocType.permissions.map(perm => ({

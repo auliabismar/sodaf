@@ -20,12 +20,12 @@ export class MetaFactory {
 	 * @returns DocTypeMeta instance
 	 * @throws DocTypeError if DocType is invalid
 	 */
-	public static create(doctype: DocType): DocTypeMeta {
+	public static create(doctype: DocType, includeCustomFields: boolean = true): DocTypeMeta {
 		if (!this.validateDocType(doctype)) {
 			throw new DocTypeError('Invalid DocType provided');
 		}
 
-		const meta = new DocTypeMeta(doctype);
+		const meta = new DocTypeMeta(doctype, includeCustomFields);
 		this.initializeIndexes(meta);
 
 		return meta;
@@ -39,14 +39,15 @@ export class MetaFactory {
 	 */
 	public static async createFromName(
 		doctypeName: string,
-		engine: DocTypeEngine
+		engine: DocTypeEngine,
+		includeCustomFields: boolean = true
 	): Promise<DocTypeMeta | null> {
 		const doctype = await engine.getDocType(doctypeName);
 		if (!doctype) {
 			return null;
 		}
 
-		return this.create(doctype);
+		return this.create(doctype, includeCustomFields);
 	}
 
 	/**
@@ -57,13 +58,14 @@ export class MetaFactory {
 	 */
 	public static async createFromNames(
 		doctypeNames: string[],
-		engine: DocTypeEngine
+		engine: DocTypeEngine,
+		includeCustomFields: boolean = true
 	): Promise<Map<string, DocTypeMeta | null>> {
 		const results = new Map<string, DocTypeMeta | null>();
 
 		// Process in parallel for better performance
 		const promises = doctypeNames.map(async (doctypeName) => {
-			const meta = await this.createFromName(doctypeName, engine);
+			const meta = await this.createFromName(doctypeName, engine, includeCustomFields);
 			return { doctypeName, meta };
 		});
 

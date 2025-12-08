@@ -5,7 +5,7 @@
  * Single DocTypes store values in the tabSingles table as key-value pairs
  * instead of having their own table.
  *
- * Key characteristics:
+ * Key features:
  * - Name always equals doctype name
  * - Stored in tabSingles table (doctype, fieldname, value)
  * - insert() not allowed - throws SingleDocTypeError
@@ -167,8 +167,17 @@ export class SingleDocument extends Doc {
         }
 
         try {
+            // Update modified timestamp
+            this.modified = new Date();
+            this.modified_by = 'Administrator';
+
             // Get all field values to save
-            const values = this.get_valid_dict();
+            const values: Record<string, any> = {};
+            for (const [key, val] of Object.entries(this)) {
+                if (typeof val !== 'function' && !key.startsWith('__')) {
+                    values[key] = val;
+                }
+            }
 
             // Remove metadata fields that don't go in Singles table
             const excludeFields = ['name', 'doctype', 'db', 'hooks', '__isnew', '__unsaved', '__issingle', '__original_values', '__doc_before_save'];
@@ -183,35 +192,34 @@ export class SingleDocument extends Doc {
                 }
 
                 // Convert value to string for storage
-                const stringValue = value === null || value === undefined
-                    ? null
-                    : typeof value === 'object'
-                        ? JSON.stringify(value)
-                        : String(value);
+                let stringValue: string | null;
+
+                if (value === null || value === undefined) {
+                    stringValue = null;
+                } else if (value instanceof Date) {
+                    stringValue = value.toISOString().replace('T', ' ').substring(0, 19);
+                } else if (typeof value === 'object') {
+                    stringValue = JSON.stringify(value);
+                } else {
+                    stringValue = String(value);
+                }
 
                 // Upsert the value
-                await this.db.run(
-                    `INSERT INTO tabSingles (doctype, field, value)
-					 VALUES (?, ?, ?)
-					 ON CONFLICT (doctype, field) DO UPDATE SET value = excluded.value`,
-                    [this.doctype, field, stringValue]
-                );
+                // Handle both direct Database and TestDatabase interfaces
+                if ((this.db as any).getDatabase && typeof (this.db as any).getDatabase === 'function') {
+                    // TestDatabase wrapper - use run method directly
+                    await (this.db as any).run(
+                        'INSERT OR REPLACE INTO tabSingles (doctype, field, value) VALUES (?, ?, ?)',
+                        [this.doctype, field, stringValue]
+                    );
+                } else {
+                    // Direct Database interface
+                    await this.db.run(
+                        'INSERT OR REPLACE INTO tabSingles (doctype, field, value) VALUES (?, ?, ?)',
+                        [this.doctype, field, stringValue]
+                    );
+                }
             }
-
-            // Update modified timestamp
-            const now = new Date().toISOString().replace('T', ' ').substring(0, 19);
-            await this.db.run(
-                `INSERT INTO tabSingles (doctype, field, value)
-				 VALUES (?, 'modified', ?)
-				 ON CONFLICT (doctype, field) DO UPDATE SET value = excluded.value`,
-                [this.doctype, now]
-            );
-            await this.db.run(
-                `INSERT INTO tabSingles (doctype, field, value)
-				 VALUES (?, 'modified_by', ?)
-				 ON CONFLICT (doctype, field) DO UPDATE SET value = excluded.value`,
-                [this.doctype, 'Administrator']
-            );
 
             // Mark as saved
             this.__unsaved = false;
@@ -240,10 +248,30 @@ export class SingleDocument extends Doc {
             await this.ensureSinglesTable();
 
             // Get all values for this doctype from Singles table
-            const rows = await this.db.sql(
-                `SELECT field, value FROM tabSingles WHERE doctype = ?`,
-                [this.doctype]
-            ) as SinglesTableRow[];
+            // Handle both direct Database and TestDatabase interfaces
+            let rows: SinglesTableRow[];
+            if ((this.db as any).getDatabase && typeof (this.db as any).getDatabase === 'function') {
+                // TestDatabase wrapper - use sql method instead of direct db access
+                try {
+                    rows = await (this.db as any).sql(
+                        'SELECT field, value FROM tabSingles WHERE doctype = ?',
+                        [this.doctype]
+                    ) as SinglesTableRow[];
+                } catch (error) {
+                    // Fallback to direct db access if sql method fails
+                    const db = (this.db as any).getDatabase();
+                    const stmt = db.prepare(
+                        'SELECT field, value FROM tabSingles WHERE doctype = ?'
+                    );
+                    rows = stmt.all(this.doctype) as SinglesTableRow[];
+                }
+            } else {
+                // Direct Database interface
+                rows = await this.db.sql(
+                    'SELECT field, value FROM tabSingles WHERE doctype = ?',
+                    [this.doctype]
+                ) as SinglesTableRow[];
+            }
 
             // Build document from rows
             const data: Record<string, any> = {};
@@ -252,7 +280,18 @@ export class SingleDocument extends Doc {
             }
 
             // Update this instance with loaded values
+            for (const [field, value] of Object.entries(data)) {
+                (this as any)[field] = value;
+            }
             Object.assign(this, data);
+
+            // Restore standard Date fields
+            if (typeof this.creation === 'string') {
+                this.creation = new Date(this.creation);
+            }
+            if (typeof this.modified === 'string') {
+                this.modified = new Date(this.modified);
+            }
 
             // Store original values
             this.__original_values = { ...data };
@@ -275,14 +314,21 @@ export class SingleDocument extends Doc {
      * Ensure the Singles table exists
      */
     private async ensureSinglesTable(): Promise<void> {
-        await this.db.run(`
-			CREATE TABLE IF NOT EXISTS tabSingles (
-				doctype TEXT NOT NULL,
-				field TEXT NOT NULL,
-				value TEXT,
-				PRIMARY KEY (doctype, field)
-			)
-		`);
+        const createTableSQL = `
+            CREATE TABLE IF NOT EXISTS tabSingles (
+                doctype TEXT NOT NULL,
+                field TEXT NOT NULL,
+                value TEXT,
+                PRIMARY KEY (doctype, field)
+            )
+        `;
+
+        // Handle both direct Database and TestDatabase interfaces
+        if ((this.db as any).getDatabase && typeof (this.db as any).getDatabase === 'function') {
+            await (this.db as any).run(createTableSQL);
+        } else {
+            await this.db.run(createTableSQL);
+        }
     }
 
     /**
@@ -355,21 +401,30 @@ export class SingleDocument extends Doc {
      */
     static async exists(doctype: string, db: Database): Promise<boolean> {
         try {
-            // Ensure Singles table exists
-            await db.run(`
-				CREATE TABLE IF NOT EXISTS tabSingles (
-					doctype TEXT NOT NULL,
-					field TEXT NOT NULL,
-					value TEXT,
-					PRIMARY KEY (doctype, field)
-				)
-			`);
+            const createTableSQL = `
+                CREATE TABLE IF NOT EXISTS tabSingles (
+                    doctype TEXT NOT NULL,
+                    field TEXT NOT NULL,
+                    value TEXT,
+                    PRIMARY KEY (doctype, field)
+                )
+            `;
 
-            const result = await db.sql(
-                `SELECT 1 FROM tabSingles WHERE doctype = ? LIMIT 1`,
-                [doctype]
-            );
-            return result.length > 0;
+            if (typeof (db as any).getDatabase === 'function') {
+                await (db as any).run(createTableSQL);
+                const result = await (db as any).sql(
+                    'SELECT 1 FROM tabSingles WHERE doctype = ? LIMIT 1',
+                    [doctype]
+                );
+                return result.length > 0;
+            } else {
+                await db.run(createTableSQL);
+                const result = await db.sql(
+                    'SELECT 1 FROM tabSingles WHERE doctype = ? LIMIT 1',
+                    [doctype]
+                );
+                return result.length > 0;
+            }
         } catch {
             return false;
         }
@@ -387,11 +442,6 @@ export class SingleDocument extends Doc {
  * @param doctype Single DocType name
  * @param field Field name to retrieve
  * @returns Promise resolving to the field value, or null if not found
- *
- * @example
- * ```typescript
- * const allowLogin = await get_single_value(db, 'System Settings', 'allow_login_using_mobile_number');
- * ```
  */
 export async function get_single_value(
     db: Database,
@@ -399,18 +449,23 @@ export async function get_single_value(
     field: string
 ): Promise<any> {
     try {
-        // Ensure Singles table exists
-        await db.run(`
-			CREATE TABLE IF NOT EXISTS tabSingles (
-				doctype TEXT NOT NULL,
-				field TEXT NOT NULL,
-				value TEXT,
-				PRIMARY KEY (doctype, field)
-			)
-		`);
+        const createTableSQL = `
+            CREATE TABLE IF NOT EXISTS tabSingles (
+                doctype TEXT NOT NULL,
+                field TEXT NOT NULL,
+                value TEXT,
+                PRIMARY KEY (doctype, field)
+            )
+        `;
+
+        if (typeof (db as any).getDatabase === 'function') {
+            await (db as any).run(createTableSQL);
+        } else {
+            await db.run(createTableSQL);
+        }
 
         const result = await db.sql(
-            `SELECT value FROM tabSingles WHERE doctype = ? AND field = ?`,
+            'SELECT value FROM tabSingles WHERE doctype = ? AND field = ?',
             [doctype, field]
         ) as { value: string | null }[];
 
@@ -455,11 +510,6 @@ export async function get_single_value(
  * @param doctype Single DocType name
  * @param field Field name to set
  * @param value Value to set
- *
- * @example
- * ```typescript
- * await set_single_value(db, 'System Settings', 'enable_password_policy', 1);
- * ```
  */
 export async function set_single_value(
     db: Database,
@@ -468,15 +518,20 @@ export async function set_single_value(
     value: any
 ): Promise<void> {
     try {
-        // Ensure Singles table exists
-        await db.run(`
-			CREATE TABLE IF NOT EXISTS tabSingles (
-				doctype TEXT NOT NULL,
-				field TEXT NOT NULL,
-				value TEXT,
-				PRIMARY KEY (doctype, field)
-			)
-		`);
+        const createTableSQL = `
+            CREATE TABLE IF NOT EXISTS tabSingles (
+                doctype TEXT NOT NULL,
+                field TEXT NOT NULL,
+                value TEXT,
+                PRIMARY KEY (doctype, field)
+            )
+        `;
+
+        if (typeof (db as any).getDatabase === 'function') {
+            await (db as any).run(createTableSQL);
+        } else {
+            await db.run(createTableSQL);
+        }
 
         // Convert value to string for storage
         const stringValue = value === null || value === undefined
@@ -486,27 +541,39 @@ export async function set_single_value(
                 : String(value);
 
         // Upsert the value
-        await db.run(
-            `INSERT INTO tabSingles (doctype, field, value)
-			 VALUES (?, ?, ?)
-			 ON CONFLICT (doctype, field) DO UPDATE SET value = excluded.value`,
-            [doctype, field, stringValue]
-        );
+        if (typeof (db as any).getDatabase === 'function') {
+            await (db as any).run(
+                'INSERT OR REPLACE INTO tabSingles (doctype, field, value) VALUES (?, ?, ?)',
+                [doctype, field, stringValue]
+            );
 
-        // Update modified timestamp
-        const now = new Date().toISOString().replace('T', ' ').substring(0, 19);
-        await db.run(
-            `INSERT INTO tabSingles (doctype, field, value)
-			 VALUES (?, 'modified', ?)
-			 ON CONFLICT (doctype, field) DO UPDATE SET value = excluded.value`,
-            [doctype, now]
-        );
-        await db.run(
-            `INSERT INTO tabSingles (doctype, field, value)
-			 VALUES (?, 'modified_by', ?)
-			 ON CONFLICT (doctype, field) DO UPDATE SET value = excluded.value`,
-            [doctype, 'Administrator']
-        );
+            // Update modified timestamp
+            const now = new Date().toISOString().replace('T', ' ').substring(0, 19);
+            await (db as any).run(
+                'INSERT OR REPLACE INTO tabSingles (doctype, field, value) VALUES (?, ?, ?)',
+                [doctype, 'modified', now]
+            );
+            await (db as any).run(
+                'INSERT OR REPLACE INTO tabSingles (doctype, field, value) VALUES (?, ?, ?)',
+                [doctype, 'modified_by', 'Administrator']
+            );
+        } else {
+            await db.run(
+                'INSERT OR REPLACE INTO tabSingles (doctype, field, value) VALUES (?, ?, ?)',
+                [doctype, field, stringValue]
+            );
+
+            // Update modified timestamp
+            const now = new Date().toISOString().replace('T', ' ').substring(0, 19);
+            await db.run(
+                'INSERT OR REPLACE INTO tabSingles (doctype, field, value) VALUES (?, ?, ?)',
+                [doctype, 'modified', now]
+            );
+            await db.run(
+                'INSERT OR REPLACE INTO tabSingles (doctype, field, value) VALUES (?, ?, ?)',
+                [doctype, 'modified_by', 'Administrator']
+            );
+        }
     } catch (error) {
         throw new Error(`Failed to set single value: ${(error as Error).message}`);
     }
@@ -534,18 +601,24 @@ export async function get_single_doc(
     doctype: string
 ): Promise<Record<string, any>> {
     try {
-        // Ensure Singles table exists
-        await db.run(`
-			CREATE TABLE IF NOT EXISTS tabSingles (
-				doctype TEXT NOT NULL,
-				field TEXT NOT NULL,
-				value TEXT,
-				PRIMARY KEY (doctype, field)
-			)
-		`);
+        const createTableSQL = `
+            CREATE TABLE IF NOT EXISTS tabSingles (
+                doctype TEXT NOT NULL,
+                field TEXT NOT NULL,
+                value TEXT,
+                PRIMARY KEY (doctype, field)
+            )
+        `;
+
+        // Handle both direct Database and TestDatabase interfaces
+        if ((db as any).getDatabase && typeof (db as any).getDatabase === 'function') {
+            await (db as any).run(createTableSQL);
+        } else {
+            await db.run(createTableSQL);
+        }
 
         const rows = await db.sql(
-            `SELECT field, value FROM tabSingles WHERE doctype = ?`,
+            'SELECT field, value FROM tabSingles WHERE doctype = ?',
             [doctype]
         ) as { field: string; value: string | null }[];
 

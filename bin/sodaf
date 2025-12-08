@@ -1,0 +1,22 @@
+#!/usr/bin/env node
+
+/**
+ * SODAF CLI Entry Point
+ * 
+ * This is the main executable for the SODAF CLI system.
+ * It loads and runs the CLI from the compiled JavaScript bundle.
+ */
+
+// Set up error handling
+process.on('uncaughtException', (error) => {
+	console.error('Uncaught exception:', error);
+	process.exit(1);
+});
+
+process.on('unhandledRejection', (reason, promise) => {
+	console.error('Unhandled rejection at:', promise, 'reason:', reason);
+	process.exit(1);
+});
+
+// Run the CLI
+require('../dist/cli/index.js');

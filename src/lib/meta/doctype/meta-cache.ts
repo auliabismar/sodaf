@@ -17,7 +17,8 @@ import { DocTypeError } from './errors';
 export class MetaCache {
 	private static instance: MetaCache | null = null;
 	private cache: Map<string, DocTypeMeta> = new Map();
-	private readonly engine: DocTypeEngine;
+	private engine: DocTypeEngine;
+	private loadingPromises: Map<string, Promise<DocTypeMeta | null>> = new Map();
 
 	/**
 	 * Private constructor for singleton pattern
@@ -38,6 +39,10 @@ export class MetaCache {
 				throw new DocTypeError('DocTypeEngine required for first initialization');
 			}
 			MetaCache.instance = new MetaCache(engine);
+		} else if (engine) {
+			// If an engine is provided and we already have an instance,
+			// update the engine reference to ensure we use the latest engine
+			MetaCache.instance.engine = engine;
 		}
 		return MetaCache.instance;
 	}
@@ -46,6 +51,10 @@ export class MetaCache {
 	 * Reset the singleton instance (for testing purposes)
 	 */
 	public static resetInstance(): void {
+		if (MetaCache.instance) {
+			MetaCache.instance.cache.clear();
+			MetaCache.instance.loadingPromises.clear();
+		}
 		MetaCache.instance = null;
 	}
 
@@ -54,12 +63,38 @@ export class MetaCache {
 	 * @param doctypeName Name of the DocType to get Meta for
 	 * @returns Promise resolving to DocTypeMeta instance or null if not found
 	 */
-	public async getMeta(doctypeName: string): Promise<DocTypeMeta | null> {
+	public async getMeta(doctypeName: string, includeCustomFields: boolean = true): Promise<DocTypeMeta | null> {
+		// Create cache key with includeCustomFields flag
+		const cacheKey = `${doctypeName}_${includeCustomFields}`;
+		
 		// Check cache first
-		if (this.cache.has(doctypeName)) {
-			return this.cache.get(doctypeName)!;
+		if (this.cache.has(cacheKey)) {
+			return this.cache.get(cacheKey)!;
 		}
 
+		// Check if already loading (handle concurrent access)
+		if (this.loadingPromises.has(cacheKey)) {
+			return this.loadingPromises.get(cacheKey)!;
+		}
+
+		// Create loading promise
+		const loadingPromise = this.loadAndCacheMeta(doctypeName, includeCustomFields);
+		this.loadingPromises.set(cacheKey, loadingPromise);
+
+		try {
+			return await loadingPromise;
+		} finally {
+			// Clean up loading promise
+			this.loadingPromises.delete(cacheKey);
+		}
+	}
+
+	/**
+	 * Load DocType from engine and cache it
+	 * @param doctypeName Name of DocType to load
+	 * @returns Promise resolving to DocTypeMeta instance or null if not found
+	 */
+	private async loadAndCacheMeta(doctypeName: string, includeCustomFields: boolean): Promise<DocTypeMeta | null> {
 		// Load DocType from engine
 		const doctype = await this.engine.getDocType(doctypeName);
 		if (!doctype) {
@@ -67,8 +102,9 @@ export class MetaCache {
 		}
 
 		// Create and cache Meta instance
-		const meta = this.createMeta(doctype);
-		this.cache.set(doctypeName, meta);
+		const meta = this.createMeta(doctype, includeCustomFields);
+		const cacheKey = `${doctypeName}_${includeCustomFields}`;
+		this.cache.set(cacheKey, meta);
 
 		return meta;
 	}
@@ -78,7 +114,17 @@ export class MetaCache {
 	 * @param doctypeName Name of the DocType to invalidate cache for
 	 */
 	public invalidateMeta(doctypeName: string): void {
-		this.cache.delete(doctypeName);
+		// Invalidate all cache entries for this DocType (with and without custom fields)
+		const keysToDelete: string[] = [];
+		for (const key of this.cache.keys()) {
+			if (key.startsWith(`${doctypeName}_`)) {
+				keysToDelete.push(key);
+			}
+		}
+		
+		for (const key of keysToDelete) {
+			this.cache.delete(key);
+		}
 	}
 
 	/**
@@ -93,9 +139,9 @@ export class MetaCache {
 	 * @param doctypeName Name of the DocType to reload
 	 * @returns Promise resolving to DocTypeMeta instance or null if not found
 	 */
-	public async reloadMeta(doctypeName: string): Promise<DocTypeMeta | null> {
+	public async reloadMeta(doctypeName: string, includeCustomFields: boolean = true): Promise<DocTypeMeta | null> {
 		this.invalidateMeta(doctypeName);
-		return this.getMeta(doctypeName);
+		return this.getMeta(doctypeName, includeCustomFields);
 	}
 
 	/**
@@ -150,8 +196,8 @@ export class MetaCache {
 	 * @param doctype DocType definition to create Meta for
 	 * @returns DocTypeMeta instance
 	 */
-	private createMeta(doctype: DocType): DocTypeMeta {
-		return MetaFactory.create(doctype);
+	private createMeta(doctype: DocType, includeCustomFields: boolean = true): DocTypeMeta {
+		return MetaFactory.create(doctype, includeCustomFields);
 	}
 
 	/**

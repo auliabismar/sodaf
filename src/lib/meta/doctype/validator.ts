@@ -34,7 +34,7 @@ const VALID_FIELD_TYPES: FieldType[] = [
  * Field types that require options
  */
 const FIELD_TYPES_REQUIRING_OPTIONS: FieldType[] = [
-	'Link', 'Table'
+	'Link', 'Table', 'Select'
 ];
 
 /**
@@ -48,6 +48,18 @@ export class DocTypeValidator {
 	 */
 	public static validateDocType(doctype: DocType): ValidationResult {
 		const errors: ValidationError[] = [];
+
+		if (!doctype) {
+			return {
+				valid: false,
+				errors: [{
+					type: 'required',
+					field: 'doctype',
+					message: 'DocType definition cannot be null or undefined',
+					severity: 'error'
+				}]
+			};
+		}
 
 		// Validate required properties
 		errors.push(...this.validateRequiredProperties(doctype));

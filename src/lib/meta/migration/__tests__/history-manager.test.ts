@@ -31,9 +31,7 @@ describe('MigrationHistoryManager', () => {
 		vi.clearAllMocks();
 	});
 	
-	afterEach(() => {
-		historyManager = null as any;
-	});
+	
 
 	describe('initializeHistoryTable', () => {
 		it('should create migration history table if not exists', async () => {

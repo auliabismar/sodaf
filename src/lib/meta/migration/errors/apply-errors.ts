@@ -58,13 +58,13 @@ export class MigrationValidationError extends MigrationError {
 	 */
 	constructor(validation: any) {
 		super(
-			`Migration validation failed: ${
-				validation.errors?.map((e: any) => e.message).join(', ') || 'Unknown validation error'
+			`Migration validation failed: ${validation.errors?.map((e: any) => e.message).join(', ') || 'Unknown validation error'
 			}`,
 			'MIGRATION_VALIDATION_FAILED',
 			validation.doctype || validation.migration?.doctype,
 			validation.migration?.id
 		);
+		this.name = 'MigrationValidationError';
 		this.validation = validation;
 	}
 
@@ -93,6 +93,7 @@ export class MigrationExecutionError extends MigrationError {
 			statement.table,
 			statement.id
 		);
+		this.name = 'MigrationExecutionError';
 		this.statement = statement;
 		this.originalError = originalError;
 	}
@@ -127,6 +128,7 @@ export class MigrationRollbackError extends MigrationError {
 			undefined,
 			migrationId
 		);
+		this.name = 'MigrationRollbackError';
 		this.migrationId = migrationId;
 		this.originalError = originalError;
 	}
@@ -158,6 +160,7 @@ export class DataLossRiskError extends MigrationError {
 			undefined,
 			{ risks }
 		);
+		this.name = 'DataLossRiskError';
 		this.risks = risks;
 	}
 
@@ -188,6 +191,7 @@ export class MigrationTimeoutError extends MigrationError {
 			undefined,
 			migrationId
 		);
+		this.name = 'MigrationTimeoutError';
 		this.timeout = timeout;
 		this.operation = operation;
 	}
@@ -223,6 +227,7 @@ export class MigrationBackupError extends MigrationError {
 			undefined,
 			{ backupPath }
 		);
+		this.name = 'MigrationBackupError';
 		this.backupPath = backupPath;
 		this.originalError = originalError;
 	}
@@ -258,6 +263,7 @@ export class MigrationRestoreError extends MigrationError {
 			undefined,
 			{ backupPath }
 		);
+		this.name = 'MigrationRestoreError';
 		this.backupPath = backupPath;
 		this.originalError = originalError;
 	}
@@ -294,6 +300,7 @@ export class MigrationDependencyError extends MigrationError {
 			undefined,
 			migrationId
 		);
+		this.name = 'MigrationDependencyError';
 		this.dependencies = dependencies;
 		this.originalError = originalError;
 	}
@@ -330,6 +337,7 @@ export class MigrationConflictError extends MigrationError {
 			undefined,
 			migrationId
 		);
+		this.name = 'MigrationConflictError';
 		this.conflicts = conflicts;
 		this.originalError = originalError;
 	}
@@ -387,9 +395,8 @@ export class MigrationErrorRecovery {
 			return {
 				success: false,
 				recovered: false,
-				message: `Recovery failed: ${
-					recoveryError instanceof Error ? recoveryError.message : String(recoveryError)
-				}`,
+				message: `Recovery failed: ${recoveryError instanceof Error ? recoveryError.message : String(recoveryError)
+					}`,
 				nextSteps: [
 					'Check error logs',
 					'Verify system state',
@@ -523,7 +530,7 @@ export class MigrationErrorRecovery {
 	}> {
 		// For execution errors, suggest retrying with different options
 		const retryCount = context.retryCount || 0;
-		
+
 		if (retryCount < 3) {
 			return {
 				success: true,

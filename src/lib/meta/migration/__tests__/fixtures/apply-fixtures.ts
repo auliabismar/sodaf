@@ -458,6 +458,10 @@ export const sampleBatchMigrationResult: BatchMigrationResult = {
 	failed: ['User'],
 	skipped: [],
 	totalTime: 4500,
+	sql: [
+		'CREATE TABLE test_table (id INTEGER PRIMARY KEY, name TEXT)',
+		'ALTER TABLE user_table ADD COLUMN email TEXT'
+	],
 	warnings: [
 		'Table rebuild may be slow on large datasets',
 		'Data loss risk detected'

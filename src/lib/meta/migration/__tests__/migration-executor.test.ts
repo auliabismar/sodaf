@@ -30,9 +30,7 @@ describe('MigrationExecutor', () => {
 		vi.clearAllMocks();
 	});
 	
-	afterEach(() => {
-		executor = null as any;
-	});
+	
 
 	describe('executeInTransaction', () => {
 		it('should execute operations within transaction', async () => {

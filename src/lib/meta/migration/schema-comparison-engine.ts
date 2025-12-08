@@ -33,6 +33,7 @@ import {
 	TableNotFoundError,
 	SchemaValidationError
 } from './schema-comparison-errors';
+import { CustomFieldManager } from '../custom';
 
 /**
  * Main class for orchestrating schema comparison operations
@@ -40,6 +41,7 @@ import {
 export class SchemaComparisonEngine {
 	private database: Database;
 	private doctypeEngine: DocTypeEngine;
+	private customFieldManager: CustomFieldManager;
 	private defaultOptions: SchemaComparisonOptions;
 	private cache: Map<string, SchemaCacheEntry>;
 
@@ -61,6 +63,7 @@ export class SchemaComparisonEngine {
 	) {
 		this.database = database;
 		this.doctypeEngine = doctypeEngine;
+		this.customFieldManager = CustomFieldManager.getInstance();
 		this.defaultOptions = {
 			caseSensitive: true,
 			includeSystemFields: false,
@@ -115,6 +118,12 @@ export class SchemaComparisonEngine {
 				current: doctypeName
 			});
 
+			// Get DocType with custom fields if enabled
+			let doctypeForComparison = doctype;
+			if (mergedOptions.includeSystemFields) {
+				doctypeForComparison = await this.customFieldManager.mergeCustomFields(doctype);
+			}
+
 			// Get table schema from database
 			const tableName = doctype.table_name || doctypeName;
 			let tableColumns: ColumnInfo[] = [];
@@ -125,7 +134,7 @@ export class SchemaComparisonEngine {
 					this.getTableColumns(tableName, context),
 					this.getTableIndexes(tableName, context)
 				]);
-			} catch (error) {
+		} catch (error) {
 				// Handle case where table doesn't exist
 				if (error instanceof TableNotFoundError) {
 					// Table doesn't exist, use empty arrays
@@ -144,7 +153,7 @@ export class SchemaComparisonEngine {
 
 			// Perform schema comparison
 			const diff = await this.performSchemaComparison(
-				doctype,
+				doctypeForComparison,
 				tableColumns,
 				tableIndexes,
 				mergedOptions,

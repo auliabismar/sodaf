@@ -232,6 +232,47 @@ export interface DocField {
 	
 	/** Field real fieldname */
 	real_fieldname?: string;
+
+	// OpenAPI-specific properties
+	
+	/** OpenAPI field format (e.g., 'date-time', 'email', 'uri') */
+	openapi_format?: string;
+	
+	/** OpenAPI field pattern (regex) */
+	openapi_pattern?: string;
+	
+	/** OpenAPI field minimum value */
+	openapi_minimum?: number;
+	
+	/** OpenAPI field maximum value */
+	openapi_maximum?: number;
+	
+	/** OpenAPI field minimum length */
+	openapi_min_length?: number;
+	
+	/** OpenAPI field maximum length */
+	openapi_max_length?: number;
+	
+	/** OpenAPI field example value */
+	openapi_example?: any;
+	
+	/** OpenAPI field examples (multiple examples) */
+	openapi_examples?: Record<string, any>;
+	
+	/** OpenAPI field deprecated flag */
+	openapi_deprecated?: boolean;
+	
+	/** OpenAPI field nullable flag */
+	openapi_nullable?: boolean;
+	
+	/** OpenAPI field write-only flag */
+	openapi_write_only?: boolean;
+	
+	/** OpenAPI field read-only flag */
+	openapi_read_only?: boolean;
+	
+	/** OpenAPI field custom schema */
+	openapi_schema?: Record<string, any>;
 }
 
 /**
@@ -587,4 +628,46 @@ export interface DocType {
 	
 	/** Is private */
 	is_private?: boolean;
+
+	// OpenAPI-specific properties
+	
+	/** OpenAPI tag for grouping endpoints */
+	openapi_tag?: string;
+	
+	/** OpenAPI description for the DocType */
+	openapi_description?: string;
+	
+	/** OpenAPI external documentation URL */
+	openapi_external_docs?: string;
+	
+	/** OpenAPI operation summary template */
+	openapi_summary_template?: string;
+	
+	/** OpenAPI operation description template */
+	openapi_description_template?: string;
+	
+	/** OpenAPI custom parameters */
+	openapi_parameters?: Record<string, any>[];
+	
+	/** OpenAPI custom responses */
+	openapi_responses?: Record<string, any>;
+	
+	/** OpenAPI custom security requirements */
+	openapi_security?: Record<string, string>[];
+	
+	/** OpenAPI custom servers */
+	openapi_servers?: Array<{
+		url: string;
+		description?: string;
+		variables?: Record<string, any>;
+	}>;
+	
+	/** OpenAPI extensions (x-*) */
+	openapi_extensions?: Record<string, any>;
+	
+	/** OpenAPI exclude from generation */
+	openapi_exclude?: boolean;
+	
+	/** OpenAPI deprecated flag */
+	openapi_deprecated?: boolean;
 }

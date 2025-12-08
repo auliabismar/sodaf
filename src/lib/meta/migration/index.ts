@@ -380,3 +380,44 @@ function mapFieldTypeToSQLiteType(fieldtype: string): string {
 			return 'text';
 	}
 }
+// Export custom field integration
+export { CustomFieldManager } from '../custom';
+export type {
+	CustomField,
+	CreateCustomFieldOptions,
+	UpdateCustomFieldOptions,
+	CustomFieldQueryOptions,
+	CustomFieldValidationResult,
+	CustomFieldManagerConfig
+} from '../custom';
+export {
+	CustomFieldError,
+	CustomFieldExistsError,
+	CustomFieldNotFoundError,
+	CustomFieldValidationError,
+	CustomFieldOperationNotSupportedError,
+	CustomFieldDependencyNotFoundError,
+	CustomFieldTypeNotSupportedError,
+	CustomFieldOperationError,
+	CustomFieldDatabaseError,
+	CustomFieldCacheError,
+	CustomFieldConfigurationError,
+	CustomFieldMigrationError,
+	CustomFieldApiError,
+	type ValidationResult,
+	createValidationResult,
+	createSuccessValidationResult,
+	createFailureValidationResult
+} from '../custom';
+export {
+	validateFieldName,
+	validateFieldLabel,
+	validateFieldType,
+	validateFieldOptions,
+	validateFieldLength,
+	validateFieldDefaultValue,
+	validateFieldDependencies,
+	validateCustomField,
+	validateCreateCustomFieldOptions,
+	validateUpdateCustomFieldOptions
+} from '../custom';

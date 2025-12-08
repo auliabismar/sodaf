@@ -25,6 +25,7 @@ import { MigrationStatus } from './apply-types';
 
 import { SchemaComparisonEngine } from './schema-comparison-engine';
 import { SQLGenerator } from './sql-generator';
+import { CustomFieldManager } from '../custom/custom-field';
 // These will be implemented later, so we'll create placeholder imports for now
 // import { MigrationHistoryManager } from './history/history-manager';
 // import { MigrationBackupManager } from './backup/backup-manager';
@@ -40,29 +41,29 @@ import { SQLGenerator } from './sql-generator';
 
 // Placeholder classes to avoid import errors
 class MigrationHistoryManager {
-	constructor(database: any) {}
-	async recordMigration(migration: any): Promise<void> {}
+	constructor(database: any) { }
+	async recordMigration(migration: any): Promise<void> { }
 	async isMigrationApplied(migrationId: string): Promise<boolean> { return false; }
 	async getMigrationById(migrationId: string): Promise<any> { return null; }
-	async updateMigrationStatus(migrationId: string, status: any): Promise<void> {}
+	async updateMigrationStatus(migrationId: string, status: any): Promise<void> { }
 	async getMigrationHistory(doctypeName?: string): Promise<any> { return { migrations: [], stats: {} }; }
 	async getPendingMigrations(doctypeName?: string): Promise<any[]> { return []; }
 }
 
 class MigrationBackupManager {
-	constructor(database: any) {}
+	constructor(database: any) { }
 	async createBackup(doctypeName: string, backupType?: string): Promise<string> { return ''; }
 }
 
 class MigrationValidator {
-	constructor(database: any) {}
+	constructor(database: any) { }
 	async validateMigration(migration: any): Promise<any> { return { valid: true, warnings: [] }; }
 	async validateRollbackPossibility(migration: any): Promise<any> { return { possible: true, blockers: [], risks: [] }; }
 	async checkDataLossRisks(diff: any): Promise<any[]> { return []; }
 }
 
 class MigrationExecutor {
-	constructor(database: any) {}
+	constructor(database: any) { }
 	async executeMigrationSQL(statements: any[], options?: any): Promise<any> {
 		return { success: true, warnings: [], affectedRows: 0 };
 	}
@@ -107,6 +108,7 @@ export class MigrationApplier {
 	private backupManager: MigrationBackupManager;
 	private validator: MigrationValidator;
 	private executor: MigrationExecutor;
+	private customFieldManager: CustomFieldManager;
 	private defaultOptions: ApplyOptions;
 
 	/**
@@ -142,6 +144,7 @@ export class MigrationApplier {
 		this.backupManager = new MigrationBackupManager(database);
 		this.validator = new MigrationValidator(database);
 		this.executor = new MigrationExecutor(database);
+		this.customFieldManager = CustomFieldManager.getInstance();
 	}
 
 	/**
@@ -180,7 +183,8 @@ export class MigrationApplier {
 					caseSensitive: true,
 					includeSystemFields: false,
 					analyzeDataMigration: true,
-					validateTypeCompatibility: true
+					validateTypeCompatibility: true,
+					includeCustomFields: true
 				}
 			);
 
@@ -230,8 +234,11 @@ export class MigrationApplier {
 
 			// Create backup if needed
 			if (mergedOptions.backup && migrationSQL.destructive) {
+				console.log('[DEBUG] Creating sync backup. Destructive:', migrationSQL.destructive);
 				backupPath = await this.backupManager.createBackup(doctypeName);
 				warnings.push(`Backup created at: ${backupPath}`);
+			} else {
+				console.log('[DEBUG] Skipping sync backup. BackupOpt:', mergedOptions.backup, 'Destructive:', migrationSQL.destructive);
 			}
 
 			// Execute migration if not dry run
@@ -375,6 +382,14 @@ export class MigrationApplier {
 				}
 			}
 
+			// Collect all SQL statements
+			const allSql: string[] = [];
+			results.forEach(result => {
+				if (result.sql) {
+					allSql.push(...result.sql);
+				}
+			});
+
 			return {
 				success: failed.length === 0,
 				results,
@@ -382,6 +397,7 @@ export class MigrationApplier {
 				failed,
 				skipped,
 				totalTime: Date.now() - startTime,
+				sql: allSql,
 				warnings: allWarnings,
 				errors: allErrors
 			};
@@ -390,6 +406,14 @@ export class MigrationApplier {
 			const errorMessage = error instanceof Error ? error.message : String(error);
 			allErrors.push(`Batch sync failed: ${errorMessage}`);
 
+			// Collect all SQL statements
+			const allSql: string[] = [];
+			results.forEach(result => {
+				if (result.sql) {
+					allSql.push(...result.sql);
+				}
+			});
+
 			return {
 				success: false,
 				results,
@@ -397,6 +421,7 @@ export class MigrationApplier {
 				failed,
 				skipped,
 				totalTime: Date.now() - startTime,
+				sql: allSql,
 				warnings: allWarnings,
 				errors: allErrors
 			};
@@ -417,8 +442,8 @@ export class MigrationApplier {
 		const startTime = Date.now();
 		const warnings: string[] = [];
 		const errors: string[] = [];
-		const sqlStatements = Array.isArray(migration.sql) 
-			? migration.sql 
+		const sqlStatements = Array.isArray(migration.sql)
+			? migration.sql
 			: [migration.sql];
 		let backupPath: string | undefined;
 		let affectedRows: number | undefined;
@@ -559,6 +584,8 @@ export class MigrationApplier {
 			context: {},
 			...options
 		};
+		console.log('[DEBUG] rollbackMigration start', JSON.stringify({ migrationId, mergedOptions }));
+
 		const startTime = Date.now();
 		const warnings: string[] = [];
 		const errors: string[] = [];
@@ -599,6 +626,7 @@ export class MigrationApplier {
 
 			// Create backup before rollback
 			if (mergedOptions.backup) {
+				console.log('[DEBUG] Creating rollback backup');
 				backupPath = await this.backupManager.createBackup(
 					migration.doctype,
 					'FULL'

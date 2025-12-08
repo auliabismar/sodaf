@@ -40,9 +40,7 @@ describe('MigrationValidator', () => {
 		vi.clearAllMocks();
 	});
 	
-	afterEach(() => {
-		validator = null as any;
-	});
+	
 
 	describe('validateMigration', () => {
 		it('should return valid for simple migration', async () => {

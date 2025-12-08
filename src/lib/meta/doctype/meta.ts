@@ -7,6 +7,7 @@
 
 import type { DocType, DocField, FieldType } from './types';
 import { DocTypeError } from './errors';
+import { CustomFieldManager } from '../custom';
 
 /**
  * DocTypeMeta class for accessing DocType definitions at runtime
@@ -16,12 +17,14 @@ export class DocTypeMeta {
 	private readonly fieldIndex: Map<string, DocField>;
 	private readonly fieldsByType: Map<FieldType, DocField[]>;
 	private readonly computedFields: Map<string, any>;
+	private readonly customFieldManager: CustomFieldManager;
+	private readonly includeCustomFields: boolean;
 
 	/**
 	 * Create a new DocTypeMeta instance
 	 * @param doctype DocType definition to wrap
 	 */
-	constructor(doctype: DocType) {
+	constructor(doctype: DocType, includeCustomFields: boolean = true) {
 		if (!doctype) {
 			throw new DocTypeError('DocType cannot be null or undefined');
 		}
@@ -30,6 +33,8 @@ export class DocTypeMeta {
 		this.fieldIndex = new Map();
 		this.fieldsByType = new Map();
 		this.computedFields = new Map();
+		this.customFieldManager = CustomFieldManager.getInstance();
+		this.includeCustomFields = includeCustomFields;
 
 		// Build indexes for efficient field access
 		this.buildIndexes();
@@ -267,6 +272,99 @@ export class DocTypeMeta {
 				this.fieldsByType.set(field.fieldtype, []);
 			}
 			this.fieldsByType.get(field.fieldtype)!.push(field);
+		}
+	}
+
+	/**
+	 * Get all fields including custom fields if enabled
+	 * @returns Array of all fields including custom fields
+	 */
+	private async getAllFieldsIncludingCustom(): Promise<DocField[]> {
+		if (!this.includeCustomFields) {
+			return [...this.doctype.fields];
+		}
+
+		try {
+			// Get custom fields for this DocType
+			const customFields = await this.customFieldManager.getCustomFields(this.doctype.name);
+			
+			// Merge standard fields with custom fields
+			return [...this.doctype.fields, ...customFields];
+		} catch (error) {
+			// If custom field manager fails, return standard fields only
+			console.warn('Failed to get custom fields:', error);
+			return [...this.doctype.fields];
+		}
+	}
+
+	/**
+	 * Rebuild indexes with custom fields
+	 */
+	private async rebuildIndexesWithCustomFields(): Promise<void> {
+		// Get all fields including custom fields
+		const allFields = await this.getAllFieldsIncludingCustom();
+
+		// Clear existing indexes
+		this.fieldIndex.clear();
+		this.fieldsByType.clear();
+
+		// Build field name index and type index
+		for (const field of allFields) {
+			// Field name index
+			this.fieldIndex.set(field.fieldname, field);
+
+			// Field type index
+			if (!this.fieldsByType.has(field.fieldtype)) {
+				this.fieldsByType.set(field.fieldtype, []);
+			}
+			this.fieldsByType.get(field.fieldtype)!.push(field);
+		}
+	}
+
+	/**
+	 * Refresh custom fields and rebuild indexes
+	 */
+	public async refreshCustomFields(): Promise<void> {
+		if (this.includeCustomFields) {
+			await this.rebuildIndexesWithCustomFields();
+			// Clear computed fields cache
+			this.computedFields.clear();
+		}
+	}
+
+	/**
+	 * Get custom fields for this DocType
+	 * @returns Array of custom fields
+	 */
+	public async getCustomFields(): Promise<any[]> {
+		if (!this.includeCustomFields) {
+			return [];
+		}
+
+		try {
+			return await this.customFieldManager.getCustomFields(this.doctype.name);
+		} catch (error) {
+			console.warn('Failed to get custom fields:', error);
+			return [];
+		}
+	}
+
+	/**
+	 * Check if a field is a custom field
+	 * @param fieldname Name of the field to check
+	 * @returns True if field is a custom field, false otherwise
+	 */
+	public async isCustomField(fieldname: string): Promise<boolean> {
+		if (!this.includeCustomFields) {
+			return false;
+		}
+
+		try {
+			const customField = await this.customFieldManager.getCustomField(this.doctype.name, fieldname);
+			return customField !== null;
+		} catch (error) {
+			console.warn('Failed to check if field is custom:', error);
+			return false;
 		}
 	}
 }

@@ -139,11 +139,20 @@ export interface BatchMigrationResult {
 	/** Total execution time */
 	totalTime: number;
 	
+	/** Combined SQL statements */
+	sql: string[];
+	
 	/** Combined warnings */
 	warnings: string[];
 	
 	/** Combined errors */
 	errors: string[];
+	
+	/** Number of rows affected */
+	affectedRows?: number;
+	
+	/** Migration execution time in milliseconds */
+	executionTime?: number;
 }
 
 /**
