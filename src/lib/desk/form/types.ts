@@ -194,6 +194,12 @@ export interface FormEvents {
 
     /** Called when form encounters an error */
     on_error?: (error: Error, state: FormViewState) => void;
+
+    /** Called when auto-save completes successfully */
+    on_auto_save?: (state: FormViewState, result: SaveResult) => void | Promise<void>;
+
+    /** Called when auto-save encounters an error */
+    on_auto_save_error?: (error: Error, state: FormViewState, result?: SaveResult) => void | Promise<void>;
 }
 
 /**
@@ -246,6 +252,15 @@ export interface FormControllerConfig {
 
     /** Whether to validate on field change */
     validate_on_change?: boolean;
+
+    /** Whether to validate before auto-save */
+    validate_on_auto_save?: boolean;
+
+    /** Maximum number of auto-save retries */
+    auto_save_max_retries?: number;
+
+    /** Whether to show auto-save notifications */
+    show_auto_save_notifications?: boolean;
 
     /** Whether to show loading state */
     show_loading?: boolean;
