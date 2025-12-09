@@ -126,6 +126,14 @@ export interface QueryExecutor {
      * @returns Promise resolving to query results
      */
     sql(query: string, values?: any[]): Promise<any[]>;
+
+    /**
+     * Execute a SQL statement that doesn't return data
+     * @param query SQL query string with placeholders
+     * @param values Values for placeholders
+     * @returns Promise resolving to operation result
+     */
+    run?(query: string, values?: any[]): Promise<any>;
 }
 
 /**

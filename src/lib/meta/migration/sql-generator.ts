@@ -5,6 +5,7 @@
  */
 
 import type { DocType, DocField, DocIndex } from '../doctype/types';
+import { getTreeFields, isTreeField } from '../tree/schema';
 import type { SchemaDiff, FieldChange, ColumnChange, ColumnRename, ColumnDefinition } from './types';
 import type {
 	MigrationSQL,
@@ -32,7 +33,7 @@ export class SQLGenerator {
 	private rollbackGenerator: RollbackGenerator;
 	private formatter: SQLFormatter;
 	private options: Required<SQLOptions>;
-	
+
 	constructor(options: SQLOptions = {}) {
 		this.options = {
 			typeMappings: {},
@@ -56,7 +57,7 @@ export class SQLGenerator {
 			validateSQL: false,
 			...options
 		};
-		
+
 		this.typeMapper = new FieldTypeMapper(this.options.typeMappings);
 		this.constraintBuilder = new ConstraintBuilder(this.options);
 		this.indexBuilder = new IndexBuilder(this.options);
@@ -64,7 +65,7 @@ export class SQLGenerator {
 		this.rollbackGenerator = new RollbackGenerator(this.options);
 		this.formatter = new SQLFormatter(this.options);
 	}
-	
+
 	/**
 	 * Generate CREATE TABLE SQL for a DocType
 	 */
@@ -73,27 +74,27 @@ export class SQLGenerator {
 		const tableName = doctype.table_name || `tab${doctype.name}`;
 		const columns = this.generateColumnDefinitions(doctype);
 		const constraints = this.generateTableConstraints(doctype);
-		
+
 		const columnDefs = columns.map(col => {
 			const colConstraints = this.constraintBuilder.buildColumnConstraints(
 				this.fieldToDocField(col, doctype)
 			);
 			return this.constraintBuilder.buildColumnDefinition(col, colConstraints);
 		});
-		
+
 		let sql = this.formatter.formatCreateTable(
 			tableName,
 			columnDefs,
 			constraints
 		);
-		
+
 		if (this.options.includeComments) {
 			sql = this.formatter.addComments(
 				sql,
 				`Create table for DocType: ${doctype.name}`
 			);
 		}
-		
+
 		return [{
 			sql,
 			type: 'create_table',
@@ -102,22 +103,22 @@ export class SQLGenerator {
 			comment: `Create table for DocType: ${doctype.name}`
 		}];
 	}
-	
+
 	/**
 	 * Generate DROP TABLE SQL for a DocType
 	 */
 	generateDropTableSQL(doctype: DocType): SQLStatement[] {
 		const tableName = this.getTableName(doctype);
-		
+
 		let sql = this.formatter.formatDropStatement('TABLE', tableName);
-		
+
 		if (this.options.includeComments) {
 			sql = this.formatter.addComments(
 				sql,
 				`Drop table for DocType: ${doctype.name}`
 			);
 		}
-		
+
 		return [{
 			sql,
 			type: 'drop_table',
@@ -126,7 +127,7 @@ export class SQLGenerator {
 			comment: `Drop table for DocType: ${doctype.name}`
 		}];
 	}
-	
+
 	/**
 	 * Generate ALTER TABLE ADD COLUMN SQL
 	 */
@@ -135,16 +136,16 @@ export class SQLGenerator {
 		const columnDef = this.typeMapper.mapFieldType(field);
 		const colConstraints = this.constraintBuilder.buildColumnConstraints(field);
 		const columnDefinition = this.constraintBuilder.buildColumnDefinition(columnDef, colConstraints);
-		
+
 		let sql = this.formatter.formatAlterTable(tableName, 'ADD COLUMN', columnDefinition);
-		
+
 		if (this.options.includeComments) {
 			sql = this.formatter.addComments(
 				sql,
 				`Add column '${field.fieldname}' to table '${tableName}'`
 			);
 		}
-		
+
 		return [{
 			sql,
 			type: 'alter_table',
@@ -154,23 +155,23 @@ export class SQLGenerator {
 			comment: `Add column '${field.fieldname}' to table '${tableName}'`
 		}];
 	}
-	
+
 	/**
 	 * Generate ALTER TABLE DROP COLUMN SQL
 	 */
 	generateDropColumnSQL(doctype: DocType, field: DocField): SQLStatement[] {
 		const tableName = this.getTableName(doctype);
 		const columnName = this.quoteIdentifier(field.fieldname);
-		
+
 		let sql = this.formatter.formatAlterTable(tableName, 'DROP COLUMN', columnName);
-		
+
 		if (this.options.includeComments) {
 			sql = this.formatter.addComments(
 				sql,
 				`Drop column '${field.fieldname}' from table '${tableName}'`
 			);
 		}
-		
+
 		return [{
 			sql,
 			type: 'alter_table',
@@ -179,7 +180,7 @@ export class SQLGenerator {
 			comment: `Drop column '${field.fieldname}' from table '${tableName}'`
 		}];
 	}
-	
+
 	/**
 	 * Generate ALTER TABLE MODIFY COLUMN SQL
 	 */
@@ -189,7 +190,7 @@ export class SQLGenerator {
 		// For now, return a simple ALTER TABLE statement
 		// In a full implementation, this would rebuild the table
 		const tableName = this.getTableName(this.getDocTypeFromName(doctype));
-		
+
 		// Create a basic DocField from the change information
 		const columnDef: DocField = {
 			fieldname: change.fieldname,
@@ -199,20 +200,20 @@ export class SQLGenerator {
 			unique: false,
 			default: undefined
 		};
-		
+
 		const columnDefinition = this.typeMapper.mapFieldType(columnDef);
 		const colConstraints = this.constraintBuilder.buildColumnConstraints(columnDef);
 		const columnDefStr = this.constraintBuilder.buildColumnDefinition(columnDefinition, colConstraints);
-		
+
 		let sql = this.formatter.formatAlterTable(tableName, 'MODIFY COLUMN', columnDefStr);
-		
+
 		if (this.options.includeComments) {
 			sql = this.formatter.addComments(
 				sql,
 				`Modify column '${change.fieldname}' in table '${tableName}'`
 			);
 		}
-		
+
 		return [{
 			sql,
 			type: 'alter_table',
@@ -221,7 +222,7 @@ export class SQLGenerator {
 			comment: `Modify column '${change.fieldname}' in table '${tableName}'`
 		}];
 	}
-	
+
 	/**
 	 * Generate CREATE INDEX SQL
 	 */
@@ -229,21 +230,21 @@ export class SQLGenerator {
 		const tableName = this.getTableName(doctype);
 		const indexName = `idx_${doctype.name}_${index.columns.join('_')}`;
 		const columns = index.columns.map(col => this.quoteIdentifier(col));
-		
+
 		let sql = this.formatter.formatCreateIndex(
 			indexName,
 			tableName,
 			columns,
 			index.unique
 		);
-		
+
 		if (this.options.includeComments) {
 			sql = this.formatter.addComments(
 				sql,
 				`Create ${index.unique ? 'unique ' : ''}index '${indexName}' on table '${tableName}'`
 			);
 		}
-		
+
 		return [{
 			sql,
 			type: 'create_index',
@@ -252,20 +253,20 @@ export class SQLGenerator {
 			comment: `Create ${index.unique ? 'unique ' : ''}index '${indexName}' on table '${tableName}'`
 		}];
 	}
-	
+
 	/**
 	 * Generate DROP INDEX SQL
 	 */
 	generateDropIndexSQL(indexName: string): SQLStatement[] {
 		let sql = this.formatter.formatDropStatement('INDEX', indexName);
-		
+
 		if (this.options.includeComments) {
 			sql = this.formatter.addComments(
 				sql,
 				`Drop index '${indexName}'`
 			);
 		}
-		
+
 		return [{
 			sql,
 			type: 'drop_index',
@@ -274,7 +275,7 @@ export class SQLGenerator {
 			comment: `Drop index '${indexName}'`
 		}];
 	}
-	
+
 	/**
 	 * Generate SQL to rename a column (requires table rebuild in SQLite)
 	 */
@@ -282,7 +283,7 @@ export class SQLGenerator {
 		const strategy = this.options.defaultRebuildStrategy;
 		return this.buildRenameColumnRebuild(doctype, rename, strategy);
 	}
-	
+
 	/**
 	 * Generate complete migration SQL from schema diff
 	 */
@@ -290,31 +291,31 @@ export class SQLGenerator {
 		const statements: SQLStatement[] = [];
 		const warnings: string[] = [];
 		let destructive = false;
-		
+
 		// Process added columns
 		for (const column of diff.addedColumns) {
 			const sql = this.generateAddColumnSQL(this.getDocTypeFromName(doctype), this.columnDefinitionToDocField(column.column, this.getDocTypeFromName(doctype)));
 			statements.push(...sql);
 		}
-		
+
 		// Process removed columns
 		for (const column of diff.removedColumns) {
 			if (column.destructive) {
 				warnings.push(`Removing column '${column.fieldname}' may result in data loss`);
 				destructive = true;
 			}
-			
+
 			const sql = this.generateDropColumnSQL(this.getDocTypeFromName(doctype), this.columnDefinitionToDocField(column.column, this.getDocTypeFromName(doctype)));
 			statements.push(...sql);
 		}
-		
+
 		// Process modified columns
 		for (const change of diff.modifiedColumns) {
 			if (change.destructive) {
 				warnings.push(`Modifying column '${change.fieldname}' may result in data loss`);
 				destructive = true;
 			}
-			
+
 			// Skip field changes for now as they need special handling
 			// In a full implementation, this would convert FieldChange to ColumnChange
 			const columnDef: DocField = {
@@ -332,28 +333,28 @@ export class SQLGenerator {
 			});
 			statements.push(...sql);
 		}
-		
+
 		// Process added indexes
 		for (const index of diff.addedIndexes) {
 			const sql = this.generateCreateIndexSQL(this.getDocTypeFromName(doctype), index.index as DocIndex);
 			statements.push(...sql);
 		}
-		
+
 		// Process removed indexes
 		for (const index of diff.removedIndexes) {
 			const sql = this.generateDropIndexSQL(index.name);
 			statements.push(...sql);
 		}
-		
+
 		// Process renamed columns
 		for (const rename of diff.renamedColumns) {
 			const sql = this.generateRenameColumnSQL(doctype, rename);
 			statements.push(...sql);
 		}
-		
+
 		// Generate rollback statements
 		const rollbackStatements = this.rollbackGenerator.generateRollbackMigration(statements);
-		
+
 		// Create metadata
 		const metadata: MigrationMetadata = {
 			id: `migration_${Date.now()}`,
@@ -368,7 +369,7 @@ export class SQLGenerator {
 				dryRun: false
 			}
 		};
-		
+
 		return {
 			forward: statements,
 			rollback: rollbackStatements,
@@ -378,14 +379,14 @@ export class SQLGenerator {
 			metadata
 		};
 	}
-	
+
 	/**
 	 * Generate rollback SQL for a migration
 	 */
 	generateRollbackSQL(statements: SQLStatement[]): SQLStatement[] {
 		return this.rollbackGenerator.generateRollbackMigration(statements);
 	}
-	
+
 	/**
 	 * Get table name from DocType
 	 */
@@ -393,17 +394,27 @@ export class SQLGenerator {
 		if (doctype.table_name) {
 			return this.formatter.formatTableName(doctype.table_name);
 		}
-		
+
 		return this.formatter.formatTableName(doctype.name);
 	}
-	
+
 	/**
 	 * Generate column definitions from DocType
 	 */
 	private generateColumnDefinitions(doctype: DocType): ColumnDefinition[] {
 		const columns: ColumnDefinition[] = [];
-		
-		for (const field of doctype.fields) {
+
+		const fields = [...doctype.fields];
+		if (doctype.is_tree) {
+			const treeFields = getTreeFields(doctype);
+			for (const tf of treeFields) {
+				if (!fields.find(f => f.fieldname === tf.fieldname)) {
+					fields.push(tf);
+				}
+			}
+		}
+
+		for (const field of fields) {
 			try {
 				const columnDef = this.typeMapper.mapFieldType(field);
 				columns.push(columnDef);
@@ -415,25 +426,25 @@ export class SQLGenerator {
 				throw error;
 			}
 		}
-		
+
 		return columns;
 	}
-	
+
 	/**
 	 * Generate table constraints from DocType
 	 */
 	private generateTableConstraints(doctype: DocType): string[] {
 		const constraints: string[] = [];
-		
+
 		// Add primary key constraint if name field exists
 		const nameField = doctype.fields.find(field => field.fieldname === 'name');
 		if (nameField) {
 			constraints.push(`PRIMARY KEY (${this.quoteIdentifier('name')})`);
 		}
-		
+
 		return constraints;
 	}
-	
+
 	/**
 	 * Convert ColumnDefinition back to DocField for constraint building
 	 */
@@ -443,11 +454,11 @@ export class SQLGenerator {
 		if (doctype && doctype.fields) {
 			originalField = doctype.fields.find(f => f.fieldname === column.name);
 		}
-		
+
 		if (originalField) {
 			return originalField;
 		}
-		
+
 		// Create minimal DocField from ColumnDefinition
 		return {
 			fieldname: column.name,
@@ -458,13 +469,13 @@ export class SQLGenerator {
 			default: column.default_value
 		};
 	}
-	
+
 	/**
 	 * Estimate execution time for SQL statements
 	 */
 	private estimateExecutionTime(statements: SQLStatement[]): number {
 		let totalTime = 0;
-		
+
 		for (const statement of statements) {
 			switch (statement.type) {
 				case 'create_table':
@@ -496,20 +507,20 @@ export class SQLGenerator {
 					break;
 			}
 		}
-		
+
 		return totalTime;
 	}
-	
+
 	/**
 	 * Convert ColumnDefinition back to DocField for constraint building
 	 */
 	private columnDefinitionToDocField(column: ColumnDefinition, doctype?: DocType): DocField {
 		// Find original field if available
 		const originalField = this.fieldToDocField(column, doctype);
-		
+
 		return originalField;
 	}
-	
+
 	/**
 	 * Build rename column rebuild SQL
 	 */
@@ -523,9 +534,9 @@ export class SQLGenerator {
 		const quotedTempTable = this.quoteIdentifier(tempTableName);
 		const quotedFrom = this.quoteIdentifier(rename.from);
 		const quotedTo = this.quoteIdentifier(rename.to);
-		
+
 		const statements: SQLStatement[] = [];
-		
+
 		// Create temporary table with renamed column
 		statements.push({
 			sql: `CREATE TABLE ${quotedTempTable} AS\nSELECT * FROM ${quotedTableName} WHERE 1=0`,
@@ -534,7 +545,7 @@ export class SQLGenerator {
 			table: tempTableName,
 			comment: `Create temporary table for column rename`
 		});
-		
+
 		// Copy data with renamed column
 		statements.push({
 			sql: `INSERT INTO ${quotedTempTable}\nSELECT *, ${quotedFrom} AS ${quotedTo} FROM ${quotedTableName}`,
@@ -543,7 +554,7 @@ export class SQLGenerator {
 			table: tempTableName,
 			comment: `Copy data with renamed column`
 		});
-		
+
 		// Drop original table
 		statements.push({
 			sql: `DROP TABLE ${quotedTableName}`,
@@ -552,7 +563,7 @@ export class SQLGenerator {
 			table: tableName,
 			comment: `Drop original table`
 		});
-		
+
 		// Rename temporary table
 		statements.push({
 			sql: `ALTER TABLE ${quotedTempTable} RENAME TO ${quotedTableName}`,
@@ -561,17 +572,17 @@ export class SQLGenerator {
 			table: tableName,
 			comment: `Rename temporary table to original name`
 		});
-		
+
 		return statements;
 	}
-	
+
 	/**
 	 * Quote identifier according to options
 	 */
 	private quoteIdentifier(name: string): string {
 		return `${this.options.identifierQuote}${name}${this.options.identifierQuote}`;
 	}
-	
+
 	/**
 	 * Get DocType from name (placeholder implementation)
 	 */

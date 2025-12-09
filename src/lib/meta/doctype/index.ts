@@ -97,3 +97,38 @@ export {
 	validateCreateCustomFieldOptions,
 	validateUpdateCustomFieldOptions
 } from '../custom';
+
+// P2-021: Property Setter Integration
+export { PropertySetterManager } from '../custom';
+export type {
+	PropertySetter,
+	SetPropertyOptions,
+	PropertySetterQueryOptions,
+	PropertySetterValidationResult,
+	PropertySetterManagerConfig,
+	SupportedFieldProperty,
+	SupportedDocTypeProperty
+} from '../custom';
+export {
+	SUPPORTED_FIELD_PROPERTIES,
+	SUPPORTED_DOCTYPE_PROPERTIES
+} from '../custom';
+export {
+	PropertySetterExistsError,
+	PropertySetterNotFoundError,
+	PropertySetterValidationError,
+	PropertySetterOperationNotSupportedError,
+	PropertySetterPropertyNotSupportedError,
+	PropertySetterOperationError,
+	PropertySetterDatabaseError,
+	PropertySetterCacheError,
+	PropertySetterConfigurationError
+} from '../custom';
+export {
+	validateDocTypeName,
+	validateFieldnameForPropertySetter,
+	validatePropertyName,
+	validatePropertyValue,
+	validatePropertySetter,
+	validateSetPropertyOptions
+} from '../custom';

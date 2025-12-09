@@ -16,7 +16,7 @@ import {
 import type { ValidationResult } from './errors';
 import { MetaCache } from './meta-cache';
 import type { DocTypeMeta } from './meta';
-import { CustomFieldManager } from '../custom';
+import { CustomFieldManager, PropertySetterManager } from '../custom';
 
 // Re-export error classes for convenience
 export {
@@ -38,12 +38,14 @@ export class DocTypeEngine {
 	private moduleIndex: Map<string, Set<string>> = new Map();
 	private registrationLock: Promise<void> = Promise.resolve();
 	private customFieldManager: CustomFieldManager;
+	private propertySetterManager: PropertySetterManager;
 
 	/**
 	 * Private constructor for singleton pattern
 	 */
 	private constructor() {
 		this.customFieldManager = CustomFieldManager.getInstance();
+		this.propertySetterManager = PropertySetterManager.getInstance();
 	}
 
 	/**
@@ -282,9 +284,13 @@ export class DocTypeEngine {
 	 * @param includeCustomFields Whether to include custom fields in the meta
 	 * @returns Promise resolving to DocTypeMeta instance or null if not found
 	 */
-	public async getDocTypeMeta(doctypeName: string, includeCustomFields: boolean = true): Promise<DocTypeMeta | null> {
+	public async getDocTypeMeta(
+		doctypeName: string,
+		includeCustomFields: boolean = true,
+		includePropertySetters: boolean = true
+	): Promise<DocTypeMeta | null> {
 		const cache = this.getMetaCache();
-		return cache.getMeta(doctypeName, includeCustomFields);
+		return cache.getMeta(doctypeName, includeCustomFields, includePropertySetters);
 	}
 
 	/**
@@ -293,9 +299,13 @@ export class DocTypeEngine {
 	 * @param includeCustomFields Whether to include custom fields in the meta
 	 * @returns Promise resolving to DocTypeMeta instance or null if not found
 	 */
-	public async reloadDocTypeMeta(doctypeName: string, includeCustomFields: boolean = true): Promise<DocTypeMeta | null> {
+	public async reloadDocTypeMeta(
+		doctypeName: string,
+		includeCustomFields: boolean = true,
+		includePropertySetters: boolean = true
+	): Promise<DocTypeMeta | null> {
 		const cache = this.getMetaCache();
-		return cache.reloadMeta(doctypeName, includeCustomFields);
+		return cache.reloadMeta(doctypeName, includeCustomFields, includePropertySetters);
 	}
 
 	/**
@@ -425,6 +435,22 @@ export class DocTypeEngine {
 	}
 
 	/**
+	 * Get PropertySetterManager instance
+	 * @returns PropertySetterManager instance
+	 */
+	public getPropertySetterManager(): PropertySetterManager {
+		return this.propertySetterManager;
+	}
+
+	/**
+	 * Set PropertySetterManager instance (for testing)
+	 * @param propertySetterManager PropertySetterManager instance to set
+	 */
+	public setPropertySetterManager(propertySetterManager: PropertySetterManager): void {
+		this.propertySetterManager = propertySetterManager;
+	}
+
+	/**
 	 * Get a DocType with custom fields merged
 	 * @param doctypeName Name of the DocType to get
 	 * @returns Promise resolving to DocType with custom fields merged or null if not found
@@ -492,6 +518,117 @@ export class DocTypeEngine {
 		this.invalidateDocTypeMeta(doctypeName);
 
 		return customField;
+	}
+
+	// =============================================================================
+	// Property Setter Support
+	// =============================================================================
+
+	/**
+		* Set a property for a DocType or field
+		* @param doctypeName Name of the DocType
+		* @param fieldname Name of the field (undefined for DocType-level setters)
+		* @param property Property name to set
+		* @param value Property value
+		* @param options Additional options
+		* @returns Promise resolving to created property setter
+		*/
+	public async setProperty(
+		doctypeName: string,
+		fieldname: string | undefined,
+		property: string,
+		value: any,
+		options: any = {}
+	): Promise<any> {
+		// Check if DocType exists
+		const doctype = await this.getDocType(doctypeName);
+		if (!doctype) {
+			throw new DocTypeNotFoundError(doctypeName);
+		}
+
+		// Create property setter
+		const propertySetter = await this.propertySetterManager.setProperty({
+			doctype: doctypeName,
+			fieldname,
+			property,
+			value,
+			...options
+		});
+
+		// Invalidate cache for this DocType
+		this.invalidateDocTypeMeta(doctypeName);
+
+		return propertySetter;
+	}
+
+	/**
+		* Remove a property setter
+		* @param doctypeName Name of the DocType
+		* @param fieldname Name of the field (undefined for DocType-level setters)
+		* @param property Property name (undefined to remove all properties for field/DocType)
+		* @returns Promise resolving to removed property setter(s)
+		*/
+	public async removeProperty(
+		doctypeName: string,
+		fieldname: string | undefined,
+		property?: string
+	): Promise<any> {
+		// Check if DocType exists
+		const doctype = await this.getDocType(doctypeName);
+		if (!doctype) {
+			throw new DocTypeNotFoundError(doctypeName);
+		}
+
+		// Remove property setter
+		const removedSetter = await this.propertySetterManager.removeProperty(
+			doctypeName,
+			fieldname,
+			property
+		);
+
+		// Invalidate cache for this DocType
+		this.invalidateDocTypeMeta(doctypeName);
+
+		return removedSetter;
+	}
+
+	/**
+		* Get a property setter
+		* @param doctypeName Name of the DocType
+		* @param fieldname Name of the field (undefined for DocType-level setters)
+		* @param property Property name
+		* @returns Promise resolving to property setter or null if not found
+		*/
+	public async getProperty(
+		doctypeName: string,
+		fieldname: string | undefined,
+		property: string
+	): Promise<any> {
+		return await this.propertySetterManager.getProperty(doctypeName, fieldname, property);
+	}
+
+	/**
+		* Get all property setters for a DocType
+		* @param doctypeName Name of the DocType
+		* @param options Query options
+		* @returns Promise resolving to array of property setters
+		*/
+	public async getProperties(doctypeName: string, options: any = {}): Promise<any[]> {
+		return await this.propertySetterManager.getProperties(doctypeName, options);
+	}
+
+	/**
+		* Get a DocType with property setters applied
+		* @param doctypeName Name of the DocType
+		* @returns Promise resolving to DocType with property setters applied or null if not found
+		*/
+	public async getDocTypeWithPropertySetters(doctypeName: string): Promise<any> {
+		const doctype = await this.getDocType(doctypeName);
+		if (!doctype) {
+			return null;
+		}
+
+		return await this.propertySetterManager.applyProperties(doctype);
 	}
 
 	/**

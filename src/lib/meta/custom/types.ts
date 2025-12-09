@@ -615,3 +615,183 @@ export interface CustomFieldManagerConfig {
 	/** Custom field value table name */
 	custom_field_value_table_name?: string;
 }
+
+/**
+ * Property Setter Types and Interfaces
+ *
+ * This section defines TypeScript interfaces for property setters, which allow
+ * modifying existing field properties without touching the original DocType.
+ */
+
+/**
+ * Property Setter definition for modifying field or DocType properties
+ */
+export interface PropertySetter {
+	/** Unique identifier for the property setter */
+	name?: string;
+	
+	/** DocType this property setter applies to */
+	doctype: string;
+	
+	/** Field name this property setter applies to (undefined for DocType-level setters) */
+	fieldname?: string;
+	
+	/** Property name to modify */
+	property: string;
+	
+	/** Property value to set */
+	value: any;
+	
+	/** Whether this property setter is enabled */
+	enabled?: boolean;
+	
+	/** Priority of this property setter (higher numbers have higher priority) */
+	priority?: number;
+	
+	/** Description of what this property setter does */
+	description?: string;
+	
+	/** Property setter creation timestamp */
+	creation?: Date;
+	
+	/** Property setter modification timestamp */
+	modified?: Date;
+	
+	/** Property setter owner */
+	owner?: string;
+	
+	/** Property setter modified by */
+	modified_by?: string;
+	
+	/** Property setter name */
+	parent?: string;
+	
+	/** Property setter parent field */
+	parentfield?: string;
+	
+	/** Property setter parent type */
+	parenttype?: string;
+	
+	/** Property setter index */
+	idx?: number;
+	
+	/** Property setter docstatus */
+	docstatus?: number;
+}
+
+/**
+ * Property Setter creation options
+ */
+export interface SetPropertyOptions {
+	/** DocType to apply the property setter to */
+	doctype: string;
+	
+	/** Field name to apply the property setter to (undefined for DocType-level setters) */
+	fieldname?: string;
+	
+	/** Property name to modify */
+	property: string;
+	
+	/** Property value to set */
+	value: any;
+	
+	/** Whether this property setter is enabled */
+	enabled?: boolean;
+	
+	/** Priority of this property setter (higher numbers have higher priority) */
+	priority?: number;
+	
+	/** Description of what this property setter does */
+	description?: string;
+}
+
+/**
+ * Property Setter query options
+ */
+export interface PropertySetterQueryOptions {
+	/** DocType to filter by */
+	doctype?: string;
+	
+	/** Field name to filter by */
+	fieldname?: string;
+	
+	/** Property name to filter by */
+	property?: string;
+	
+	/** Whether to include disabled property setters */
+	include_disabled?: boolean;
+	
+	/** Maximum number of results to return */
+	limit?: number;
+	
+	/** Number of results to skip */
+	offset?: number;
+	
+	/** Field to sort by */
+	sort_by?: string;
+	
+	/** Sort order */
+	sort_order?: 'asc' | 'desc';
+}
+
+/**
+ * Property Setter validation result
+ */
+export interface PropertySetterValidationResult {
+	/** Whether the property setter is valid */
+	valid: boolean;
+	
+	/** Array of validation errors */
+	errors: string[];
+	
+	/** Array of validation warnings */
+	warnings: string[];
+}
+
+/**
+ * Property Setter manager configuration
+ */
+export interface PropertySetterManagerConfig {
+	/** Whether to enable caching */
+	enable_cache?: boolean;
+	
+	/** Cache TTL in seconds */
+	cache_ttl?: number;
+	
+	/** Whether to enable validation */
+	enable_validation?: boolean;
+	
+	/** Whether to enable database persistence */
+	enable_database_persistence?: boolean;
+	
+	/** Property setter table name */
+	property_setter_table_name?: string;
+}
+
+/**
+ * Supported field properties for property setters
+ */
+export const SUPPORTED_FIELD_PROPERTIES = [
+	'label', 'hidden', 'default', 'reqd', 'read_only', 'description', 'options', 'length', 'unique',
+	'depends_on', 'mandatory_depends_on', 'read_only_depends_on', 'hidden_depends_on',
+	'in_list_view', 'in_standard_filter', 'in_global_search', 'allow_in_quick_entry',
+	'bold', 'collapsible', 'collapsible_depends_on'
+] as const;
+
+/**
+ * Supported DocType properties for property setters
+ */
+export const SUPPORTED_DOCTYPE_PROPERTIES = [
+	'engine', 'name', 'module', 'label', 'search_fields', 'title_field', 'description',
+	'allow_rename', 'autoname'
+] as const;
+
+/**
+ * Type for supported field properties
+ */
+export type SupportedFieldProperty = typeof SUPPORTED_FIELD_PROPERTIES[number];
+
+/**
+ * Type for supported DocType properties
+ */
+export type SupportedDocTypeProperty = typeof SUPPORTED_DOCTYPE_PROPERTIES[number];

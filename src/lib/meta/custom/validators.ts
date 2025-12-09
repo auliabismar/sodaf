@@ -5,7 +5,19 @@
  * custom field definitions are valid before they are created or updated.
  */
 
-import type { CustomField, CreateCustomFieldOptions, UpdateCustomFieldOptions } from './types';
+import type {
+	CustomField,
+	CreateCustomFieldOptions,
+	UpdateCustomFieldOptions,
+	PropertySetter,
+	SetPropertyOptions,
+	SupportedFieldProperty,
+	SupportedDocTypeProperty
+} from './types';
+import {
+	SUPPORTED_FIELD_PROPERTIES,
+	SUPPORTED_DOCTYPE_PROPERTIES
+} from './types';
 import type { FieldType } from '../doctype/types';
 import {
 	createFailureValidationResult,
@@ -491,6 +503,317 @@ export function validateUpdateCustomFieldOptions(options: UpdateCustomFieldOptio
 		const defaultValueResult = validateFieldDefaultValue(options.fieldtype || 'Data', options.default);
 		errors.push(...defaultValueResult.errors);
 		warnings.push(...defaultValueResult.warnings);
+	}
+	
+	return errors.length > 0 ? createFailureValidationResult(errors, warnings) : createSuccessValidationResult(warnings);
+}
+
+/**
+ * Validate a DocType name
+ * @param doctype DocType name to validate
+ * @returns ValidationResult with validation status and errors
+ */
+export function validateDocTypeName(doctype: string): ValidationResult {
+	const errors: string[] = [];
+	const warnings: string[] = [];
+	
+	// Check if doctype is provided
+	if (!doctype || doctype.trim() === '') {
+		errors.push('DocType name is required');
+		return createFailureValidationResult(errors, warnings);
+	}
+	
+	// Check if doctype is a string
+	if (typeof doctype !== 'string') {
+		errors.push('DocType name must be a string');
+		return createFailureValidationResult(errors, warnings);
+	}
+	
+	// Check if doctype is too long
+	if (doctype.length > 140) {
+		errors.push('DocType name cannot be longer than 140 characters');
+	}
+	
+	// Check if doctype contains invalid characters
+	if (!/^[a-zA-Z_][a-zA-Z0-9_]*$/.test(doctype)) {
+		errors.push(
+			'DocType name must start with a letter or underscore and contain only letters, numbers, and underscores'
+		);
+	}
+	
+	return errors.length > 0 ? createFailureValidationResult(errors, warnings) : createSuccessValidationResult(warnings);
+}
+
+/**
+ * Validate a field name for property setter
+ * @param fieldname Field name to validate
+ * @param existingFields Existing field names in the DocType
+ * @returns ValidationResult with validation status and errors
+ */
+export function validateFieldnameForPropertySetter(
+	fieldname: string | undefined,
+	existingFields: string[] = []
+): ValidationResult {
+	const errors: string[] = [];
+	const warnings: string[] = [];
+	
+	// Field name is optional (undefined for DocType-level setters)
+	if (fieldname === undefined) {
+		return createSuccessValidationResult(warnings);
+	}
+	
+	// Check if fieldname is a string
+	if (typeof fieldname !== 'string') {
+		errors.push('Field name must be a string');
+		return createFailureValidationResult(errors, warnings);
+	}
+	
+	// Check if fieldname is too long
+	if (fieldname.length > 140) {
+		errors.push('Field name cannot be longer than 140 characters');
+	}
+	
+	// Check if fieldname contains invalid characters
+	if (!/^[a-zA-Z_][a-zA-Z0-9_]*$/.test(fieldname)) {
+		errors.push(
+			'Field name must start with a letter or underscore and contain only letters, numbers, and underscores'
+		);
+	}
+	
+	// Check if field exists in the DocType
+	if (existingFields.length > 0 && !existingFields.includes(fieldname)) {
+		errors.push(`Field '${fieldname}' does not exist in the DocType`);
+	}
+	
+	return errors.length > 0 ? createFailureValidationResult(errors, warnings) : createSuccessValidationResult(warnings);
+}
+
+/**
+ * Validate a property name for property setter
+ * @param property Property name to validate
+ * @param fieldname Field name (undefined for DocType-level setters)
+ * @returns ValidationResult with validation status and errors
+ */
+export function validatePropertyName(
+	property: string,
+	fieldname?: string
+): ValidationResult {
+	const errors: string[] = [];
+	const warnings: string[] = [];
+	
+	// Check if property is provided
+	if (!property || property.trim() === '') {
+		errors.push('Property name is required');
+		return createFailureValidationResult(errors, warnings);
+	}
+	
+	// Check if property is a string
+	if (typeof property !== 'string') {
+		errors.push('Property name must be a string');
+		return createFailureValidationResult(errors, warnings);
+	}
+	
+	// Check if property is supported
+	if (fieldname === undefined) {
+		// DocType-level property
+		if (!SUPPORTED_DOCTYPE_PROPERTIES.includes(property as SupportedDocTypeProperty)) {
+			errors.push(`Property '${property}' is not supported for DocType-level setters`);
+		}
+	} else {
+		// Field-level property
+		if (!SUPPORTED_FIELD_PROPERTIES.includes(property as SupportedFieldProperty)) {
+			errors.push(`Property '${property}' is not supported for field-level setters`);
+		}
+	}
+	
+	return errors.length > 0 ? createFailureValidationResult(errors, warnings) : createSuccessValidationResult(warnings);
+}
+
+/**
+ * Validate a property value for property setter
+ * @param property Property name
+ * @param value Property value to validate
+ * @param fieldname Field name (undefined for DocType-level setters)
+ * @returns ValidationResult with validation status and errors
+ */
+export function validatePropertyValue(
+	property: string,
+	value: any,
+	fieldname?: string
+): ValidationResult {
+	const errors: string[] = [];
+	const warnings: string[] = [];
+	
+	// Check if value is provided
+	if (value === undefined) {
+		errors.push('Property value is required');
+		return createFailureValidationResult(errors, warnings);
+	}
+	
+	// Validate specific property types
+	switch (property) {
+		case 'length':
+			if (typeof value !== 'number' || value <= 0 || value > 1000000) {
+				errors.push('Property value for length must be a number between 1 and 1000000');
+			}
+			break;
+			
+		case 'hidden':
+		case 'reqd':
+		case 'read_only':
+		case 'unique':
+		case 'in_list_view':
+		case 'in_standard_filter':
+		case 'in_global_search':
+		case 'allow_in_quick_entry':
+		case 'bold':
+		case 'collapsible':
+		case 'allow_rename':
+		case 'translatable':
+		case 'no_copy':
+		case 'remember_last_selected':
+		case 'deprecated':
+		case 'search_index':
+		case 'email_trigger':
+		case 'timeline':
+		case 'track_seen':
+		case 'track_visits':
+		case 'unique_across_doctypes':
+		case 'ignore_user_permissions':
+		case 'ignore_xss_filtered':
+		case 'allow_on_submit':
+		case 'set_user_permissions':
+		case 'ignore_strict_user_permissions':
+			if (typeof value !== 'boolean') {
+				errors.push(`Property value for ${property} must be a boolean`);
+			}
+			break;
+			
+		case 'label':
+		case 'description':
+		case 'options':
+		case 'depends_on':
+		case 'mandatory_depends_on':
+		case 'read_only_depends_on':
+		case 'hidden_depends_on':
+		case 'collapsible_depends_on':
+		case 'change':
+		case 'filters':
+		case 'fetch_from':
+		case 'fetch_to_include':
+		case 'precision_based_on':
+		case 'width':
+		case 'columns':
+		case 'child_doctype':
+		case 'image_field':
+		case 'old_fieldname':
+		case 'table_fieldname':
+		case 'real_fieldname':
+		case 'search_fields':
+		case 'title_field':
+		case 'autoname':
+		case 'engine':
+		case 'module':
+			if (typeof value !== 'string') {
+				errors.push(`Property value for ${property} must be a string`);
+			}
+			break;
+			
+		case 'default':
+			// Default value can be any type
+			break;
+			
+		case 'priority':
+			if (typeof value !== 'number' || value < 0) {
+				errors.push('Property value for priority must be a non-negative number');
+			}
+			break;
+	}
+	
+	return errors.length > 0 ? createFailureValidationResult(errors, warnings) : createSuccessValidationResult(warnings);
+}
+
+/**
+ * Validate a complete property setter definition
+ * @param propertySetter Property setter to validate
+ * @param existingFields Existing field names in the DocType
+ * @returns ValidationResult with validation status and errors
+ */
+export function validatePropertySetter(
+	propertySetter: PropertySetter,
+	existingFields: string[] = []
+): ValidationResult {
+	const errors: string[] = [];
+	const warnings: string[] = [];
+	
+	// Validate DocType name
+	const doctypeResult = validateDocTypeName(propertySetter.doctype);
+	errors.push(...doctypeResult.errors);
+	warnings.push(...doctypeResult.warnings);
+	
+	// Validate field name
+	const fieldnameResult = validateFieldnameForPropertySetter(propertySetter.fieldname, existingFields);
+	errors.push(...fieldnameResult.errors);
+	warnings.push(...fieldnameResult.warnings);
+	
+	// Validate property name
+	const propertyResult = validatePropertyName(propertySetter.property, propertySetter.fieldname);
+	errors.push(...propertyResult.errors);
+	warnings.push(...propertyResult.warnings);
+	
+	// Validate property value
+	const valueResult = validatePropertyValue(propertySetter.property, propertySetter.value, propertySetter.fieldname);
+	errors.push(...valueResult.errors);
+	warnings.push(...valueResult.warnings);
+	
+	// Validate priority if provided
+	if (propertySetter.priority !== undefined) {
+		if (typeof propertySetter.priority !== 'number' || propertySetter.priority < 0) {
+			errors.push('Priority must be a non-negative number');
+		}
+	}
+	
+	return errors.length > 0 ? createFailureValidationResult(errors, warnings) : createSuccessValidationResult(warnings);
+}
+
+/**
+ * Validate property setter creation options
+ * @param options Property setter creation options to validate
+ * @param existingFields Existing field names in the DocType
+ * @returns ValidationResult with validation status and errors
+ */
+export function validateSetPropertyOptions(
+	options: SetPropertyOptions,
+	existingFields: string[] = []
+): ValidationResult {
+	const errors: string[] = [];
+	const warnings: string[] = [];
+	
+	// Validate DocType name
+	const doctypeResult = validateDocTypeName(options.doctype);
+	errors.push(...doctypeResult.errors);
+	warnings.push(...doctypeResult.warnings);
+	
+	// Validate field name
+	const fieldnameResult = validateFieldnameForPropertySetter(options.fieldname, existingFields);
+	errors.push(...fieldnameResult.errors);
+	warnings.push(...fieldnameResult.warnings);
+	
+	// Validate property name
+	const propertyResult = validatePropertyName(options.property, options.fieldname);
+	errors.push(...propertyResult.errors);
+	warnings.push(...propertyResult.warnings);
+	
+	// Validate property value
+	const valueResult = validatePropertyValue(options.property, options.value, options.fieldname);
+	errors.push(...valueResult.errors);
+	warnings.push(...valueResult.warnings);
+	
+	// Validate priority if provided
+	if (options.priority !== undefined) {
+		if (typeof options.priority !== 'number' || options.priority < 0) {
+			errors.push('Priority must be a non-negative number');
+		}
 	}
 	
 	return errors.length > 0 ? createFailureValidationResult(errors, warnings) : createSuccessValidationResult(warnings);

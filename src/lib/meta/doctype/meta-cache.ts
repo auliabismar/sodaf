@@ -10,6 +10,7 @@ import type { DocTypeEngine } from './doctype-engine';
 import { DocTypeMeta } from './meta';
 import { MetaFactory } from './meta-factory';
 import { DocTypeError } from './errors';
+import { CustomFieldManager, PropertySetterManager } from '../custom';
 
 /**
  * MetaCache class for managing DocTypeMeta instances
@@ -63,9 +64,13 @@ export class MetaCache {
 	 * @param doctypeName Name of the DocType to get Meta for
 	 * @returns Promise resolving to DocTypeMeta instance or null if not found
 	 */
-	public async getMeta(doctypeName: string, includeCustomFields: boolean = true): Promise<DocTypeMeta | null> {
-		// Create cache key with includeCustomFields flag
-		const cacheKey = `${doctypeName}_${includeCustomFields}`;
+	public async getMeta(
+		doctypeName: string,
+		includeCustomFields: boolean = true,
+		includePropertySetters: boolean = true
+	): Promise<DocTypeMeta | null> {
+		// Create cache key with includeCustomFields and includePropertySetters flags
+		const cacheKey = `${doctypeName}_${includeCustomFields}_${includePropertySetters}`;
 		
 		// Check cache first
 		if (this.cache.has(cacheKey)) {
@@ -78,7 +83,7 @@ export class MetaCache {
 		}
 
 		// Create loading promise
-		const loadingPromise = this.loadAndCacheMeta(doctypeName, includeCustomFields);
+		const loadingPromise = this.loadAndCacheMeta(doctypeName, includeCustomFields, includePropertySetters);
 		this.loadingPromises.set(cacheKey, loadingPromise);
 
 		try {
@@ -94,16 +99,24 @@ export class MetaCache {
 	 * @param doctypeName Name of DocType to load
 	 * @returns Promise resolving to DocTypeMeta instance or null if not found
 	 */
-	private async loadAndCacheMeta(doctypeName: string, includeCustomFields: boolean): Promise<DocTypeMeta | null> {
+	private async loadAndCacheMeta(
+		doctypeName: string,
+		includeCustomFields: boolean,
+		includePropertySetters: boolean
+	): Promise<DocTypeMeta | null> {
 		// Load DocType from engine
 		const doctype = await this.engine.getDocType(doctypeName);
 		if (!doctype) {
 			return null;
 		}
 
+		// Get managers from engine to ensure consistent instances
+		const customFieldManager = this.engine.getCustomFieldManager();
+		const propertySetterManager = this.engine.getPropertySetterManager();
+
 		// Create and cache Meta instance
-		const meta = this.createMeta(doctype, includeCustomFields);
-		const cacheKey = `${doctypeName}_${includeCustomFields}`;
+		const meta = await this.createMeta(doctype, includeCustomFields, includePropertySetters, customFieldManager, propertySetterManager);
+		const cacheKey = `${doctypeName}_${includeCustomFields}_${includePropertySetters}`;
 		this.cache.set(cacheKey, meta);
 
 		return meta;
@@ -114,7 +127,7 @@ export class MetaCache {
 	 * @param doctypeName Name of the DocType to invalidate cache for
 	 */
 	public invalidateMeta(doctypeName: string): void {
-		// Invalidate all cache entries for this DocType (with and without custom fields)
+		// Invalidate all cache entries for this DocType (with and without custom fields and property setters)
 		const keysToDelete: string[] = [];
 		for (const key of this.cache.keys()) {
 			if (key.startsWith(`${doctypeName}_`)) {
@@ -139,9 +152,13 @@ export class MetaCache {
 	 * @param doctypeName Name of the DocType to reload
 	 * @returns Promise resolving to DocTypeMeta instance or null if not found
 	 */
-	public async reloadMeta(doctypeName: string, includeCustomFields: boolean = true): Promise<DocTypeMeta | null> {
+	public async reloadMeta(
+		doctypeName: string,
+		includeCustomFields: boolean = true,
+		includePropertySetters: boolean = true
+	): Promise<DocTypeMeta | null> {
 		this.invalidateMeta(doctypeName);
-		return this.getMeta(doctypeName, includeCustomFields);
+		return this.getMeta(doctypeName, includeCustomFields, includePropertySetters);
 	}
 
 	/**
@@ -196,8 +213,14 @@ export class MetaCache {
 	 * @param doctype DocType definition to create Meta for
 	 * @returns DocTypeMeta instance
 	 */
-	private createMeta(doctype: DocType, includeCustomFields: boolean = true): DocTypeMeta {
-		return MetaFactory.create(doctype, includeCustomFields);
+	private async createMeta(
+		doctype: DocType,
+		includeCustomFields: boolean = true,
+		includePropertySetters: boolean = true,
+		customFieldManager?: CustomFieldManager,
+		propertySetterManager?: PropertySetterManager
+	): Promise<DocTypeMeta> {
+		return await MetaFactory.create(doctype, includeCustomFields, includePropertySetters, customFieldManager, propertySetterManager);
 	}
 
 	/**

@@ -15,6 +15,22 @@ export type {
 	CustomFieldManagerConfig
 } from './types';
 
+// Property Setter types and interfaces
+export type {
+	PropertySetter,
+	SetPropertyOptions,
+	PropertySetterQueryOptions,
+	PropertySetterValidationResult,
+	PropertySetterManagerConfig,
+	SupportedFieldProperty,
+	SupportedDocTypeProperty
+} from './types';
+
+export {
+	SUPPORTED_FIELD_PROPERTIES,
+	SUPPORTED_DOCTYPE_PROPERTIES
+} from './types';
+
 // Error classes
 export {
 	CustomFieldError,
@@ -36,6 +52,19 @@ export {
 	createFailureValidationResult
 } from './errors';
 
+// Property Setter error classes
+export {
+	PropertySetterExistsError,
+	PropertySetterNotFoundError,
+	PropertySetterValidationError,
+	PropertySetterOperationNotSupportedError,
+	PropertySetterPropertyNotSupportedError,
+	PropertySetterOperationError,
+	PropertySetterDatabaseError,
+	PropertySetterCacheError,
+	PropertySetterConfigurationError
+} from './errors';
+
 // Validators
 export {
 	validateFieldName,
@@ -50,5 +79,18 @@ export {
 	validateUpdateCustomFieldOptions
 } from './validators';
 
+// Property Setter validators
+export {
+	validateDocTypeName,
+	validateFieldnameForPropertySetter,
+	validatePropertyName,
+	validatePropertyValue,
+	validatePropertySetter,
+	validateSetPropertyOptions
+} from './validators';
+
 // CustomFieldManager class
 export { CustomFieldManager } from './custom-field';
+
+// PropertySetterManager class
+export { PropertySetterManager } from './property-setter';

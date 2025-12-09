@@ -27,7 +27,7 @@ import { SQLGenerator } from './sql-generator';
 export class MigrationWorkflow {
 	private schemaEngine: SchemaComparisonEngine;
 	private sqlGenerator: SQLGenerator;
-	
+
 	constructor(database: any, doctypeEngine: DocTypeEngine) {
 		this.schemaEngine = new SchemaComparisonEngine(database, doctypeEngine);
 		this.sqlGenerator = new SQLGenerator({
@@ -38,7 +38,7 @@ export class MigrationWorkflow {
 			validateSQL: true
 		});
 	}
-	
+
 	/**
 	 * Complete migration workflow: compare, generate SQL, and optionally apply
 	 */
@@ -53,30 +53,30 @@ export class MigrationWorkflow {
 			warnings: [],
 			errors: []
 		};
-		
+
 		try {
 			// 1. Compare schemas
 			const diff = await this.schemaEngine.compareSchema(doctypeName);
 			const sql = this.sqlGenerator.generateMigrationSQL(diff, doctypeName);
-			
+
 			if (!this.hasChanges(diff)) {
 				result.success = true;
 				result.warnings.push('No schema changes detected');
 				return result;
 			}
-			
+
 			// 2. Validate migration
 			const validation = this.validateMigration(sql);
 			if (!validation.valid) {
 				result.errors.push(...validation.errors.map((e: any) => e.message));
 				return result;
 			}
-			
+
 			result.warnings.push(...validation.warnings.map((w: any) => w.message));
-			
+
 			// 3. Prepare SQL statements
 			result.sql = sql.forward.map((stmt: any) => stmt.sql);
-			
+
 			// 4. Apply migration if not dry run
 			if (!options.dryRun) {
 				const applied = await this.applyMigration(sql);
@@ -87,20 +87,20 @@ export class MigrationWorkflow {
 				result.success = true;
 				result.warnings.push('Dry run - no changes applied');
 			}
-			
+
 			// 5. Record migration
 			if (result.success && !options.dryRun) {
 				await this.recordMigration(doctypeName, diff, sql);
 			}
-			
+
 		} catch (error) {
 			result.errors.push(`Migration failed: ${error instanceof Error ? error.message : String(error)}`);
 		}
-		
+
 		result.executionTime = Date.now() - startTime;
 		return result;
 	}
-	
+
 	/**
 	 * Generate migration SQL without applying
 	 */
@@ -108,7 +108,7 @@ export class MigrationWorkflow {
 		const diff: SchemaDiff = await this.schemaEngine.compareSchema(doctypeName);
 		return this.sqlGenerator.generateMigrationSQL(diff, doctypeName);
 	}
-	
+
 	/**
 	 * Validate migration SQL
 	 */
@@ -119,7 +119,7 @@ export class MigrationWorkflow {
 			warnings: [],
 			recommendations: []
 		};
-		
+
 		// Check for destructive operations
 		if (sql.destructive) {
 			validation.warnings.push({
@@ -129,7 +129,7 @@ export class MigrationWorkflow {
 			});
 			validation.recommendations.push('Consider creating a backup before applying this migration');
 		}
-		
+
 		// Validate SQL syntax (basic)
 		for (const statement of sql.forward) {
 			if (!this.isValidSQLSyntax(statement.sql)) {
@@ -142,12 +142,12 @@ export class MigrationWorkflow {
 				});
 			}
 		}
-		
+
 		// Check for data migration requirements
-		const requiresDataMigration = sql.forward.some(stmt => 
+		const requiresDataMigration = sql.forward.some(stmt =>
 			stmt.type === 'alter_table' && stmt.destructive
 		);
-		
+
 		if (requiresDataMigration) {
 			validation.warnings.push({
 				code: 'DATA_MIGRATION_REQUIRED',
@@ -156,10 +156,10 @@ export class MigrationWorkflow {
 			});
 			validation.recommendations.push('Consider running migration during low-traffic periods');
 		}
-		
+
 		return validation;
 	}
-	
+
 	/**
 	 * Apply migration SQL
 	 */
@@ -170,26 +170,26 @@ export class MigrationWorkflow {
 			warnings: [],
 			errors: []
 		};
-		
+
 		try {
 			// This would execute SQL statements in a transaction
 			// For now, simulate successful execution
 			result.success = true;
 			result.affectedRows = 0; // Would be actual row count
-			
+
 			// Simulate execution time estimation
 			const estimatedTime = sql.estimatedTime || 0;
 			if (estimatedTime > 10) {
 				result.warnings.push(`Migration may take approximately ${estimatedTime} seconds`);
 			}
-			
+
 		} catch (error) {
 			result.errors.push(`SQL execution failed: ${error instanceof Error ? error.message : String(error)}`);
 		}
-		
+
 		return result;
 	}
-	
+
 	/**
 	 * Record migration in history
 	 */
@@ -209,7 +209,7 @@ export class MigrationWorkflow {
 			destructive: sql.destructive
 		});
 	}
-	
+
 	/**
 	 * Check if schema diff has changes
 	 */
@@ -223,14 +223,14 @@ export class MigrationWorkflow {
 			diff.renamedColumns.length > 0
 		);
 	}
-	
+
 	/**
 	 * Basic SQL syntax validation
 	 */
 	private isValidSQLSyntax(sql: string): boolean {
 		// Basic validation - in practice, you'd use a proper SQL parser
 		const trimmed = sql.trim().toUpperCase();
-		
+
 		// Check for required keywords
 		const hasValidKeyword = [
 			'CREATE TABLE',
@@ -242,27 +242,27 @@ export class MigrationWorkflow {
 			'UPDATE',
 			'DELETE FROM'
 		].some(keyword => trimmed.startsWith(keyword));
-		
+
 		if (!hasValidKeyword) {
 			return false;
 		}
-		
+
 		// Check for balanced quotes
 		const singleQuotes = (sql.match(/'/g) || []).length;
 		if (singleQuotes % 2 !== 0) {
 			return false;
 		}
-		
+
 		// Check for balanced parentheses
 		let parenCount = 0;
 		for (const char of sql) {
 			if (char === '(') parenCount++;
 			if (char === ')') parenCount--;
 		}
-		
+
 		return parenCount === 0;
 	}
-	
+
 	/**
 	 * Generate rollback SQL for a migration
 	 */
@@ -270,33 +270,33 @@ export class MigrationWorkflow {
 		const migrationSQL = await this.generateMigrationSQL(doctypeName);
 		return migrationSQL.rollback.map((stmt: any) => stmt.sql);
 	}
-	
+
 	/**
 	 * Execute rollback for a migration
 	 */
 	async executeRollback(doctypeName: string): Promise<MigrationResult> {
 		const rollbackSQL = await this.generateRollbackSQL(doctypeName);
-		
+
 		const result: MigrationResult = {
 			success: false,
 			sql: rollbackSQL,
 			warnings: ['Executing rollback migration'],
 			errors: []
 		};
-		
+
 		try {
 			// This would execute rollback SQL statements in a transaction
 			// For now, simulate successful execution
 			result.success = true;
 			result.warnings.push('Rollback migration completed successfully');
-			
+
 		} catch (error) {
 			result.errors.push(`Rollback failed: ${error instanceof Error ? error.message : String(error)}`);
 		}
-		
+
 		return result;
 	}
-	
+
 	/**
 	 * Get migration history for a DocType
 	 */
@@ -305,7 +305,7 @@ export class MigrationWorkflow {
 		// For now, return empty array
 		return [];
 	}
-	
+
 	/**
 	 * Check if migration has been applied
 	 */
@@ -314,7 +314,7 @@ export class MigrationWorkflow {
 		// For now, return false
 		return false;
 	}
-	
+
 	/**
 	 * Get pending migrations for a DocType
 	 */
@@ -323,7 +323,7 @@ export class MigrationWorkflow {
 		// For now, return empty array
 		return [];
 	}
-	
+
 	/**
 	 * Create backup before migration
 	 */
@@ -333,7 +333,7 @@ export class MigrationWorkflow {
 		const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
 		return `backup_${doctypeName}_${timestamp}.sql`;
 	}
-	
+
 	/**
 	 * Restore from backup
 	 */
@@ -344,17 +344,17 @@ export class MigrationWorkflow {
 			warnings: [`Restoring from backup: ${backupPath}`],
 			errors: []
 		};
-		
+
 		try {
 			// This would execute the backup SQL
 			// For now, simulate successful execution
 			result.success = true;
 			result.warnings.push('Backup restored successfully');
-			
+
 		} catch (error) {
 			result.errors.push(`Restore failed: ${error instanceof Error ? error.message : String(error)}`);
 		}
-		
+
 		return result;
 	}
 }

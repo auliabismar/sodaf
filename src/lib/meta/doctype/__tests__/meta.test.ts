@@ -24,16 +24,16 @@ describe('DocTypeMeta', () => {
 		DocTypeEngine.resetInstance();
 		engine = DocTypeEngine.getInstance();
 		metaHelper = new DocTypeTestHelper();
-		
+
 		// Create test DocType
 		testDocType = DocTypeTestFactory.createComprehensiveDocType({
 			name: 'TestDocType',
 			module: 'TestModule'
 		});
-		
+
 		// Register DocType
 		await engine.registerDocType(testDocType);
-		
+
 		// Create Meta instance
 		meta = new DocTypeMeta(testDocType);
 	});
@@ -45,123 +45,123 @@ describe('DocTypeMeta', () => {
 	});
 
 	describe('Initialization', () => {
-		it('should initialize with valid DocType', () => {
+		it('should initialize with valid DocType', async () => {
 			expect(meta).toBeDefined();
 			expect(meta.get_doctype().name).toBe(testDocType.name);
 			expect(meta.get_doctype().module).toBe(testDocType.module);
-			expect(meta.get_all_fields()).toHaveLength(testDocType.fields.length);
+			expect(await meta.get_all_fields()).toHaveLength(testDocType.fields.length);
 		});
 
 		it('should throw error for null DocType', () => {
 			expect(() => new DocTypeMeta(null as any)).toThrow(DocTypeError);
 		});
-	
+
 		it('should throw error for undefined DocType', () => {
 			expect(() => new DocTypeMeta(undefined as any)).toThrow(DocTypeError);
 		});
 	});
 
 	describe('Field Management', () => {
-		it('should get field by name', () => {
-			const field = meta.get_field('name');
-			
+		it('should get field by name', async () => {
+			const field = await meta.get_field('name');
+
 			expect(field).toBeDefined();
 			expect(field?.fieldname).toBe('name');
 			expect(field?.label).toBe('Name');
 			expect(field?.fieldtype).toBe('Data');
 		});
 
-		it('should return null for non-existent field', () => {
-			const field = meta.get_field('nonexistent_field');
-			
+		it('should return null for non-existent field', async () => {
+			const field = await meta.get_field('nonexistent_field');
+
 			expect(field).toBeNull();
 		});
 
-		it('should get all fields', () => {
-			const fields = meta.get_all_fields();
-			
+		it('should get all fields', async () => {
+			const fields = await meta.get_all_fields();
+
 			expect(fields).toHaveLength(testDocType.fields.length);
 			expect(fields.map((f: DocField) => f.fieldname)).toContain('name');
 			expect(fields.map((f: DocField) => f.fieldname)).toContain('description');
 		});
 
-		it('should get required fields', () => {
-			const requiredFields = meta.get_required_fields();
-			
+		it('should get required fields', async () => {
+			const requiredFields = await meta.get_required_fields();
+
 			const expectedRequired = testDocType.fields.filter(f => f.required);
 			expect(requiredFields).toHaveLength(expectedRequired.length);
 			expect(requiredFields.every((f: DocField) => f.required)).toBe(true);
 		});
 
-		it('should get optional fields', () => {
-			const allFields = meta.get_all_fields();
-			const requiredFields = meta.get_required_fields();
+		it('should get optional fields', async () => {
+			const allFields = await meta.get_all_fields();
+			const requiredFields = await meta.get_required_fields();
 			const optionalFields = allFields.filter(f => !requiredFields.includes(f));
-			
+
 			const expectedOptional = testDocType.fields.filter(f => !f.required);
 			expect(optionalFields).toHaveLength(expectedOptional.length);
 			expect(optionalFields.every((f: DocField) => !f.required)).toBe(true);
 		});
 
-		it('should get fields by type', () => {
-			const dataFields = meta.get_fields_by_type('Data');
-			const linkFields = meta.get_fields_by_type('Link');
-			
+		it('should get fields by type', async () => {
+			const dataFields = await meta.get_fields_by_type('Data');
+			const linkFields = await meta.get_fields_by_type('Link');
+
 			const expectedDataFields = testDocType.fields.filter(f => f.fieldtype === 'Data');
 			const expectedLinkFields = testDocType.fields.filter(f => f.fieldtype === 'Link');
-			
+
 			expect(dataFields).toHaveLength(expectedDataFields.length);
 			expect(linkFields).toHaveLength(expectedLinkFields.length);
 		});
 
-		it('should check if field exists', () => {
-			expect(meta.has_field('name')).toBe(true);
-			expect(meta.has_field('nonexistent_field')).toBe(false);
+		it('should check if field exists', async () => {
+			expect(await meta.has_field('name')).toBe(true);
+			expect(await meta.has_field('nonexistent_field')).toBe(false);
 		});
 
-		it('should get field label', () => {
-			expect(meta.get_label('name')).toBe('Name');
-			expect(meta.get_label('nonexistent_field')).toBeNull();
+		it('should get field label', async () => {
+			expect(await meta.get_label('name')).toBe('Name');
+			expect(await meta.get_label('nonexistent_field')).toBeNull();
 		});
 
-		it('should get field type', () => {
-			expect(meta.get_options('status')).toBe('Draft\nSubmitted\nCancelled');
-			expect(meta.get_options('nonexistent_field')).toBeNull();
+		it('should get field type', async () => {
+			expect(await meta.get_options('status')).toBe('Draft\nSubmitted\nCancelled');
+			expect(await meta.get_options('nonexistent_field')).toBeNull();
 		});
 	});
 
 	describe('Special Field Types', () => {
-		it('should get link fields', () => {
-			const linkFields = meta.get_link_fields();
-			
-			const expectedLinkFields = testDocType.fields.filter(f => 
+		it('should get link fields', async () => {
+			const linkFields = await meta.get_link_fields();
+
+			const expectedLinkFields = testDocType.fields.filter(f =>
 				f.fieldtype === 'Link' || f.fieldtype === 'Dynamic Link'
 			);
-			
+
 			expect(linkFields).toHaveLength(expectedLinkFields.length);
 		});
 
-		it('should get table fields', () => {
-			const tableFields = meta.get_table_fields();
-			
+		it('should get table fields', async () => {
+			const tableFields = await meta.get_table_fields();
+
 			const expectedTableFields = testDocType.fields.filter(f => f.fieldtype === 'Table');
-			
+
 			expect(tableFields).toHaveLength(expectedTableFields.length);
 		});
 
-		it('should get select fields', () => {
-			const selectFields = meta.get_select_fields();
-			
+		it('should get select fields', async () => {
+			const selectFields = await meta.get_select_fields();
+
 			const expectedSelectFields = testDocType.fields.filter(f => f.fieldtype === 'Select');
-			
+
 			expect(selectFields).toHaveLength(expectedSelectFields.length);
 		});
 
-		it('should get unique fields', () => {
-			const uniqueFields = meta.get_unique_fields();
-			
+		it('should get unique fields', async () => {
+			const uniqueFields = await meta.get_unique_fields();
+
 			const expectedUniqueFields = testDocType.fields.filter(f => f.unique);
-			
+
 			expect(uniqueFields).toHaveLength(expectedUniqueFields.length);
 		});
 	});
@@ -191,7 +191,7 @@ describe('DocTypeMeta', () => {
 	describe('Search and Display Fields', () => {
 		it('should get search fields', () => {
 			const searchFields = meta.get_search_fields();
-			
+
 			if (testDocType.search_fields) {
 				const expectedSearchFields = testDocType.search_fields.split(',').map(s => s.trim());
 				expect(searchFields).toEqual(expectedSearchFields);
@@ -202,54 +202,54 @@ describe('DocTypeMeta', () => {
 
 		it('should get title field', () => {
 			const titleField = meta.get_title_field();
-			
+
 			expect(titleField).toBe(testDocType.title_field || null);
 		});
 
 		it('should get image field', () => {
 			const imageField = meta.get_image_field();
-			
+
 			expect(imageField).toBe(testDocType.image_field || null);
 		});
 
-		it('should get valid columns', () => {
-			const validColumns = meta.get_valid_columns();
-			
+		it('should get valid columns', async () => {
+			const validColumns = await meta.get_valid_columns();
+
 			// Should exclude layout fields
 			const layoutFieldTypes = [
 				'Section Break', 'Column Break', 'Tab Break', 'Fold', 'Button', 'HTML', 'Image'
 			];
-			
+
 			const expectedColumns = testDocType.fields
 				.filter(f => !layoutFieldTypes.includes(f.fieldtype))
 				.map(f => f.fieldname);
-			
+
 			expect(validColumns).toEqual(expect.arrayContaining(expectedColumns));
 		});
 	});
 
 	describe('Field Options', () => {
-		it('should get field options', () => {
-			const options = meta.get_options('status');
-			
+		it('should get field options', async () => {
+			const options = await meta.get_options('status');
+
 			expect(options).toBe('Draft\nSubmitted\nCancelled');
 		});
 
-		it('should return null for field without options', () => {
-			const options = meta.get_options('name'); // Data field has no options
-			
+		it('should return null for field without options', async () => {
+			const options = await meta.get_options('name'); // Data field has no options
+
 			expect(options).toBeNull();
 		});
 
-		it('should return null for non-existent field', () => {
-			const options = meta.get_options('nonexistent_field');
-			
+		it('should return null for non-existent field', async () => {
+			const options = await meta.get_options('nonexistent_field');
+
 			expect(options).toBeNull();
 		});
 	});
 
 	describe('Performance', () => {
-		it('should build indexes efficiently', () => {
+		it('should build indexes efficiently', async () => {
 			const largeDocType = {
 				name: 'LargeDocType',
 				module: 'TestModule',
@@ -260,27 +260,27 @@ describe('DocTypeMeta', () => {
 				})),
 				permissions: []
 			} as DocType;
-			
+
 			const startTime = Date.now();
 			const largeMeta = new DocTypeMeta(largeDocType);
 			const endTime = Date.now();
-			
+
 			expect(largeMeta).toBeDefined();
-			expect(largeMeta.get_all_fields()).toHaveLength(1000);
+			expect(await largeMeta.get_all_fields()).toHaveLength(1000);
 			expect(endTime - startTime).toBeLessThan(1000); // Should build within 1 second
 		});
 
-		it('should cache computed properties', () => {
+		it('should cache computed properties', async () => {
 			// First call should compute
 			const startTime1 = performance.now();
-			const validColumns1 = meta.get_valid_columns();
+			const validColumns1 = await meta.get_valid_columns();
 			const endTime1 = performance.now();
-			
+
 			// Second call should use cache
 			const startTime2 = performance.now();
-			const validColumns2 = meta.get_valid_columns();
+			const validColumns2 = await meta.get_valid_columns();
 			const endTime2 = performance.now();
-			
+
 			expect(validColumns1).toEqual(validColumns2);
 			// Note: Due to performance optimizations, caching might not show significant improvement
 			// So we just check that both calls return the same result
@@ -289,19 +289,19 @@ describe('DocTypeMeta', () => {
 	});
 
 	describe('Edge Cases', () => {
-		it('should handle empty DocType gracefully', () => {
+		it('should handle empty DocType gracefully', async () => {
 			const emptyDocType = {
 				name: 'EmptyDocType',
 				module: 'TestModule',
 				fields: [],
 				permissions: []
 			};
-			
+
 			const emptyMeta = new DocTypeMeta(emptyDocType);
-			
+
 			expect(emptyMeta).toBeDefined();
-			expect(emptyMeta.get_all_fields()).toHaveLength(0);
-			expect(emptyMeta.get_required_fields()).toHaveLength(0);
+			expect(await emptyMeta.get_all_fields()).toHaveLength(0);
+			expect(await emptyMeta.get_required_fields()).toHaveLength(0);
 		});
 
 		it('should handle DocType with special characters in name', () => {
@@ -313,14 +313,14 @@ describe('DocTypeMeta', () => {
 				],
 				permissions: []
 			} as DocType;
-			
+
 			const specialMeta = new DocTypeMeta(specialDocType);
-			
+
 			expect(specialMeta).toBeDefined();
 			expect(specialMeta.get_doctype().name).toBe('DocType_With-Special.Chars');
 		});
 
-		it('should handle fields with all types', () => {
+		it('should handle fields with all types', async () => {
 			const allTypesDocType = {
 				name: 'AllTypesDocType',
 				module: 'TestModule',
@@ -341,14 +341,14 @@ describe('DocTypeMeta', () => {
 				],
 				permissions: []
 			} as DocType;
-			
+
 			const allTypesMeta = new DocTypeMeta(allTypesDocType);
-			
+
 			expect(allTypesMeta).toBeDefined();
-			expect(allTypesMeta.get_all_fields()).toHaveLength(13);
-			expect(allTypesMeta.get_link_fields()).toHaveLength(1);
-			expect(allTypesMeta.get_table_fields()).toHaveLength(1);
-			expect(allTypesMeta.get_select_fields()).toHaveLength(1);
+			expect(await allTypesMeta.get_all_fields()).toHaveLength(13);
+			expect(await allTypesMeta.get_link_fields()).toHaveLength(1);
+			expect(await allTypesMeta.get_table_fields()).toHaveLength(1);
+			expect(await allTypesMeta.get_select_fields()).toHaveLength(1);
 		});
 	});
 
@@ -356,23 +356,23 @@ describe('DocTypeMeta', () => {
 		it('should work with DocTypeEngine', async () => {
 			const registeredDocType = await engine.getDocType('TestDocType');
 			const engineMeta = new DocTypeMeta(registeredDocType!);
-			
+
 			expect(engineMeta.get_doctype().name).toBe(meta.get_doctype().name);
-			expect(engineMeta.get_all_fields()).toEqual(meta.get_all_fields());
+			expect(await engineMeta.get_all_fields()).toEqual(await meta.get_all_fields());
 		});
 
-		it('should maintain consistency with original DocType', () => {
+		it('should maintain consistency with original DocType', async () => {
 			const originalDocType = meta.get_doctype();
-			
+
 			// Modify meta should not affect original
-			const fieldsBefore = meta.get_all_fields();
+			const fieldsBefore = await meta.get_all_fields();
 			const docTypeBefore = { ...originalDocType };
-			
+
 			// Create new meta from same DocType
 			const newMeta = new DocTypeMeta(originalDocType);
-			const fieldsAfter = newMeta.get_all_fields();
+			const fieldsAfter = await newMeta.get_all_fields();
 			const docTypeAfter = newMeta.get_doctype();
-			
+
 			expect(fieldsBefore).toEqual(fieldsAfter);
 			expect(docTypeBefore).toEqual(docTypeAfter);
 		});

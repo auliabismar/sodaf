@@ -8,6 +8,8 @@
 import type { FieldType } from '../../doctype/types';
 import type { FormField } from '../types';
 
+export type { FormField };
+
 /**
  * Represents a Carbon component mapping for a DocType field
  */

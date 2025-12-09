@@ -323,3 +323,194 @@ export function createFailureValidationResult(
 ): ValidationResult {
 	return { valid: false, errors, warnings };
 }
+
+/**
+ * Property Setter Error Classes
+ *
+ * This section defines error classes specific to property setter operations,
+ * providing detailed error information for debugging and error handling.
+ */
+
+/**
+ * Error thrown when a property setter already exists
+ */
+export class PropertySetterExistsError extends CustomFieldError {
+	/**
+	 * Create a new PropertySetterExistsError
+	 * @param doctype DocType the property setter belongs to
+	 * @param fieldname Field name the property setter belongs to
+	 * @param property Property name that already has a setter
+	 */
+	constructor(doctype: string, fieldname: string | undefined, property: string) {
+		const target = fieldname ? `field '${fieldname}'` : 'DocType';
+		super(
+			`Property setter for property '${property}' on ${target} of DocType '${doctype}' already exists`,
+			'PROPERTY_SETTER_EXISTS',
+			{ doctype, fieldname, property }
+		);
+		this.name = 'PropertySetterExistsError';
+	}
+}
+
+/**
+ * Error thrown when a property setter is not found
+ */
+export class PropertySetterNotFoundError extends CustomFieldError {
+	/**
+	 * Create a new PropertySetterNotFoundError
+	 * @param doctype DocType the property setter should belong to
+	 * @param fieldname Field name the property setter should belong to
+	 * @param property Property name that was not found
+	 */
+	constructor(doctype: string, fieldname: string | undefined, property: string) {
+		const target = fieldname ? `field '${fieldname}'` : 'DocType';
+		super(
+			`Property setter for property '${property}' on ${target} of DocType '${doctype}' not found`,
+			'PROPERTY_SETTER_NOT_FOUND',
+			{ doctype, fieldname, property }
+		);
+		this.name = 'PropertySetterNotFoundError';
+	}
+}
+
+/**
+ * Error thrown when a property setter validation fails
+ */
+export class PropertySetterValidationError extends CustomFieldError {
+	/** Array of validation errors */
+	public readonly validationErrors: string[];
+	
+	/**
+	 * Create a new PropertySetterValidationError
+	 * @param message Error message
+	 * @param validationErrors Array of validation errors
+	 * @param details Additional error details
+	 */
+	constructor(message: string, validationErrors: string[], details?: Record<string, any>) {
+		super(
+			message,
+			'PROPERTY_SETTER_VALIDATION_ERROR',
+			{ validationErrors, ...details }
+		);
+		this.name = 'PropertySetterValidationError';
+		this.validationErrors = validationErrors;
+	}
+}
+
+/**
+ * Error thrown when a property setter operation is not supported
+ */
+export class PropertySetterOperationNotSupportedError extends CustomFieldError {
+	/**
+	 * Create a new PropertySetterOperationNotSupportedError
+	 * @param operation The operation that is not supported
+	 * @param reason Reason why the operation is not supported
+	 */
+	constructor(operation: string, reason?: string) {
+		super(
+			`Property setter operation '${operation}' is not supported${reason ? `: ${reason}` : ''}`,
+			'PROPERTY_SETTER_OPERATION_NOT_SUPPORTED',
+			{ operation, reason }
+		);
+		this.name = 'PropertySetterOperationNotSupportedError';
+	}
+}
+
+/**
+ * Error thrown when a property setter property is not supported
+ */
+export class PropertySetterPropertyNotSupportedError extends CustomFieldError {
+	/**
+	 * Create a new PropertySetterPropertyNotSupportedError
+	 * @param property The property that is not supported
+	 * @param target The target (field or DocType)
+	 */
+	constructor(property: string, target: string) {
+		super(
+			`Property '${property}' is not supported for ${target}`,
+			'PROPERTY_SETTER_PROPERTY_NOT_SUPPORTED',
+			{ property, target }
+		);
+		this.name = 'PropertySetterPropertyNotSupportedError';
+	}
+}
+
+/**
+ * Error thrown when a property setter operation fails
+ */
+export class PropertySetterOperationError extends CustomFieldError {
+	/**
+	 * Create a new PropertySetterOperationError
+	 * @param operation The operation that failed
+	 * @param reason Reason why the operation failed
+	 * @param details Additional error details
+	 */
+	constructor(operation: string, reason: string, details?: Record<string, any>) {
+		super(
+			`Property setter operation '${operation}' failed: ${reason}`,
+			'PROPERTY_SETTER_OPERATION_ERROR',
+			{ operation, reason, ...details }
+		);
+		this.name = 'PropertySetterOperationError';
+	}
+}
+
+/**
+ * Error thrown when a property setter database operation fails
+ */
+export class PropertySetterDatabaseError extends CustomFieldError {
+	/**
+	 * Create a new PropertySetterDatabaseError
+	 * @param operation The database operation that failed
+	 * @param reason Reason why the operation failed
+	 * @param details Additional error details
+	 */
+	constructor(operation: string, reason: string, details?: Record<string, any>) {
+		super(
+			`Property setter database operation '${operation}' failed: ${reason}`,
+			'PROPERTY_SETTER_DATABASE_ERROR',
+			{ operation, reason, ...details }
+		);
+		this.name = 'PropertySetterDatabaseError';
+	}
+}
+
+/**
+ * Error thrown when a property setter cache operation fails
+ */
+export class PropertySetterCacheError extends CustomFieldError {
+	/**
+	 * Create a new PropertySetterCacheError
+	 * @param operation The cache operation that failed
+	 * @param reason Reason why the operation failed
+	 * @param details Additional error details
+	 */
+	constructor(operation: string, reason: string, details?: Record<string, any>) {
+		super(
+			`Property setter cache operation '${operation}' failed: ${reason}`,
+			'PROPERTY_SETTER_CACHE_ERROR',
+			{ operation, reason, ...details }
+		);
+		this.name = 'PropertySetterCacheError';
+	}
+}
+
+/**
+ * Error thrown when a property setter configuration is invalid
+ */
+export class PropertySetterConfigurationError extends CustomFieldError {
+	/**
+	 * Create a new PropertySetterConfigurationError
+	 * @param configuration The configuration that is invalid
+	 * @param reason Reason why the configuration is invalid
+	 * @param details Additional error details
+	 */
+	constructor(configuration: string, reason: string, details?: Record<string, any>) {
+		super(
+			`Property setter configuration '${configuration}' is invalid: ${reason}`,
+			'PROPERTY_SETTER_CONFIGURATION_ERROR',
+			{ configuration, reason, ...details }
+		);
+		this.name = 'PropertySetterConfigurationError';
+	}
+}

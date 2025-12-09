@@ -9,6 +9,7 @@ import type { DocType } from './types';
 import type { DocTypeEngine } from './doctype-engine';
 import { DocTypeMeta } from './meta';
 import { DocTypeError } from './errors';
+import { CustomFieldManager, PropertySetterManager } from '../custom';
 
 /**
  * Factory for creating DocTypeMeta instances
@@ -20,12 +21,30 @@ export class MetaFactory {
 	 * @returns DocTypeMeta instance
 	 * @throws DocTypeError if DocType is invalid
 	 */
-	public static create(doctype: DocType, includeCustomFields: boolean = true): DocTypeMeta {
+	public static async create(
+		doctype: DocType,
+		includeCustomFields: boolean = true,
+		includePropertySetters: boolean = true,
+		customFieldManager?: CustomFieldManager,
+		propertySetterManager?: PropertySetterManager
+	): Promise<DocTypeMeta> {
 		if (!this.validateDocType(doctype)) {
 			throw new DocTypeError('Invalid DocType provided');
 		}
 
-		const meta = new DocTypeMeta(doctype, includeCustomFields);
+		const meta = new DocTypeMeta(
+			doctype,
+			includeCustomFields,
+			includePropertySetters,
+			customFieldManager,
+			propertySetterManager
+		);
+		
+		// Wait for async initialization to complete
+		if (includeCustomFields || includePropertySetters) {
+			await meta.refreshCustomFields();
+		}
+		
 		this.initializeIndexes(meta);
 
 		return meta;
@@ -40,14 +59,15 @@ export class MetaFactory {
 	public static async createFromName(
 		doctypeName: string,
 		engine: DocTypeEngine,
-		includeCustomFields: boolean = true
+		includeCustomFields: boolean = true,
+		includePropertySetters: boolean = true
 	): Promise<DocTypeMeta | null> {
 		const doctype = await engine.getDocType(doctypeName);
 		if (!doctype) {
 			return null;
 		}
 
-		return this.create(doctype, includeCustomFields);
+		return this.create(doctype, includeCustomFields, includePropertySetters);
 	}
 
 	/**
@@ -59,13 +79,14 @@ export class MetaFactory {
 	public static async createFromNames(
 		doctypeNames: string[],
 		engine: DocTypeEngine,
-		includeCustomFields: boolean = true
+		includeCustomFields: boolean = true,
+		includePropertySetters: boolean = true
 	): Promise<Map<string, DocTypeMeta | null>> {
 		const results = new Map<string, DocTypeMeta | null>();
 
 		// Process in parallel for better performance
 		const promises = doctypeNames.map(async (doctypeName) => {
-			const meta = await this.createFromName(doctypeName, engine, includeCustomFields);
+			const meta = await this.createFromName(doctypeName, engine, includeCustomFields, includePropertySetters);
 			return { doctypeName, meta };
 		});
 
