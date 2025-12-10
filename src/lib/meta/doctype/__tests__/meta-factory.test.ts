@@ -41,7 +41,7 @@ describe('MetaFactory', () => {
 
 	describe('create', () => {
 		it('should create Meta instance for valid DocType', async () => {
-			const meta = MetaFactory.create(testDocType);
+			const meta = await MetaFactory.create(testDocType);
 			
 			expect(meta).toBeDefined();
 			expect(meta.get_doctype().name).toBe(testDocType.name);
@@ -276,7 +276,7 @@ describe('MetaFactory', () => {
 			await engine.registerDocType(complexDocType);
 			
 			const startTime = Date.now();
-			const meta = MetaFactory.create(complexDocType);
+			const meta = await MetaFactory.create(complexDocType);
 			const endTime = Date.now();
 			
 			expect(meta).toBeDefined();
@@ -313,7 +313,7 @@ describe('MetaFactory', () => {
 			
 			// Perform many operations
 			for (let i = 0; i < 100; i++) {
-				const meta = MetaFactory.create(testDocType);
+				const meta = await MetaFactory.create(testDocType);
 				expect(meta).toBeDefined();
 			}
 			

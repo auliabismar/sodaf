@@ -267,15 +267,15 @@ describe('Custom Field Integration', () => {
 			const mergedDocTypeMeta = new DocTypeMeta(mergedDocType);
 			
 			// Check field type queries
-			const dataFields = mergedDocTypeMeta.get_fields_by_type('Data');
-			const intFields = mergedDocTypeMeta.get_fields_by_type('Int');
-			const floatFields = mergedDocTypeMeta.get_fields_by_type('Float');
+			const dataFields = await mergedDocTypeMeta.get_fields_by_type('Data');
+			const intFields = await mergedDocTypeMeta.get_fields_by_type('Int');
+			const floatFields = await mergedDocTypeMeta.get_fields_by_type('Float');
 			
 			expect(dataFields).toHaveLength(2); // name + cf_phone
 			expect(intFields).toHaveLength(1); // age
 			expect(floatFields).toHaveLength(1); // cf_score
 			
-			expect(dataFields.map(f => f.fieldname)).toEqual(
+			expect(dataFields.map((f: any) => f.fieldname)).toEqual(
 				expect.arrayContaining(['name', 'cf_phone'])
 			);
 		});
@@ -315,9 +315,9 @@ describe('Custom Field Integration', () => {
 			const mergedDocTypeMeta = new DocTypeMeta(mergedDocType);
 			
 			// Check required fields
-			const requiredFields = mergedDocTypeMeta.get_required_fields();
+			const requiredFields = await mergedDocTypeMeta.get_required_fields();
 			expect(requiredFields).toHaveLength(2);
-			expect(requiredFields.map(f => f.fieldname)).toEqual(
+			expect(requiredFields.map((f: any) => f.fieldname)).toEqual(
 				expect.arrayContaining(['name', 'cf_address'])
 			);
 		});

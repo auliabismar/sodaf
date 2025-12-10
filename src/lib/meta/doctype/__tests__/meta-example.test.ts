@@ -94,7 +94,7 @@ describe('DocTypeMeta Example Usage', () => {
 		await engine.registerDocType(sampleDocType);
 
 		// Get DocTypeMeta using the factory
-		const meta = MetaFactory.create(sampleDocType);
+		const meta = await MetaFactory.create(sampleDocType);
 
 		// Test field access methods
 		expect(meta.get_field('customer_name')).toBeTruthy();
@@ -103,28 +103,28 @@ describe('DocTypeMeta Example Usage', () => {
 		expect(meta.has_field('nonexistent')).toBe(false);
 
 		// Test field type queries
-		const linkFields = meta.get_link_fields();
+		const linkFields = await meta.get_link_fields();
 		expect(linkFields).toHaveLength(1);
 		expect(linkFields[0].fieldname).toBe('territory');
 
-		const selectFields = meta.get_select_fields();
+		const selectFields = await meta.get_select_fields();
 		expect(selectFields).toHaveLength(1);
 		expect(selectFields[0].fieldname).toBe('customer_type');
 
 		// Test valid columns (excludes layout fields)
-		const validColumns = meta.get_valid_columns();
+		const validColumns = await meta.get_valid_columns();
 		expect(validColumns).toContain('customer_name');
 		expect(validColumns).toContain('email');
 		expect(validColumns).not.toContain('section_break');
 
 		// Test required and unique fields
-		const requiredFields = meta.get_required_fields();
+		const requiredFields = await meta.get_required_fields();
 		expect(requiredFields).toHaveLength(1);
 		expect(requiredFields[0].fieldname).toBe('customer_name');
 
-		const uniqueFields = meta.get_unique_fields();
+		const uniqueFields = await meta.get_unique_fields();
 		expect(uniqueFields).toHaveLength(2);
-		expect(uniqueFields.map(f => f.fieldname)).toEqual(
+		expect(uniqueFields.map((f: any) => f.fieldname)).toEqual(
 			expect.arrayContaining(['customer_name', 'email'])
 		);
 	});
@@ -134,7 +134,7 @@ describe('DocTypeMeta Example Usage', () => {
 		await engine.registerDocType(sampleDocType);
 
 		// Get DocTypeMeta using the factory
-		const meta = MetaFactory.create(sampleDocType);
+		const meta = await MetaFactory.create(sampleDocType);
 
 		// Test DocType properties
 		expect(meta.is_submittable()).toBe(true);
@@ -154,15 +154,15 @@ describe('DocTypeMeta Example Usage', () => {
 		await engine.registerDocType(sampleDocType);
 
 		// Get DocTypeMeta using the factory
-		const meta = MetaFactory.create(sampleDocType);
+		const meta = await MetaFactory.create(sampleDocType);
 
 		// Test field metadata access
-		expect(meta.get_label('customer_name')).toBe('Customer Name');
-		expect(meta.get_label('nonexistent')).toBeNull();
+		expect(await meta.get_label('customer_name')).toBe('Customer Name');
+		expect(await meta.get_label('nonexistent')).toBeNull();
 
-		expect(meta.get_options('customer_type')).toBe('Individual\nCompany\nGovernment');
-		expect(meta.get_options('territory')).toBe('Territory');
-		expect(meta.get_options('customer_name')).toBeNull();
+		expect(await meta.get_options('customer_type')).toBe('Individual\nCompany\nGovernment');
+		expect(await meta.get_options('territory')).toBe('Territory');
+		expect(await meta.get_options('customer_name')).toBeNull();
 	});
 
 	it('should demonstrate MetaCache functionality', async () => {

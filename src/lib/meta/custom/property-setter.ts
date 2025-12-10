@@ -555,4 +555,20 @@ export class PropertySetterManager {
 
 		return Date.now() - timestamp > (this.config.cache_ttl * 1000);
 	}
+
+	/**
+	 * Get current configuration
+	 * @returns Current configuration object
+	 */
+	public getConfig(): PropertySetterManagerConfig {
+		return { ...this.config };
+	}
+
+	/**
+	 * Update configuration
+	 * @param newConfig Partial configuration to merge with current config
+	 */
+	public updateConfig(newConfig: Partial<PropertySetterManagerConfig>): void {
+		this.config = { ...this.config, ...newConfig };
+	}
 }

@@ -99,7 +99,7 @@ describe('DocType Lifecycle Integration', () => {
 	describe('DocType Creation and Registration', () => {
 		it('should create and register a new DocType', async () => {
 			// Act
-			const meta = MetaFactory.create(testDocType);
+			const meta = await MetaFactory.create(testDocType);
 			await docTypeEngine.registerDocType(meta.get_doctype());
 
 			// Assert
@@ -220,9 +220,9 @@ describe('DocType Lifecycle Integration', () => {
 	});
 
 	describe('Meta Factory Integration', () => {
-		it('should create Meta instance from DocType', () => {
+		it('should create Meta instance from DocType', async () => {
 			// Act
-			const meta = MetaFactory.create(testDocType);
+			const meta = await MetaFactory.create(testDocType);
 
 			// Assert
 			expect(meta).toBeDefined();
@@ -230,12 +230,12 @@ describe('DocType Lifecycle Integration', () => {
 			expect(meta.get_doctype().module).toBe('Test');
 		});
 
-		it('should initialize computed properties', () => {
+		it('should initialize computed properties', async () => {
 			// Act
-			const meta = MetaFactory.create(testDocType);
+			const meta = await MetaFactory.create(testDocType);
 
 			// Assert
-			const validColumns = meta.get_valid_columns();
+			const validColumns = await meta.get_valid_columns();
 			expect(validColumns).toContain('name');
 			expect(validColumns).toContain('description');
 			expect(validColumns).toContain('status');

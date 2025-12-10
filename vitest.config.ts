@@ -1,54 +1,37 @@
 import { defineConfig } from 'vitest/config';
-import { sveltekit } from '@sveltejs/kit/vite';
 
 export default defineConfig({
-	plugins: [sveltekit()],
 	test: {
-		include: ['src/**/*.{test,spec}.{js,ts}'],
-		exclude: [
-			'node_modules/**',
-			'dist/**',
-			'build/**',
-			'coverage/**',
-			'src/**/*.d.ts'
-		],
 		environment: 'jsdom',
+		setupFiles: ['./src/lib/desk/form/fields/__tests__/setup.ts'],
 		globals: true,
+		include: ['src/**/__tests__/**/*.{test,spec}.{js,ts}'],
+		exclude: ['node_modules', 'dist', '.idea', '.git', '.cache'],
+		// Add Svelte 5 specific configuration
+		environmentOptions: {
+			jsdom: {
+				resources: 'usable',
+				runScripts: 'dangerously'
+			}
+		},
 		coverage: {
 			provider: 'v8',
 			reporter: ['text', 'json', 'html'],
+			reportsDirectory: 'coverage',
+			include: ['src/lib/desk/form/fields/**/*.{js,ts,svelte}'],
 			exclude: [
-				'node_modules/**',
-				'dist/**',
-				'build/**',
-				'coverage/**',
-				'src/**/*.d.ts',
-				'src/**/*.test.ts',
-				'src/**/*.spec.ts',
-				'src/**/__tests__/**',
-				'src/**/*.config.ts',
-				'src/**/*.stories.@(js|jsx|ts|tsx|svelte)',
-				'migration/**',
-				'**/*.fixture.ts'
+				'**/__tests__/**',
+				'**/*.d.ts',
+				'**/node_modules/**'
 			],
 			thresholds: {
 				global: {
-					branches: 70,
+					branches: 80,
 					functions: 80,
 					lines: 80,
 					statements: 80
 				}
 			}
-		},
-		testTimeout: 5000,
-		hookTimeout: 10000,
-		setupFiles: [],
-		watch: false,
-		sequence: {
-			concurrent: true,
-			shuffle: false
-		},
-		bail: 0,
-		retry: 0
+		}
 	}
 });
