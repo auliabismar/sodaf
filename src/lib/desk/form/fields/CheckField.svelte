@@ -35,7 +35,7 @@
 	let inputId = $derived(`input-${field.fieldname}`);
 	let isInvalid = $derived(!!error);
 	let isChecked = $derived(value === true);
-	let isDisabled = $derived(disabled || readonly || field.read_only);
+	let isDisabled = $derived(disabled || field.read_only === true);
 
 	// Event handlers
 	function handleChange(event: CustomEvent<boolean> | boolean) {
@@ -147,13 +147,13 @@
 
 	.checkbox-label {
 		font-weight: 500;
-		color: var(--cds-text-primary);
+		color: var(--cds-text-primary, #161616);
 		cursor: pointer;
 		margin: 0;
 	}
 
 	.checkbox-label.disabled {
-		color: var(--cds-text-disabled);
+		color: var(--cds-text-disabled, #8d8d8d);
 		cursor: not-allowed;
 	}
 

@@ -21,7 +21,7 @@
 
 	let {
 		field,
-		value = '',
+		value = $bindable(''),
 		error = '',
 		disabled = false,
 		readonly = false,
@@ -41,10 +41,11 @@
 	let inputPlaceholder = $derived(placeholder || field.label || '');
 
 	// Event handlers
-	function handleChange(event: CustomEvent<string | number | null> | any) {
-		// Handle Carbon's CustomEvent or native Event
-		const newValue = event.detail !== undefined ? event.detail : event.currentTarget.value;
-		onchange?.(newValue as string);
+	function handleInput(event: Event) {
+		const target = event.target as HTMLInputElement;
+		const newValue = target.value;
+		value = newValue;
+		onchange?.(newValue);
 	}
 
 	function handleBlur(event: FocusEvent) {
@@ -73,15 +74,15 @@
 		<TextInput
 			id={inputId}
 			{value}
-			disabled={disabled || readonly}
+			{disabled}
 			{readonly}
 			placeholder={inputPlaceholder}
 			maxlength={maxLength}
 			invalid={!!error}
 			invalidText={Array.isArray(error) ? error.join(', ') : error}
-			on:input={handleChange}
-			on:blur={handleBlur}
-			on:focus={handleFocus}
+			oninput={handleInput}
+			onblur={handleBlur}
+			onfocus={handleFocus}
 		/>
 	{/snippet}
 </BaseField>

@@ -5,8 +5,8 @@
  */
 
 import { describe, it, expect, vi, beforeEach, afterEach, type Mock } from 'vitest';
-import { FormController } from './form-controller';
-import type { FormViewState, FormControllerConfig } from './types';
+import { FormController } from '../form-controller';
+import type { FormViewState, FormControllerConfig } from '../types';
 
 // =============================================================================
 // Mock setup
@@ -568,13 +568,13 @@ describe('P3-006: Form Controller', () => {
                 const cancelSpy = vi.spyOn(controller as any, 'cancelAutoSave');
 
                 controller.setValue('subject', 'Updated');
-                
+
                 // Mock the new document load to avoid error
                 const mockFetch = global.fetch as Mock;
                 mockFetch.mockImplementationOnce(() =>
                     Promise.resolve(createMockResponse({ data: { ...mockDocument, name: 'TASK-002' } }))
                 );
-                
+
                 await controller.load('TASK-002');
 
                 expect(cancelSpy).toHaveBeenCalled();
@@ -768,7 +768,7 @@ describe('P3-006: Form Controller', () => {
                 controller.on('on_auto_save_error', errorSpy);
 
                 controller.setValue('subject', 'Updated');
-                
+
                 // First attempt
                 await vi.advanceTimersByTimeAsync(100);
                 expect(errorSpy).toHaveBeenCalledTimes(1);

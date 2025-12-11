@@ -16,7 +16,7 @@ import {
     escapeCSV,
     type ExportConfig,
     type ExportProgress
-} from './export';
+} from '../export';
 
 // Mock fetch
 const fetchMock = vi.fn();

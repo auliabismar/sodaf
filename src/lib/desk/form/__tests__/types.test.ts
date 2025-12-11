@@ -22,8 +22,8 @@ import type {
     FormSidebarState,
     PrintFormatConfig,
     FormPrintSettings
-} from './types';
-import type { DocType } from '../../meta/doctype/types';
+} from '../types';
+import type { DocType } from '../../../meta/doctype/types';
 
 describe('P3-005: Form View Types and Interfaces', () => {
     // P3-005-T1: FormState interface compiles

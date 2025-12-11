@@ -15,14 +15,14 @@
 		min?: number | undefined;
 		max?: number | undefined;
 		step?: number;
-		onchange?: (value: number) => void;
+		onchange?: (value: number | null) => void;
 		onblur?: () => void;
 		onfocus?: () => void;
 	}
 
 	let {
 		field,
-		value = null,
+		value = $bindable(null),
 		error = '',
 		disabled = false,
 		readonly = false,
@@ -37,6 +37,22 @@
 		onfocus
 	}: Props = $props();
 
+	// Internal state for the input
+	let internalValue = $state<number | null>(value);
+
+	// Sync internal value with prop
+	$effect(() => {
+		internalValue = value;
+	});
+
+	// Watch for internal value changes (from +/- buttons or typing)
+	$effect(() => {
+		if (internalValue !== value) {
+			value = internalValue;
+			onchange?.(internalValue);
+		}
+	});
+
 	// Computed properties
 	let inputId = $derived(`input-${field.fieldname}`);
 	let inputMin = $derived(
@@ -49,11 +65,6 @@
 	let isInvalid = $derived(!!error);
 
 	// Event handlers
-	function handleChange(event: CustomEvent<number>) {
-		const newValue = event.detail;
-		onchange?.(newValue);
-	}
-
 	function handleBlur(event: FocusEvent) {
 		onblur?.();
 	}
@@ -114,7 +125,7 @@
 >
 	<NumberInput
 		id={inputId}
-		{value}
+		bind:value={internalValue}
 		disabled={disabled || readonly}
 		{readonly}
 		min={inputMin}
@@ -122,13 +133,8 @@
 		step={inputStep}
 		invalid={isInvalid}
 		invalidText={Array.isArray(error) ? error.join(', ') : error}
-		onchange={(event) => {
-			const customEvent = new CustomEvent('change', {
-				detail: event.currentTarget.valueAsNumber
-			});
-			handleChange(customEvent);
-		}}
 		onblur={handleBlur}
 		onfocus={handleFocus}
+		allowEmpty={true}
 	/>
 </BaseField>

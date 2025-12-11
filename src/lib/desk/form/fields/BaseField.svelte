@@ -42,7 +42,7 @@
 	// Computed properties
 	let hasError = $derived(error && error !== '');
 	let isRequired = $derived(required || field.required);
-	let isDisabled = $derived(disabled || readonly || field.read_only);
+	let isDisabled = $derived(disabled || field.read_only === true); // Note: readonly is NOT disabled
 	let isReadonly = $derived(readonly || field.read_only);
 	let isHidden = $derived(field.hidden);
 
@@ -101,19 +101,19 @@
 	{/if}
 
 	<div class="field-input-container" class:disabled={isDisabled}>
-	<!-- Slot for the actual field input -->
-	{@render children({
-		value,
-		disabled: isDisabled,
-		readonly: isReadonly,
-		required: isRequired,
-		id: labelId,
-		"aria-describedby": hasError ? errorId : undefined,
-		onchange: handleFieldChange,
-		onblur: handleFieldBlur,
-		onfocus: handleFieldFocus
-	})}
-</div>
+		<!-- Slot for the actual field input -->
+		{@render children({
+			value,
+			disabled: isDisabled,
+			readonly: isReadonly,
+			required: isRequired,
+			id: labelId,
+			'aria-describedby': hasError ? errorId : undefined,
+			onchange: handleFieldChange,
+			onblur: handleFieldBlur,
+			onfocus: handleFieldFocus
+		})}
+	</div>
 
 	{#if hasError}
 		<div class="error-container" id={errorId} role="alert" aria-live="polite">
@@ -130,6 +130,22 @@
 		display: flex;
 		flex-direction: column;
 		gap: 0.5rem;
+
+		/* Set Carbon theme variables locally to ensure visibility on all themes */
+		--cds-text-01: #161616;
+		--cds-text-02: #525252;
+		--cds-text-primary: #161616;
+		--cds-text-secondary: #525252;
+		--cds-icon-01: #161616;
+		--cds-icon-02: #525252;
+		--cds-field-01: #ffffff;
+		--cds-ui-01: #f4f4f4;
+		--cds-ui-03: #8d8d8d; /* Border color */
+		--cds-border-strong-01: #8d8d8d;
+		--cds-border-subtle-01: #e0e0e0;
+		--cds-interactive-01: #0f62fe;
+		--cds-focus: #0f62fe;
+		--cds-support-error: #da1e28;
 		margin-bottom: 1.5rem;
 		width: 100%;
 	}
@@ -138,11 +154,44 @@
 		display: none;
 	}
 
+	/* Global styles for Carbon inputs to ensure visibility */
+	.base-field
+		:global(input:not([type='checkbox']):not([type='radio']):not([type='color']):not([type='range'])),
+	.base-field :global(textarea),
+	.base-field :global(select) {
+		color: #161616 !important;
+		background-color: #ffffff;
+	}
+
+	.base-field
+		:global(
+			input[readonly]:not([type='checkbox']):not([type='radio']):not([type='color']):not([type='range'])
+		),
+	.base-field :global(textarea[readonly]) {
+		color: #525252 !important;
+		background-color: #f4f4f4 !important;
+	}
+
+	.base-field :global(.cds--label) {
+		color: #161616 !important;
+	}
+
 	.base-field.has-error .field-input-container :global(input),
 	.base-field.has-error .field-input-container :global(textarea),
 	.base-field.has-error .field-input-container :global(select) {
-		border-color: var(--cds-support-error);
-		box-shadow: inset 0 0 0 1px var(--cds-support-error);
+		border-color: var(--cds-support-error, #da1e28);
+		box-shadow: inset 0 0 0 1px var(--cds-support-error, #da1e28);
+	}
+
+	/* Force icon visibility for NumberInput and Select (both v10 bx-- and v11 cds-- prefixes) */
+	.base-field :global(.cds--number__control-btn),
+	.base-field :global(.cds--number__control-btn svg),
+	.base-field :global(.cds--select__arrow),
+	.base-field :global(.bx--number__control-btn),
+	.base-field :global(.bx--number__control-btn svg),
+	.base-field :global(.bx--select__arrow) {
+		fill: #161616 !important;
+		color: #161616 !important;
 	}
 
 	.field-label-container {
@@ -154,7 +203,7 @@
 
 	.field-label {
 		font-weight: 600;
-		color: var(--cds-text-primary);
+		color: var(--cds-text-primary, #161616);
 		margin: 0;
 	}
 
@@ -163,7 +212,7 @@
 	}
 
 	.required-indicator {
-		color: var(--cds-support-error);
+		color: var(--cds-support-error, #da1e28);
 		margin-left: 0.25rem;
 		font-weight: 700;
 	}
@@ -178,7 +227,7 @@
 		max-width: 300px;
 		font-size: 0.875rem;
 		line-height: 1.25rem;
-		color: var(--cds-text-secondary);
+		color: var(--cds-text-secondary, #525252);
 	}
 
 	.field-input-container {
@@ -205,7 +254,7 @@
 
 	.error-message {
 		font-size: 0.875rem;
-		color: var(--cds-support-error);
+		color: var(--cds-support-error, #da1e28);
 		font-weight: 500;
 		line-height: 1.25rem;
 	}

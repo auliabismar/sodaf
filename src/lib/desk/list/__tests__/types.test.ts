@@ -1,3 +1,9 @@
+/**
+ * P3-001: List View Types and Interfaces Tests
+ * 
+ * Tests to verify all list view interfaces compile correctly.
+ */
+
 import { describe, it, expect } from 'vitest';
 import type {
     ListViewConfig,
@@ -10,8 +16,9 @@ import type {
     PaginationState
 } from '../types';
 
-describe('List View Types', () => {
-    it('should compile ColumnConfig', () => {
+describe('P3-001: List View Types and Interfaces', () => {
+    // P3-001-T2: ColumnConfig interface compiles
+    it('P3-001-T2: ColumnConfig interface compiles', () => {
         const column: ColumnConfig = {
             fieldname: 'name',
             label: 'Name',
@@ -23,7 +30,8 @@ describe('List View Types', () => {
         expect(column.fieldname).toBe('name');
     });
 
-    it('should compile FilterConfig', () => {
+    // P3-001-T3: FilterConfig interface compiles
+    it('P3-001-T3: FilterConfig interface compiles', () => {
         const filter: FilterConfig = {
             fieldname: 'status',
             fieldtype: 'Select',
@@ -35,7 +43,8 @@ describe('List View Types', () => {
         expect(filter.fieldname).toBe('status');
     });
 
-    it('should compile RowAction', () => {
+    // P3-001-T4: RowAction interface compiles
+    it('P3-001-T4: RowAction interface compiles', () => {
         const action: RowAction = {
             label: 'Edit',
             icon: 'edit',
@@ -46,7 +55,8 @@ describe('List View Types', () => {
         expect(action.label).toBe('Edit');
     });
 
-    it('should compile BulkAction', () => {
+    // P3-001-T5: BulkAction interface compiles
+    it('P3-001-T5: BulkAction interface compiles', () => {
         const action: BulkAction = {
             label: 'Delete',
             icon: 'delete',
@@ -56,7 +66,8 @@ describe('List View Types', () => {
         expect(action.label).toBe('Delete');
     });
 
-    it('should compile SortConfig', () => {
+    // P3-001-T6: SortConfig interface compiles
+    it('P3-001-T6: SortConfig interface compiles', () => {
         const sort: SortConfig = {
             field: 'created_at',
             order: 'desc'
@@ -64,7 +75,8 @@ describe('List View Types', () => {
         expect(sort.field).toBe('created_at');
     });
 
-    it('should compile PaginationState', () => {
+    // P3-001-T8: PaginationState interface compiles
+    it('P3-001-T8: PaginationState interface compiles', () => {
         const pagination: PaginationState = {
             page: 1,
             page_size: 20,
@@ -74,7 +86,8 @@ describe('List View Types', () => {
         expect(pagination.total).toBe(100);
     });
 
-    it('should compile ListViewState', () => {
+    // P3-001-T7: ListViewState interface compiles
+    it('P3-001-T7: ListViewState interface compiles', () => {
         const state: ListViewState = {
             data: [{ id: 1, name: 'Test' }],
             loading: false,
@@ -91,7 +104,8 @@ describe('List View Types', () => {
         expect(state.loading).toBe(false);
     });
 
-    it('should compile ListViewConfig', () => {
+    // P3-001-T1: ListViewConfig interface compiles
+    it('P3-001-T1: ListViewConfig interface compiles', () => {
         const config: ListViewConfig = {
             doctype: 'User',
             columns: [

@@ -47,7 +47,8 @@
 	let inputId = $derived(`input-${field.fieldname}`);
 	let inputPlaceholder = $derived(placeholder || field.label || '#000000');
 	let isInvalid = $derived(!!error);
-	let isDisabled = $derived(disabled || readonly || field.read_only);
+	let isReadonly = $derived(readonly || field.read_only);
+	let isDisabled = $derived(disabled || field.read_only === true);
 	let displayColor = $derived(normalizeColor(value));
 	let colorPreviewStyle = $derived(`background-color: ${displayColor};`);
 
@@ -85,7 +86,7 @@
 	}
 
 	function toggleColorPicker() {
-		if (isDisabled) return;
+		if (isDisabled || isReadonly) return;
 
 		if (showColorPicker) {
 			closeColorPicker();
@@ -95,7 +96,7 @@
 	}
 
 	function openColorPicker() {
-		if (isDisabled || isPickerOpening) return;
+		if (isDisabled || isReadonly || isPickerOpening) return;
 
 		isPickerOpening = true;
 		showColorPicker = true;
@@ -127,6 +128,12 @@
 	function isValidColor(color: string): boolean {
 		if (!color || typeof color !== 'string') return false;
 
+		// During SSR (no document), use basic regex validation
+		if (typeof document === 'undefined') {
+			// Basic hex color validation for SSR
+			return /^#([0-9A-Fa-f]{3}|[0-9A-Fa-f]{6}|[0-9A-Fa-f]{8})$/.test(color);
+		}
+
 		// Create a temporary element to test color validity
 		const temp = document.createElement('div');
 		temp.style.color = color;
@@ -138,6 +145,15 @@
 	}
 
 	function normalizeColor(color: string): string {
+		// During SSR (no document), return color as-is or default
+		if (typeof document === 'undefined') {
+			// Basic hex validation for SSR
+			if (/^#([0-9A-Fa-f]{3}|[0-9A-Fa-f]{6}|[0-9A-Fa-f]{8})$/.test(color)) {
+				return color.toUpperCase();
+			}
+			return '#000000';
+		}
+
 		if (!isValidColor(color)) return '#000000';
 
 		// Convert to the specified format
@@ -303,7 +319,7 @@
 				type="text"
 				{value}
 				disabled={isDisabled}
-				{readonly}
+				readonly={isReadonly}
 				placeholder={inputPlaceholder}
 				invalid={isInvalid}
 				invalidText={Array.isArray(error) ? error.join(', ') : error}
@@ -371,7 +387,8 @@
 								id="picker-input"
 								type="color"
 								value={displayColor}
-								disabled={isDisabled}
+								disabled={isDisabled || isReadonly}
+								oninput={handleColorPickerChange}
 								onchange={handleColorPickerChange}
 								onblur={handleColorPickerBlur}
 								class="color-picker-input"
@@ -501,7 +518,7 @@
 
 	.color-picker-title {
 		font-weight: 600;
-		color: var(--cds-text-primary);
+		color: var(--cds-text-primary, #161616);
 	}
 
 	.color-picker-content {
@@ -520,7 +537,7 @@
 	.color-picker-label {
 		font-size: 0.875rem;
 		font-weight: 500;
-		color: var(--cds-text-secondary);
+		color: var(--cds-text-secondary, #525252);
 		min-width: 60px;
 	}
 
@@ -539,7 +556,7 @@
 	.color-value,
 	.alpha-value {
 		font-size: 0.875rem;
-		color: var(--cds-text-primary);
+		color: var(--cds-text-primary, #161616);
 		font-family: monospace;
 		min-width: 80px;
 		text-align: right;
