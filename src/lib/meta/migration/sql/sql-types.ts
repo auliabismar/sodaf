@@ -14,28 +14,28 @@ import type { SchemaDiff, FieldChange, ColumnChange, ColumnRename } from '../typ
 export interface SQLOptions {
 	/** Custom field type mappings */
 	typeMappings?: Record<string, SQLiteTypeMapping>;
-	
+
 	/** Table naming strategy */
 	tableNamingStrategy?: 'snake_case' | 'camelCase' | 'preserve';
-	
+
 	/** Identifier quoting style */
 	identifierQuote?: '`' | '"' | '[' | ']';
-	
+
 	/** Whether to include comments in generated SQL */
 	includeComments?: boolean;
-	
+
 	/** Whether to format SQL with proper indentation */
 	formatSQL?: boolean;
-	
+
 	/** Table rebuild strategy */
 	defaultRebuildStrategy?: TableRebuildStrategy;
-	
+
 	/** Foreign key handling during rebuilds */
 	foreignKeyStrategy?: 'drop' | 'preserve' | 'recreate';
-	
+
 	/** Maximum line length for formatted SQL */
 	maxLineLength?: number;
-	
+
 	/** Whether to validate SQL syntax */
 	validateSQL?: boolean;
 }
@@ -46,31 +46,31 @@ export interface SQLOptions {
 export interface SQLiteTypeMapping {
 	/** SQLite data type */
 	sqliteType: string;
-	
+
 	/** Whether type supports length */
 	supportsLength: boolean;
-	
+
 	/** Default length if not specified */
 	defaultLength?: number;
-	
+
 	/** Whether type supports precision */
 	supportsPrecision: boolean;
-	
+
 	/** Default precision if not specified */
 	defaultPrecision?: number;
-	
+
 	/** Conversion function for data migration */
 	converter?: (value: any) => any;
-	
+
 	/** Validation function for type compatibility */
 	validator?: (from: string, to: string) => boolean;
-	
+
 	/** Whether type can be used in PRIMARY KEY */
 	canBePrimaryKey: boolean;
-	
+
 	/** Whether type can be used in UNIQUE constraint */
 	canBeUnique: boolean;
-	
+
 	/** Whether type can be used in INDEX */
 	canBeIndexed: boolean;
 }
@@ -81,19 +81,19 @@ export interface SQLiteTypeMapping {
 export interface ColumnDefinitionSQL {
 	/** Column name (quoted) */
 	name: string;
-	
+
 	/** SQLite data type */
 	type: string;
-	
+
 	/** Column constraints */
 	constraints: ColumnConstraintsSQL;
-	
+
 	/** Column comment */
 	comment?: string;
-	
+
 	/** Whether column is auto-increment */
 	autoIncrement: boolean;
-	
+
 	/** Whether column is primary key */
 	primaryKey: boolean;
 }
@@ -104,19 +104,19 @@ export interface ColumnDefinitionSQL {
 export interface ColumnConstraintsSQL {
 	/** NOT NULL constraint */
 	notNull?: boolean;
-	
+
 	/** UNIQUE constraint */
 	unique?: boolean;
-	
+
 	/** DEFAULT value */
 	defaultValue?: string;
-	
+
 	/** CHECK constraint */
 	check?: string;
-	
+
 	/** FOREIGN KEY constraint */
 	foreignKey?: ForeignKeySQL;
-	
+
 	/** COLLATE clause */
 	collate?: string;
 }
@@ -127,13 +127,13 @@ export interface ColumnConstraintsSQL {
 export interface ForeignKeySQL {
 	/** Referenced table */
 	referencedTable: string;
-	
+
 	/** Referenced column */
 	referencedColumn: string;
-	
+
 	/** ON DELETE action */
 	onDelete: string;
-	
+
 	/** ON UPDATE action */
 	onUpdate: string;
 }
@@ -144,22 +144,22 @@ export interface ForeignKeySQL {
 export interface IndexDefinitionSQL {
 	/** Index name (quoted) */
 	name: string;
-	
+
 	/** Table name (quoted) */
 	table: string;
-	
+
 	/** Indexed columns with order */
 	columns: IndexColumnSQL[];
-	
+
 	/** Whether index is unique */
 	unique: boolean;
-	
+
 	/** Index type (btree, hash, etc.) */
 	type?: string;
-	
+
 	/** WHERE clause for partial index */
 	where?: string;
-	
+
 	/** Index comment */
 	comment?: string;
 }
@@ -170,10 +170,10 @@ export interface IndexDefinitionSQL {
 export interface IndexColumnSQL {
 	/** Column name (quoted) */
 	name: string;
-	
+
 	/** Sort order */
 	order: 'ASC' | 'DESC';
-	
+
 	/** Collation */
 	collate?: string;
 }
@@ -184,28 +184,28 @@ export interface IndexColumnSQL {
 export interface TableRebuildStrategy {
 	/** Whether to create temporary table */
 	useTempTable: boolean;
-	
+
 	/** Temporary table naming pattern */
 	tempTablePattern: string;
-	
+
 	/** Data copying strategy */
 	copyStrategy: 'batch' | 'single' | 'cursor';
-	
+
 	/** Batch size for large tables */
 	batchSize?: number;
-	
+
 	/** Whether to drop original table after successful migration */
 	dropOriginal: boolean;
-	
+
 	/** Whether to verify data after migration */
 	verifyData: boolean;
-	
+
 	/** Whether to preserve indexes during rebuild */
 	preserveIndexes: boolean;
-	
+
 	/** Whether to preserve foreign keys during rebuild */
 	preserveForeignKeys: boolean;
-	
+
 	/** Whether to preserve triggers during rebuild */
 	preserveTriggers: boolean;
 }
@@ -216,19 +216,19 @@ export interface TableRebuildStrategy {
 export interface MigrationSQL {
 	/** Forward migration SQL statements */
 	forward: SQLStatement[];
-	
+
 	/** Rollback migration SQL statements */
 	rollback: SQLStatement[];
-	
+
 	/** Whether migration is destructive */
 	destructive: boolean;
-	
+
 	/** Warnings about potential data loss */
 	warnings: string[];
-	
+
 	/** Estimated execution time in seconds */
 	estimatedTime?: number;
-	
+
 	/** Migration metadata */
 	metadata: MigrationMetadata;
 }
@@ -239,30 +239,36 @@ export interface MigrationSQL {
 export interface SQLStatement {
 	/** SQL statement */
 	sql: string;
-	
+
 	/** Statement type */
 	type: SQLStatementType;
-	
+
 	/** Whether statement is destructive */
 	destructive: boolean;
-	
+
 	/** Estimated execution time in seconds */
 	estimatedTime?: number;
-	
+
 	/** Statement comment */
 	comment?: string;
-	
+
 	/** Related table */
 	table?: string;
-	
+
 	/** Related column */
 	column?: string;
+
+	/** Column definition for restoration/rollback */
+	columnDef?: DocField;
+
+	/** Additional metadata */
+	meta?: any;
 }
 
 /**
  * SQL Statement Type
  */
-export type SQLStatementType = 
+export type SQLStatementType =
 	| 'create_table'
 	| 'drop_table'
 	| 'alter_table'
@@ -281,22 +287,22 @@ export type SQLStatementType =
 export interface MigrationMetadata {
 	/** Migration ID */
 	id: string;
-	
+
 	/** Target DocType */
 	doctype: string;
-	
+
 	/** Migration version */
 	version: string;
-	
+
 	/** Migration timestamp */
 	timestamp: Date;
-	
+
 	/** Schema diff this migration addresses */
 	diff: SchemaDiff;
-	
+
 	/** Migration options */
 	options: MigrationOptions;
-	
+
 	/** Additional metadata */
 	custom?: Record<string, any>;
 }
@@ -307,22 +313,22 @@ export interface MigrationMetadata {
 export interface MigrationOptions {
 	/** Whether to create backup before migration */
 	backup?: boolean;
-	
+
 	/** Whether to validate data after migration */
 	validateData?: boolean;
-	
+
 	/** Whether to continue on error */
 	continueOnError?: boolean;
-	
+
 	/** Whether to perform dry run */
 	dryRun?: boolean;
-	
+
 	/** Batch size for large operations */
 	batchSize?: number;
-	
+
 	/** Timeout for migration in seconds */
 	timeout?: number;
-	
+
 	/** Custom migration context */
 	context?: Record<string, any>;
 }

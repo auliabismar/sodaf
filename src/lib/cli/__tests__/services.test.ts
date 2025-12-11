@@ -5,7 +5,7 @@
  * implementations and their interactions with the system.
  */
 
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach, vi, type MockedClass } from 'vitest';
 import { MigrationService } from '../services/migration-service';
 import { SiteService } from '../services/site-service';
 import { ConfigService } from '../services/config-service';
@@ -13,6 +13,13 @@ import type { ExecutionContext, CLIConfig } from '../types';
 import type { SiteInfo } from '../site';
 import type { SiteContext } from '../../core/site/types';
 import type { Database } from '../../core/database/database';
+
+// Import modules to be mocked
+import { MigrationApplier } from '../../meta/migration/apply';
+import { DocTypeEngine } from '../../meta/doctype/doctype-engine';
+import { MigrationHistoryManager } from '../../meta/migration/history/history-manager';
+import { SiteManager } from '../site';
+import { SQLiteDatabase } from '../../core/database/sqlite-database';
 
 // Mock dependencies
 vi.mock('../../meta/migration/apply');
@@ -87,7 +94,8 @@ describe('CLI Services', () => {
 				migrationHistory: vi.fn()
 			} as any,
 			progress: {
-				start: vi.fn(),
+				start: vi.fn().mockReturnThis(),
+				complete: vi.fn(),
 				spinner: vi.fn(),
 				warning: vi.fn(),
 				error: vi.fn()
@@ -107,6 +115,18 @@ describe('CLI Services', () => {
 			env: {},
 			startTime: new Date()
 		};
+
+		// Setup base mocks for dependencies that are always used
+		// SiteManager mock
+		const MockSiteManager = vi.mocked(SiteManager);
+		MockSiteManager.prototype.createSiteContext = vi.fn().mockResolvedValue(mockSite);
+		MockSiteManager.getDefaultSitesDir = vi.fn().mockReturnValue('/default/sites');
+
+		// SQLiteDatabase mock
+		vi.mocked(SQLiteDatabase).mockImplementation(function () { return mockDatabase as any; });
+
+		// DocTypeEngine mock
+		vi.mocked(DocTypeEngine).mockImplementation(function () { return {} as any; });
 	});
 
 	describe('MigrationService', () => {
@@ -120,31 +140,16 @@ describe('CLI Services', () => {
 
 		it('should run migrations successfully', async () => {
 			// Arrange
-			const mockApplier = {
-				syncAllDocTypes: vi.fn().mockResolvedValue({
-					success: true,
-					sql: ['CREATE TABLE test (...)'],
-					warnings: [],
-					errors: [],
-					executionTime: 150
-				})
+			const mockSyncResult = {
+				success: true,
+				sql: ['CREATE TABLE test (...)'],
+				warnings: [],
+				errors: [],
+				executionTime: 150
 			};
 
-			const mockMigrationApplier = vi.fn().mockImplementation(() => mockApplier);
-			const mockDocTypeEngine = vi.fn();
-
-			// Mock dynamic imports
-			const mockImport = vi.fn();
-			(vi as any).import = mockImport;
-			mockImport.mockImplementation((path: string) => {
-				if (path === '../../meta/migration/apply') {
-					return Promise.resolve({ MigrationApplier: mockMigrationApplier });
-				}
-				if (path === '../../meta/doctype/doctype-engine') {
-					return Promise.resolve({ DocTypeEngine: mockDocTypeEngine });
-				}
-				return Promise.resolve({});
-			}) as any;
+			const MockMigrationApplier = vi.mocked(MigrationApplier);
+			MockMigrationApplier.prototype.syncAllDocTypes = vi.fn().mockResolvedValue(mockSyncResult);
 
 			const service = new MigrationService();
 			const options = {
@@ -162,7 +167,7 @@ describe('CLI Services', () => {
 
 			// Assert
 			expect(result.success).toBe(true);
-			expect(mockApplier.syncAllDocTypes).toHaveBeenCalledWith({
+			expect(MockMigrationApplier.prototype.syncAllDocTypes).toHaveBeenCalledWith({
 				force: false,
 				backup: true,
 				timeout: 300,
@@ -172,25 +177,8 @@ describe('CLI Services', () => {
 
 		it('should handle migration failures', async () => {
 			// Arrange
-			const mockApplier = {
-				syncAllDocTypes: vi.fn().mockRejectedValue(new Error('Migration failed'))
-			};
-
-			const mockMigrationApplier = vi.fn().mockImplementation(() => mockApplier);
-			const mockDocTypeEngine = vi.fn();
-
-			// Mock dynamic imports
-			const mockImport = vi.fn();
-			(vi as any).import = mockImport;
-			mockImport.mockImplementation((path: string) => {
-				if (path === '../../meta/migration/apply') {
-					return Promise.resolve({ MigrationApplier: mockMigrationApplier });
-				}
-				if (path === '../../meta/doctype/doctype-engine') {
-					return Promise.resolve({ DocTypeEngine: mockDocTypeEngine });
-				}
-				return Promise.resolve({});
-			}) as any;
+			const MockMigrationApplier = vi.mocked(MigrationApplier);
+			MockMigrationApplier.prototype.syncAllDocTypes = vi.fn().mockRejectedValue(new Error('Migration failed'));
 
 			const service = new MigrationService();
 			const options = {
@@ -247,38 +235,25 @@ describe('CLI Services', () => {
 
 		it('should get migration status', async () => {
 			// Arrange
-			const mockHistoryManager = {
-				getMigrationHistory: vi.fn().mockResolvedValue({
-					migrations: [
-						{
-							id: '001_initial',
-							doctype: 'User',
-							applied: true,
-							timestamp: new Date('2023-01-01'),
-							destructive: false
-						}
-					]
-				}),
-				getMigrationStats: vi.fn().mockResolvedValue({
-					total: 1,
-					applied: 1,
-					pending: 0,
-					failed: 0,
-					lastMigrationDate: new Date('2023-01-01')
-				})
-			};
-
-			const mockMigrationHistoryManager = vi.fn().mockImplementation(() => mockHistoryManager);
-
-			// Mock dynamic imports
-			const mockImport = vi.fn();
-			(vi as any).import = mockImport;
-			mockImport.mockImplementation((path: string) => {
-				if (path === '../../meta/migration/history/history-manager') {
-					return Promise.resolve({ MigrationHistoryManager: mockMigrationHistoryManager });
-				}
-				return Promise.resolve({});
-			}) as any;
+			const MockHistoryManager = vi.mocked(MigrationHistoryManager);
+			MockHistoryManager.prototype.getMigrationHistory = vi.fn().mockResolvedValue({
+				migrations: [
+					{
+						id: '001_initial',
+						doctype: 'User',
+						applied: true,
+						timestamp: new Date('2023-01-01'),
+						destructive: false
+					}
+				]
+			});
+			MockHistoryManager.prototype.getMigrationStats = vi.fn().mockResolvedValue({
+				total: 1,
+				applied: 1,
+				pending: 0,
+				failed: 0,
+				lastMigrationDate: new Date('2023-01-01')
+			});
 
 			const service = new MigrationService();
 
@@ -289,39 +264,27 @@ describe('CLI Services', () => {
 			expect(result.migrations).toHaveLength(1);
 			expect(result.stats.total).toBe(1);
 			expect(result.stats.applied).toBe(1);
-			expect(mockHistoryManager.getMigrationHistory).toHaveBeenCalled();
-			expect(mockHistoryManager.getMigrationStats).toHaveBeenCalled();
+			expect(MockHistoryManager.prototype.getMigrationHistory).toHaveBeenCalled();
+			expect(MockHistoryManager.prototype.getMigrationStats).toHaveBeenCalled();
 		});
 
 		it('should rollback migrations successfully', async () => {
 			// Arrange
-			const mockHistoryManager = {
-				getMigrationHistory: vi.fn().mockResolvedValue({
-					migrations: [
-						{
-							id: '001_initial',
-							doctype: 'User',
-							applied: true,
-							timestamp: new Date('2023-01-01'),
-							destructive: false,
-							rollbackSql: 'DROP TABLE test'
-						}
-					]
-				}),
-				updateMigrationStatus: vi.fn()
-			};
-
-			const mockMigrationHistoryManager = vi.fn().mockImplementation(() => mockHistoryManager);
-
-			// Mock dynamic imports
-			const mockImport = vi.fn();
-			(vi as any).import = mockImport;
-			mockImport.mockImplementation((path: string) => {
-				if (path === '../../meta/migration/history/history-manager') {
-					return Promise.resolve({ MigrationHistoryManager: mockMigrationHistoryManager });
-				}
-				return Promise.resolve({});
-			}) as any;
+			const MockHistoryManager = vi.mocked(MigrationHistoryManager);
+			MockHistoryManager.prototype.getMigrationHistory = vi.fn().mockResolvedValue({
+				migrations: [
+					{
+						id: '001_initial',
+						doctype: 'User',
+						applied: true,
+						timestamp: new Date('2023-01-01'),
+						destructive: false,
+						rollbackSql: 'DROP TABLE test',
+						affectedRows: 1
+					}
+				]
+			});
+			MockHistoryManager.prototype.updateMigrationStatus = vi.fn();
 
 			const service = new MigrationService();
 			const options = {
@@ -340,7 +303,7 @@ describe('CLI Services', () => {
 			// Assert
 			expect(result.success).toBe(true);
 			expect(result.sql).toContain('DROP TABLE test');
-			expect(mockHistoryManager.updateMigrationStatus).toHaveBeenCalledWith(
+			expect(MockHistoryManager.prototype.updateMigrationStatus).toHaveBeenCalledWith(
 				'001_initial',
 				'ROLLED_BACK'
 			);
@@ -348,22 +311,9 @@ describe('CLI Services', () => {
 
 		it('should handle rollback when no migrations to rollback', async () => {
 			// Arrange
-			const mockHistoryManager = {
-				getMigrationHistory: vi.fn().mockResolvedValue({
-					migrations: [] // No applied migrations
-				})
-			};
-
-			const mockMigrationHistoryManager = vi.fn().mockImplementation(() => mockHistoryManager);
-
-			// Mock dynamic imports
-			const mockImport = vi.fn();
-			(vi as any).import = mockImport;
-			mockImport.mockImplementation((path: string) => {
-				if (path === '../../meta/migration/history/history-manager') {
-					return Promise.resolve({ MigrationHistoryManager: mockMigrationHistoryManager });
-				}
-				return Promise.resolve({});
+			const MockHistoryManager = vi.mocked(MigrationHistoryManager);
+			MockHistoryManager.prototype.getMigrationHistory = vi.fn().mockResolvedValue({
+				migrations: [] // No applied migrations
 			});
 
 			const service = new MigrationService();
@@ -397,35 +347,26 @@ describe('CLI Services', () => {
 
 		it('should get site info', async () => {
 			// Arrange
-			const mockSiteManager = {
-				getSite: vi.fn().mockResolvedValue({
-					name: 'test-site',
-					config: {
-						db_name: 'test_site',
-						db_type: 'sqlite',
-						maintenance_mode: false,
-						developer_mode: false,
-						max_file_size: 1048576,
-						allowed_file_types: ['jpg', 'png', 'pdf'],
-						session_expiry: 3600
-					},
-					filePath: '/test/sites/test-site/test-site.json',
-					active: true,
-					createdAt: new Date('2023-01-01'),
-					modifiedAt: new Date('2023-01-01')
-				} as SiteInfo),
-				createSiteContext: vi.fn().mockResolvedValue(mockSite)
-			};
+			const siteInfo = {
+				name: 'test-site',
+				config: {
+					db_name: 'test_site',
+					db_type: 'sqlite',
+					maintenance_mode: false,
+					developer_mode: false,
+					max_file_size: 1048576,
+					allowed_file_types: ['jpg', 'png', 'pdf'],
+					session_expiry: 3600
+				},
+				filePath: '/test/sites/test-site/test-site.json',
+				active: true,
+				createdAt: new Date('2023-01-01'),
+				modifiedAt: new Date('2023-01-01')
+			} as SiteInfo;
 
-			// Mock dynamic imports
-			const mockImport = vi.fn();
-			(vi as any).import = mockImport;
-			mockImport.mockImplementation((path: string) => {
-				if (path === '../site') {
-					return Promise.resolve({ SiteManager: vi.fn().mockImplementation(() => mockSiteManager) });
-				}
-				return Promise.resolve({});
-			}) as any;
+			const MockSiteManager = vi.mocked(SiteManager);
+			// SiteService uses getSite method from SiteManager
+			MockSiteManager.prototype.getSite = vi.fn().mockResolvedValue(siteInfo);
 
 			const service = new SiteService();
 
@@ -448,6 +389,12 @@ describe('CLI Services', () => {
 				allowed_file_types: ['jpg', 'png', 'pdf'],
 				session_expiry: 3600
 			};
+
+			const MockSiteManager = vi.mocked(SiteManager);
+			MockSiteManager.prototype.createSite = vi.fn().mockResolvedValue({
+				name: 'test-site',
+				// Add other properties if needed
+			} as any);
 
 			const service = new SiteService();
 
@@ -555,35 +502,19 @@ describe('CLI Services', () => {
 			const siteService = new SiteService();
 			const configService = new ConfigService();
 
-			// Mock all dynamic imports
-			const mockImport = vi.fn();
-			(vi as any).import = mockImport;
-			mockImport.mockImplementation((path: string) => {
-				if (path === '../../meta/migration/apply') {
-					return Promise.resolve({
-						MigrationApplier: vi.fn().mockImplementation(() => ({
-							syncAllDocTypes: vi.fn().mockResolvedValue({
-								success: true,
-								sql: [],
-								warnings: [],
-								errors: [],
-								executionTime: 0
-							})
-						}))
-					});
-				}
-				if (path === '../../meta/doctype/doctype-engine') {
-					return Promise.resolve({ DocTypeEngine: vi.fn() });
-				}
-				if (path === '../site') {
-					return Promise.resolve({
-						SiteManager: vi.fn().mockImplementation(() => ({
-							createSiteContext: vi.fn().mockResolvedValue(mockSite)
-						}))
-					});
-				}
-				return Promise.resolve({});
-			}) as any;
+			const MockMigrationApplier = vi.mocked(MigrationApplier);
+			MockMigrationApplier.prototype.syncAllDocTypes = vi.fn().mockResolvedValue({
+				success: true,
+				sql: [],
+				warnings: [],
+				errors: [],
+				executionTime: 0
+			});
+
+			const MockSiteManager = vi.mocked(SiteManager);
+			MockSiteManager.prototype.getSite = vi.fn().mockResolvedValue({
+				name: 'test-site'
+			} as any);
 
 			// Act
 			const config = configService.getConfig(mockContext);
@@ -622,15 +553,11 @@ describe('CLI Services', () => {
 				verbose: true
 			};
 
-			// Mock dynamic imports to throw error
-			const mockImport = vi.fn();
-			(vi as any).import = mockImport;
-			mockImport.mockImplementation((path: string) => {
-				if (path === '../../meta/migration/apply') {
-					return Promise.reject(new Error('Database connection failed'));
-				}
-				return Promise.resolve({});
-			}) as any;
+			// Force SQLiteDatabase to fail when instantiated
+			const MockSQLiteDatabase = vi.mocked(SQLiteDatabase);
+			MockSQLiteDatabase.mockImplementationOnce(function () {
+				throw new Error('Database connection failed');
+			} as any);
 
 			// Act
 			const result = await service.runMigrations(options, mockContext);
@@ -655,31 +582,14 @@ describe('CLI Services', () => {
 				verbose: false
 			};
 
-			// Mock fast operations
-			const mockApplier = {
-				syncAllDocTypes: vi.fn().mockResolvedValue({
-					success: true,
-					sql: [],
-					warnings: [],
-					errors: [],
-					executionTime: 10
-				})
-			};
-
-			const mockMigrationApplier = vi.fn().mockImplementation(() => mockApplier);
-			const mockDocTypeEngine = vi.fn();
-
-			const mockImport = vi.fn();
-			(vi as any).import = mockImport;
-			mockImport.mockImplementation((path: string) => {
-				if (path === '../../meta/migration/apply') {
-					return Promise.resolve({ MigrationApplier: mockMigrationApplier });
-				}
-				if (path === '../../meta/doctype/doctype-engine') {
-					return Promise.resolve({ DocTypeEngine: mockDocTypeEngine });
-				}
-				return Promise.resolve({});
-			}) as any;
+			const MockMigrationApplier = vi.mocked(MigrationApplier);
+			MockMigrationApplier.prototype.syncAllDocTypes = vi.fn().mockResolvedValue({
+				success: true,
+				sql: [],
+				warnings: [],
+				errors: [],
+				executionTime: 10
+			});
 
 			// Act
 			const startTime = Date.now();

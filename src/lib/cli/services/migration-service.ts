@@ -29,7 +29,7 @@ export interface IMigrationService {
 		options: MigrationCommandOptions,
 		context: ExecutionContext
 	): Promise<MigrationResult>;
-	
+
 	/**
 	 * Show migration dry run
 	 * @param options Migration options
@@ -40,7 +40,7 @@ export interface IMigrationService {
 		options: MigrationCommandOptions,
 		context: ExecutionContext
 	): Promise<MigrationResult>;
-	
+
 	/**
 	 * Get migration status
 	 * @param siteName Site name
@@ -51,7 +51,7 @@ export interface IMigrationService {
 		siteName: string,
 		context: ExecutionContext
 	): Promise<MigrationHistory>;
-	
+
 	/**
 	 * Rollback migrations
 	 * @param options Migration options
@@ -78,14 +78,16 @@ export class MigrationService implements IMigrationService {
 		options: MigrationCommandOptions,
 		context: ExecutionContext
 	): Promise<MigrationResult> {
-		const site = await this.getSiteContext(options.site, context);
-		const database = await this.getDatabase(site);
-		
+		let database: Database | undefined;
+
 		try {
+			const site = await this.getSiteContext(options.site, context);
+			database = await this.getDatabase(site);
+
 			// Create migration applier
 			const { MigrationApplier } = await import('../../meta/migration/apply');
 			const { DocTypeEngine } = await import('../../meta/doctype/doctype-engine');
-			
+
 			const doctypeEngine = new (DocTypeEngine as any)(database);
 			const applier = new MigrationApplier(database, doctypeEngine, {
 				dryRun: options.dryRun || false,
@@ -98,7 +100,7 @@ export class MigrationService implements IMigrationService {
 				validateData: true,
 				context: { user: 'cli' }
 			});
-			
+
 			// Run migrations
 			const result = await applier.syncAllDocTypes({
 				force: options.force || false,
@@ -106,15 +108,15 @@ export class MigrationService implements IMigrationService {
 				timeout: options.timeout || 300,
 				continueOnError: options.continueOnError || false
 			});
-			
+
 			// Report progress if verbose
 			if (options.verbose) {
 				context.progress.start('Migration', result.totalTime || 0);
 				context.progress.start('Migrations').complete('Migrations completed');
 			}
-			
+
 			return result;
-			
+
 		} catch (error) {
 			return {
 				success: false,
@@ -130,7 +132,7 @@ export class MigrationService implements IMigrationService {
 			}
 		}
 	}
-	
+
 	/**
 	 * Show migration dry run
 	 * @param options Migration options
@@ -144,7 +146,7 @@ export class MigrationService implements IMigrationService {
 		const dryRunOptions = { ...options, dryRun: true };
 		return this.runMigrations(dryRunOptions, context);
 	}
-	
+
 	/**
 	 * Get migration status
 	 * @param siteName Site name
@@ -155,28 +157,29 @@ export class MigrationService implements IMigrationService {
 		siteName: string,
 		context: ExecutionContext
 	): Promise<MigrationHistory> {
-		const site = await this.getSiteContext(siteName, context);
-		const database = await this.getDatabase(site);
-		
+		let database: Database | undefined;
+
 		try {
+			const site = await this.getSiteContext(siteName, context);
+			database = await this.getDatabase(site);
+
 			// Get migration history
 			const { MigrationHistoryManager } = await import('../../meta/migration/history/history-manager');
 			const historyManager = new MigrationHistoryManager(database);
-			
+
 			const history = await historyManager.getMigrationHistory();
-			
+
 			// Get migration statistics
 			const stats = await historyManager.getMigrationStats();
-			
+
 			return {
 				...history,
 				stats
 			};
-			
+
 		} catch (error) {
-			throw new Error(`Failed to get migration status: ${
-				error instanceof Error ? error.message : String(error)
-			}`);
+			throw new Error(`Failed to get migration status: ${error instanceof Error ? error.message : String(error)
+				}`);
 		} finally {
 			// Close database connection if needed
 			if (database && 'close' in database) {
@@ -184,7 +187,7 @@ export class MigrationService implements IMigrationService {
 			}
 		}
 	}
-	
+
 	/**
 	 * Rollback migrations
 	 * @param options Migration options
@@ -195,20 +198,22 @@ export class MigrationService implements IMigrationService {
 		options: MigrationCommandOptions,
 		context: ExecutionContext
 	): Promise<MigrationResult> {
-		const site = await this.getSiteContext(options.site, context);
-		const database = await this.getDatabase(site);
-		
+		let database: Database | undefined;
+
 		try {
+			const site = await this.getSiteContext(options.site, context);
+			database = await this.getDatabase(site);
+
 			// Get migration history
 			const { MigrationHistoryManager } = await import('../../meta/migration/history/history-manager');
 			const historyManager = new MigrationHistoryManager(database);
-			
+
 			// Determine which migrations to rollback
 			const migrationsToRollback = await this.getMigrationsToRollback(
 				options,
 				historyManager
 			);
-			
+
 			if (migrationsToRollback.length === 0) {
 				return {
 					success: true,
@@ -218,14 +223,14 @@ export class MigrationService implements IMigrationService {
 					executionTime: 0
 				};
 			}
-			
+
 			// Confirm rollback if not forced
 			if (!options.force) {
 				const confirm = await this.confirmRollback(
 					migrationsToRollback,
 					context
 				);
-				
+
 				if (!confirm) {
 					return {
 						success: false,
@@ -236,21 +241,21 @@ export class MigrationService implements IMigrationService {
 					};
 				}
 			}
-			
+
 			// Execute rollback
 			const sqlStatements: string[] = [];
 			const warnings: string[] = [];
 			let totalAffected = 0;
-			
+
 			for (const migration of migrationsToRollback) {
 				if (migration.rollbackSql) {
 					const rollbackSql = Array.isArray(migration.rollbackSql)
 						? migration.rollbackSql
 						: [migration.rollbackSql];
-					
+
 					sqlStatements.push(...rollbackSql);
 					totalAffected += migration.affectedRows || 0;
-					
+
 					// Update migration status
 					await historyManager.updateMigrationStatus(
 						migration.id,
@@ -258,7 +263,7 @@ export class MigrationService implements IMigrationService {
 					);
 				}
 			}
-			
+
 			return {
 				success: true,
 				sql: sqlStatements,
@@ -267,7 +272,7 @@ export class MigrationService implements IMigrationService {
 				affectedRows: totalAffected,
 				executionTime: 0
 			};
-			
+
 		} catch (error) {
 			return {
 				success: false,
@@ -283,7 +288,7 @@ export class MigrationService implements IMigrationService {
 			}
 		}
 	}
-	
+
 	/**
 	 * Get site context
 	 * @param siteName Site name
@@ -297,15 +302,15 @@ export class MigrationService implements IMigrationService {
 		if (context.site) {
 			return context.site;
 		}
-		
+
 		// Load site from site manager
 		const { SiteManager } = await import('../site');
 		const sitesDir = context.config.sitesDir || SiteManager.getDefaultSitesDir();
 		const siteManager = new SiteManager(sitesDir);
-		
+
 		return await siteManager.createSiteContext(siteName || null, context.config);
 	}
-	
+
 	/**
 	 * Get database connection
 	 * @param site Site context
@@ -315,7 +320,7 @@ export class MigrationService implements IMigrationService {
 		const { SQLiteDatabase } = await import('../../core/database/sqlite-database');
 		return new SQLiteDatabase({ path: site.db_path });
 	}
-	
+
 	/**
 	 * Get migrations to rollback
 	 * @param options Migration options
@@ -331,22 +336,22 @@ export class MigrationService implements IMigrationService {
 		const appliedMigrations = history.migrations
 			.filter((m: any) => m.applied)
 			.sort((a: any, b: any) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
-		
+
 		if (options.id) {
 			// Rollback specific migration
 			const migration = appliedMigrations.find((m: any) => m.id === options.id);
 			return migration ? [migration] : [];
 		}
-		
+
 		if (options.steps) {
 			// Rollback last N migrations
 			return appliedMigrations.slice(0, options.steps);
 		}
-		
+
 		// Default: rollback last migration
 		return appliedMigrations.slice(0, 1);
 	}
-	
+
 	/**
 	 * Confirm rollback with user
 	 * @param migrations Migrations to rollback

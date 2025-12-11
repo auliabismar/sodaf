@@ -102,19 +102,28 @@ export class VirtualDocTypeManager implements IVirtualManager {
 			}
 
 			// Create and initialize controller
-			console.log('[DEBUG] Creating controller...');
-			const controller = await this.createController(virtualDocType);
-			console.log('[DEBUG] Controller created:', controller);
-			await controller.initialize();
+			try {
+				console.log('[DEBUG] Creating controller...');
+				const controller = await this.createController(virtualDocType);
+				console.log('[DEBUG] Controller created:', controller);
+				await controller.initialize();
 
-			// Store Virtual DocType and controller
+				// Store controller
+				this.controllers.set(virtualDocType.name, controller);
+
+				// Update Virtual DocType status
+				virtualDocType.status = 'active';
+				virtualDocType.last_refreshed = new Date();
+			} catch (error) {
+				console.warn(`[WARN] Failed to create controller for ${virtualDocType.name}:`, error);
+				// Set error status but still register the DocType
+				virtualDocType.status = 'error';
+				virtualDocType.error_message = error instanceof Error ? error.message : String(error);
+			}
+
+			// Store Virtual DocType (even if failed)
 			this.virtualDocTypes.set(virtualDocType.name, virtualDocType);
-			this.controllers.set(virtualDocType.name, controller);
 			console.log(`[DEBUG] Registered ${virtualDocType.name}. Map size: ${this.virtualDocTypes.size}. Controller map size: ${this.controllers.size}`);
-
-			// Update Virtual DocType status
-			virtualDocType.status = 'active';
-			virtualDocType.last_refreshed = new Date();
 		});
 	}
 
@@ -126,7 +135,8 @@ export class VirtualDocTypeManager implements IVirtualManager {
 		return this.acquireRegistrationLock(async () => {
 			const virtualDocType = this.virtualDocTypes.get(name);
 			if (!virtualDocType) {
-				throw new VirtualDocTypeNotFoundError(name);
+				// Idempotent: if not found, consider it already unregistered
+				return;
 			}
 
 			const controller = this.controllers.get(name);
@@ -243,6 +253,15 @@ export class VirtualDocTypeManager implements IVirtualManager {
 	 */
 	public async getController(name: string): Promise<IVirtualController | null> {
 		const controller = this.controllers.get(name) || null;
+
+		// check if it's in error state
+		if (!controller) {
+			const vDetail = this.virtualDocTypes.get(name);
+			if (vDetail && vDetail.status === 'error' && vDetail.error_message) {
+				throw new Error(vDetail.error_message);
+			}
+		}
+
 		console.log(`[DEBUG] getController(${name}) -> ${controller ? 'Found' : 'Null'}. Map size: ${this.controllers.size}. Keys: ${Array.from(this.controllers.keys()).join(', ')}`);
 		return controller;
 	}

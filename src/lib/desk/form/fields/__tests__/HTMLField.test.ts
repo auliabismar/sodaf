@@ -22,7 +22,7 @@ describe('HTMLField', () => {
 		component = render(HTMLField, {
 			props: { field, value: '<p>Test content</p>' }
 		});
-		
+
 		const htmlContent = screen.getByRole('document');
 		expect(htmlContent).toBeInTheDocument();
 		expect(htmlContent).toHaveAttribute('aria-label', 'Test Field HTML content preview');
@@ -34,7 +34,7 @@ describe('HTMLField', () => {
 		component = render(HTMLField, {
 			props: { field, value: '<p>Test content</p><script>alert("xss")</script>', sanitizeHtml: true }
 		});
-		
+
 		expect(DOMPurify.default.sanitize).toHaveBeenCalledWith('<p>Test content</p><script>alert("xss")</script>');
 	});
 
@@ -43,12 +43,12 @@ describe('HTMLField', () => {
 		component = render(HTMLField, {
 			props: { field, value: '<p>Test content</p>', allowEditing: true }
 		});
-		
+
 		// Check for toolbar elements
 		const editButton = screen.getByText('Edit');
 		const previewButton = screen.getByText('Preview');
 		const copyButton = screen.getByLabelText('Copy HTML');
-		
+
 		expect(editButton).toBeInTheDocument();
 		expect(previewButton).toBeInTheDocument();
 		expect(copyButton).toBeInTheDocument();
@@ -60,43 +60,34 @@ describe('HTMLField', () => {
 		component = render(HTMLField, {
 			props: { field, value: testValue }
 		});
-		
+
 		const htmlContent = screen.getByRole('document');
 		expect(htmlContent).toBeInTheDocument();
 	});
 
 	// Test change event
 	it('emits change event on content change', async () => {
-		let changeEventFired = false;
-		let changeEventValue = '';
-		
+		const onchange = vi.fn();
+
 		component = render(HTMLField, {
-			props: { field, value: '<p>Initial content</p>' }
+			props: { field, value: '<p>Initial content</p>', onchange }
 		});
-		
-		// Listen for change event
-		const unsubscribe = component.$on('change', (event: any) => {
-			changeEventFired = true;
-			changeEventValue = event.detail;
-		});
-		
+
 		// Start editing to trigger change
 		const editButton = screen.getByText('Edit');
 		await fireEvent.click(editButton);
-		
+
 		const textarea = screen.getByDisplayValue('Initial content');
 		await fireEvent.input(textarea, { target: { value: '<p>New content</p>' } });
-		
+
 		// Save changes
 		const saveButton = screen.getByText('Save');
 		await fireEvent.click(saveButton);
-		
+
 		// Wait for change event to be processed
 		await waitFor(() => {
-			expect(changeEventFired).toBe(true);
+			expect(onchange).toHaveBeenCalled();
 		});
-		
-		unsubscribe();
 	});
 
 	// Test disabled state
@@ -104,11 +95,11 @@ describe('HTMLField', () => {
 		component = render(HTMLField, {
 			props: { field, value: '<p>Test content</p>', disabled: true }
 		});
-		
+
 		// Should show preview only, no edit button
 		const editButton = screen.queryByText('Edit');
 		expect(editButton).not.toBeInTheDocument();
-		
+
 		const htmlContent = screen.getByRole('document');
 		expect(htmlContent).toBeInTheDocument();
 	});
@@ -118,26 +109,26 @@ describe('HTMLField', () => {
 		component = render(HTMLField, {
 			props: { field, value: '<p>Test content</p>', readonly: true }
 		});
-		
+
 		// Should show preview only, no edit button
 		const editButton = screen.queryByText('Edit');
 		expect(editButton).not.toBeInTheDocument();
-		
+
 		const htmlContent = screen.getByRole('document');
 		expect(htmlContent).toBeInTheDocument();
 	});
 
 	// Test required field
 	it('shows required indicator when field is required', async () => {
-		const requiredField = createMockField({ 
-			fieldtype: 'HTML', 
-			required: true 
+		const requiredField = createMockField({
+			fieldtype: 'HTML',
+			required: true
 		});
-		
+
 		component = render(HTMLField, {
 			props: { field: requiredField, value: '<p>Test content</p>' }
 		});
-		
+
 		const label = screen.getByText('Test Field *');
 		expect(label).toBeInTheDocument();
 	});
@@ -147,7 +138,7 @@ describe('HTMLField', () => {
 		component = render(HTMLField, {
 			props: { field, value: '<p>Test content</p>', error: 'Invalid HTML' }
 		});
-		
+
 		const errorMessage = screen.getByText('Invalid HTML');
 		expect(errorMessage).toBeInTheDocument();
 	});
@@ -157,26 +148,26 @@ describe('HTMLField', () => {
 		component = render(HTMLField, {
 			props: { field, value: '', placeholder: 'Enter HTML content here...' }
 		});
-		
+
 		// Start editing to see placeholder
 		const editButton = screen.getByText('Edit');
 		await fireEvent.click(editButton);
-		
+
 		const textarea = screen.getByPlaceholderText('Enter HTML content here...');
 		expect(textarea).toBeInTheDocument();
 	});
 
 	// Test field label
 	it('uses field label when no placeholder provided', async () => {
-		const labeledField = createMockField({ 
-			fieldtype: 'HTML', 
-			label: 'Custom HTML Field' 
+		const labeledField = createMockField({
+			fieldtype: 'HTML',
+			label: 'Custom HTML Field'
 		});
-		
+
 		component = render(HTMLField, {
 			props: { field: labeledField, value: '' }
 		});
-		
+
 		const label = screen.getByText('Custom HTML Field');
 		expect(label).toBeInTheDocument();
 	});
@@ -186,22 +177,22 @@ describe('HTMLField', () => {
 		component = render(HTMLField, {
 			props: { field, value: '', hideLabel: true }
 		});
-		
+
 		const label = screen.queryByText('Test Field');
 		expect(label).not.toBeInTheDocument();
 	});
 
 	// Test description tooltip
 	it('shows description tooltip when description is provided', async () => {
-		const fieldWithDescription = createMockField({ 
-			fieldtype: 'HTML', 
-			description: 'Enter HTML content here' 
+		const fieldWithDescription = createMockField({
+			fieldtype: 'HTML',
+			description: 'Enter HTML content here'
 		});
-		
+
 		component = render(HTMLField, {
 			props: { field: fieldWithDescription, value: '' }
 		});
-		
+
 		const infoButton = screen.getByRole('button', { name: /information/i });
 		expect(infoButton).toBeInTheDocument();
 	});
@@ -211,17 +202,17 @@ describe('HTMLField', () => {
 		component = render(HTMLField, {
 			props: { field, value: '<p>Test content</p>', allowEditing: true }
 		});
-		
+
 		const editButton = screen.getByText('Edit');
 		await fireEvent.click(editButton);
-		
+
 		// Check if editor appears
 		const textarea = screen.getByDisplayValue('Test content');
 		expect(textarea).toBeInTheDocument();
-		
+
 		const saveButton = screen.getByText('Save');
 		expect(saveButton).toBeInTheDocument();
-		
+
 		const cancelButton = screen.getByText('Cancel');
 		expect(cancelButton).toBeInTheDocument();
 	});
@@ -231,11 +222,11 @@ describe('HTMLField', () => {
 		component = render(HTMLField, {
 			props: { field, value: '<p>Test content</p>' }
 		});
-		
+
 		// Should show preview, not editor
 		const htmlContent = screen.getByRole('document');
 		expect(htmlContent).toBeInTheDocument();
-		
+
 		const textarea = screen.queryByDisplayValue('Test content');
 		expect(textarea).not.toBeInTheDocument();
 	});
@@ -245,16 +236,16 @@ describe('HTMLField', () => {
 		component = render(HTMLField, {
 			props: { field, value: '<p>Test content</p>', allowEditing: true }
 		});
-		
+
 		const editButton = screen.getByText('Edit');
 		await fireEvent.click(editButton);
-		
+
 		// Check for editor toolbar buttons
 		const boldButton = screen.getByText('B');
 		const italicButton = screen.getByText('I');
 		const underlineButton = screen.getByText('U');
 		const codeButton = screen.getByText('<code>');
-		
+
 		expect(boldButton).toBeInTheDocument();
 		expect(italicButton).toBeInTheDocument();
 		expect(underlineButton).toBeInTheDocument();
@@ -266,19 +257,19 @@ describe('HTMLField', () => {
 		component = render(HTMLField, {
 			props: { field, value: 'selected text', allowEditing: true }
 		});
-		
+
 		const editButton = screen.getByText('Edit');
 		await fireEvent.click(editButton);
-		
+
 		const textarea = screen.getByDisplayValue('selected text');
-		
+
 		// Select some text
 		(textarea as HTMLTextAreaElement).setSelectionRange(0, 8);
-		
+
 		// Click bold button
 		const boldButton = screen.getByText('B');
 		await fireEvent.click(boldButton);
-		
+
 		// Should wrap selected text in strong tags
 		expect(textarea).toHaveValue('<strong>selected text</strong>');
 	});
@@ -288,17 +279,17 @@ describe('HTMLField', () => {
 		component = render(HTMLField, {
 			props: { field, value: '<p>Test content</p>', allowEditing: true }
 		});
-		
+
 		const editButton = screen.getByText('Edit');
 		await fireEvent.click(editButton);
-		
+
 		const linkButton = screen.getByText('Link');
 		await fireEvent.click(linkButton);
-		
+
 		// Mock prompt
 		const mockPrompt = vi.fn().mockReturnValue('https://example.com');
 		global.prompt = mockPrompt;
-		
+
 		// Should trigger prompt
 		expect(mockPrompt).toHaveBeenCalledWith('Enter URL:');
 	});
@@ -308,19 +299,19 @@ describe('HTMLField', () => {
 		component = render(HTMLField, {
 			props: { field, value: '<p>Test content</p>', allowEditing: true }
 		});
-		
+
 		const editButton = screen.getByText('Edit');
 		await fireEvent.click(editButton);
-		
+
 		const imageButton = screen.getByText('Image');
 		await fireEvent.click(imageButton);
-		
+
 		// Mock prompt
 		const mockPrompt = vi.fn()
 			.mockReturnValueOnce('https://example.com/image.jpg')
 			.mockReturnValueOnce('Alt text');
 		global.prompt = mockPrompt;
-		
+
 		// Should trigger prompts
 		expect(mockPrompt).toHaveBeenCalledWith('Enter image URL:');
 		expect(mockPrompt).toHaveBeenCalledWith('Enter alt text:');
@@ -332,14 +323,14 @@ describe('HTMLField', () => {
 			writeText: vi.fn().mockResolvedValue(undefined)
 		};
 		Object.assign(navigator, { clipboard: mockClipboard });
-		
+
 		component = render(HTMLField, {
 			props: { field, value: '<p>Test content</p>' }
 		});
-		
+
 		const copyButton = screen.getByLabelText('Copy HTML');
 		await fireEvent.click(copyButton);
-		
+
 		expect(mockClipboard.writeText).toHaveBeenCalledWith('<p>Test content</p>');
 	});
 
@@ -348,10 +339,10 @@ describe('HTMLField', () => {
 		component = render(HTMLField, {
 			props: { field, value: '<p>Test content</p>' }
 		});
-		
+
 		const fullscreenButton = screen.getByLabelText('Fullscreen');
 		await fireEvent.click(fullscreenButton);
-		
+
 		const fullscreenExitButton = screen.getByLabelText('Exit fullscreen');
 		expect(fullscreenExitButton).toBeInTheDocument();
 	});
@@ -361,7 +352,7 @@ describe('HTMLField', () => {
 		component = render(HTMLField, {
 			props: { field, value: '<p>Test content</p>', sanitizeHtml: true }
 		});
-		
+
 		const sanitizedInfo = screen.getByText('Sanitized');
 		expect(sanitizedInfo).toBeInTheDocument();
 	});
@@ -371,10 +362,10 @@ describe('HTMLField', () => {
 		component = render(HTMLField, {
 			props: { field, value: '', allowEditing: true }
 		});
-		
+
 		const emptyState = screen.getByText('No HTML content to display');
 		expect(emptyState).toBeInTheDocument();
-		
+
 		const addButton = screen.getByText('Add HTML Content');
 		expect(addButton).toBeInTheDocument();
 	});
@@ -384,20 +375,20 @@ describe('HTMLField', () => {
 		component = render(HTMLField, {
 			props: { field, value: '<p>Original content</p>', allowEditing: true }
 		});
-		
+
 		const editButton = screen.getByText('Edit');
 		await fireEvent.click(editButton);
-		
+
 		const textarea = screen.getByDisplayValue('Original content');
 		await fireEvent.input(textarea, { target: { value: '<p>Modified content</p>' } });
-		
+
 		const cancelButton = screen.getByText('Cancel');
 		await fireEvent.click(cancelButton);
-		
+
 		// Should revert to original content
 		const htmlContent = screen.getByRole('document');
 		expect(htmlContent).toBeInTheDocument();
-		
+
 		// Check if content is still original (not modified)
 		expect(htmlContent).toHaveTextContent('Original content');
 	});
@@ -407,7 +398,7 @@ describe('HTMLField', () => {
 		component = render(HTMLField, {
 			props: { field, value: '<p>Test content</p>', maxHeight: '300px' }
 		});
-		
+
 		const htmlContent = screen.getByRole('document');
 		expect(htmlContent).toBeInTheDocument();
 		// Note: Max height is applied via CSS, not easily testable with queries
@@ -418,7 +409,7 @@ describe('HTMLField', () => {
 		component = render(HTMLField, {
 			props: { field, value: '<p>Test content</p>', minHeight: '150px' }
 		});
-		
+
 		const htmlContent = screen.getByRole('document');
 		expect(htmlContent).toBeInTheDocument();
 		// Note: Min height is applied via CSS, not easily testable with queries
@@ -426,53 +417,41 @@ describe('HTMLField', () => {
 
 	// Test focus and blur events
 	it('emits focus and blur events', async () => {
-		let focusEventFired = false;
-		let blurEventFired = false;
-		
+		const onfocus = vi.fn();
+		const onblur = vi.fn();
+
 		component = render(HTMLField, {
-			props: { field, value: '<p>Test content</p>', allowEditing: true }
+			props: { field, value: '<p>Test content</p>', allowEditing: true, onfocus, onblur }
 		});
-		
-		// Listen for focus and blur events
-		const unsubscribeFocus = component.$on('focus', () => {
-			focusEventFired = true;
-		});
-		
-		const unsubscribeBlur = component.$on('blur', () => {
-			blurEventFired = true;
-		});
-		
+
 		const editButton = screen.getByText('Edit');
 		await fireEvent.click(editButton);
-		
+
 		const textarea = screen.getByDisplayValue('Test content');
-		
+
 		// Simulate focus
 		await fireEvent.focus(textarea);
-		expect(focusEventFired).toBe(true);
-		
+		expect(onfocus).toHaveBeenCalled();
+
 		// Simulate blur
 		await fireEvent.blur(textarea);
-		expect(blurEventFired).toBe(true);
-		
-		unsubscribeFocus();
-		unsubscribeBlur();
+		expect(onblur).toHaveBeenCalled();
 	});
 
 	// Test allowed tags customization
 	it('respects allowedTags property', async () => {
 		const DOMPurify = await import('dompurify');
 		const customTags = ['p', 'strong', 'em'];
-		
+
 		component = render(HTMLField, {
-			props: { 
-				field, 
+			props: {
+				field,
 				value: '<p>Test <script>alert("xss")</script> content</p>',
 				sanitizeHtml: true,
 				allowedTags: customTags
 			}
 		});
-		
+
 		expect(DOMPurify.default.sanitize).toHaveBeenCalledWith('<p>Test <script>alert("xss")</script> content</p>', expect.objectContaining({
 			ALLOWED_TAGS: customTags
 		}));
@@ -482,16 +461,16 @@ describe('HTMLField', () => {
 	it('respects allowedAttributes property', async () => {
 		const DOMPurify = await import('dompurify');
 		const customAttributes = ['class', 'id'];
-		
+
 		component = render(HTMLField, {
-			props: { 
-				field, 
+			props: {
+				field,
 				value: '<p class="test" id="test">Test content</p>',
 				sanitizeHtml: true,
 				allowedAttributes: customAttributes
 			}
 		});
-		
+
 		expect(DOMPurify.default.sanitize).toHaveBeenCalledWith('<p class="test" id="test">Test content</p>', expect.objectContaining({
 			ALLOWED_ATTR: customAttributes
 		}));

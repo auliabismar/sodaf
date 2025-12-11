@@ -1,5 +1,5 @@
 import { render, screen, fireEvent } from '@testing-library/svelte';
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
 import CheckField from '../CheckField.svelte';
 import { createMockField, mockFields } from './fixtures/mockFields';
 
@@ -16,7 +16,7 @@ describe('CheckField', () => {
 		component = render(CheckField, {
 			props: { field, value: true }
 		});
-		
+
 		const checkbox = screen.getByRole('checkbox');
 		expect(checkbox).toBeInTheDocument();
 		expect(checkbox).toBeChecked();
@@ -27,7 +27,7 @@ describe('CheckField', () => {
 		component = render(CheckField, {
 			props: { field, value: false }
 		});
-		
+
 		const checkbox = screen.getByRole('checkbox');
 		expect(checkbox).toBeInTheDocument();
 		expect(checkbox).not.toBeChecked();
@@ -39,35 +39,25 @@ describe('CheckField', () => {
 		component = render(CheckField, {
 			props: { field, value: testValue }
 		});
-		
+
 		const checkbox = screen.getByRole('checkbox');
 		await fireEvent.click(checkbox);
-		
+
 		expect(checkbox).toBeChecked();
 	});
 
 	// P3-007-T6: Change event emitted
 	it('emits change event on toggle', async () => {
-		let changeEventFired = false;
-		let changeEventValue = false;
-		
+		const onchange = vi.fn();
+
 		component = render(CheckField, {
-			props: { field, value: false }
+			props: { field, value: false, onchange }
 		});
-		
-		// Listen for change event
-		const unsubscribe = component.$on('change', (event: any) => {
-			changeEventFired = true;
-			changeEventValue = event.detail;
-		});
-		
+
 		const checkbox = screen.getByRole('checkbox');
 		await fireEvent.click(checkbox);
-		
-		expect(changeEventFired).toBe(true);
-		expect(changeEventValue).toBe(true);
-		
-		unsubscribe();
+
+		expect(onchange).toHaveBeenCalledWith(true);
 	});
 
 	// Test disabled state
@@ -75,7 +65,7 @@ describe('CheckField', () => {
 		component = render(CheckField, {
 			props: { field, value: false, disabled: true }
 		});
-		
+
 		const checkbox = screen.getByRole('checkbox');
 		expect(checkbox).toBeDisabled();
 	});
@@ -85,37 +75,37 @@ describe('CheckField', () => {
 		component = render(CheckField, {
 			props: { field, value: false, readonly: true }
 		});
-		
+
 		const checkbox = screen.getByRole('checkbox');
 		expect(checkbox).toBeDisabled();
 	});
 
 	// Test field read_only
 	it('disables checkbox when field.read_only is true', async () => {
-		const readOnlyField = createMockField({ 
-			fieldtype: 'Check', 
-			read_only: true 
+		const readOnlyField = createMockField({
+			fieldtype: 'Check',
+			read_only: true
 		});
-		
+
 		component = render(CheckField, {
 			props: { field: readOnlyField, value: false }
 		});
-		
+
 		const checkbox = screen.getByRole('checkbox');
 		expect(checkbox).toBeDisabled();
 	});
 
 	// Test required field
 	it('shows required indicator when field is required', async () => {
-		const requiredField = createMockField({ 
-			fieldtype: 'Check', 
-			required: true 
+		const requiredField = createMockField({
+			fieldtype: 'Check',
+			required: true
 		});
-		
+
 		component = render(CheckField, {
 			props: { field: requiredField, value: false }
 		});
-		
+
 		const requiredIndicator = screen.getByText('*');
 		expect(requiredIndicator).toBeInTheDocument();
 	});
@@ -125,22 +115,22 @@ describe('CheckField', () => {
 		component = render(CheckField, {
 			props: { field, value: false, error: 'This field is required' }
 		});
-		
+
 		const errorMessage = screen.getByText('This field is required');
 		expect(errorMessage).toBeInTheDocument();
 	});
 
 	// Test field label
 	it('uses field label for display', async () => {
-		const labeledField = createMockField({ 
-			fieldtype: 'Check', 
-			label: 'Custom Checkbox Field' 
+		const labeledField = createMockField({
+			fieldtype: 'Check',
+			label: 'Custom Checkbox Field'
 		});
-		
+
 		component = render(CheckField, {
 			props: { field: labeledField, value: false }
 		});
-		
+
 		const label = screen.getByText('Custom Checkbox Field');
 		expect(label).toBeInTheDocument();
 	});
@@ -150,92 +140,68 @@ describe('CheckField', () => {
 		component = render(CheckField, {
 			props: { field, value: false, hideLabel: true }
 		});
-		
+
 		const label = screen.queryByText('Check Field');
 		expect(label).not.toBeInTheDocument();
 	});
 
 	// Test description tooltip
 	it('shows description tooltip when description is provided', async () => {
-		const fieldWithDescription = createMockField({ 
-			fieldtype: 'Check', 
-			description: 'This is a checkbox field' 
+		const fieldWithDescription = createMockField({
+			fieldtype: 'Check',
+			description: 'This is a checkbox field'
 		});
-		
+
 		component = render(CheckField, {
 			props: { field: fieldWithDescription, value: false }
 		});
-		
+
 		const infoButton = screen.getByRole('button', { name: /information/i });
 		expect(infoButton).toBeInTheDocument();
 	});
 
 	// Test keyboard interaction - Enter key
 	it('toggles checkbox when Enter key is pressed', async () => {
-		let changeEventFired = false;
-		let changeEventValue = false;
-		
+		const onchange = vi.fn();
+
 		component = render(CheckField, {
-			props: { field, value: false }
+			props: { field, value: false, onchange }
 		});
-		
-		const unsubscribe = component.$on('change', (event: any) => {
-			changeEventFired = true;
-			changeEventValue = event.detail;
-		});
-		
+
 		const container = screen.getByRole('checkbox');
 		container.focus();
 		await fireEvent.keyDown(container, { key: 'Enter' });
-		
-		expect(changeEventFired).toBe(true);
-		expect(changeEventValue).toBe(true);
-		
-		unsubscribe();
+
+		expect(onchange).toHaveBeenCalledWith(true);
 	});
 
 	// Test keyboard interaction - Space key
 	it('toggles checkbox when Space key is pressed', async () => {
-		let changeEventFired = false;
-		let changeEventValue = false;
-		
+		const onchange = vi.fn();
+
 		component = render(CheckField, {
-			props: { field, value: false }
+			props: { field, value: false, onchange }
 		});
-		
-		const unsubscribe = component.$on('change', (event: any) => {
-			changeEventFired = true;
-			changeEventValue = event.detail;
-		});
-		
+
 		const container = screen.getByRole('checkbox');
 		container.focus();
 		await fireEvent.keyDown(container, { key: ' ' });
-		
-		expect(changeEventFired).toBe(true);
-		expect(changeEventValue).toBe(true);
-		
-		unsubscribe();
+
+		expect(onchange).toHaveBeenCalledWith(true);
 	});
 
 	// Test keyboard interaction with disabled state
 	it('does not toggle when keyboard is used on disabled checkbox', async () => {
-		let changeEventFired = false;
-		
+		const onchange = vi.fn();
+
 		component = render(CheckField, {
-			props: { field, value: false, disabled: true }
+			props: { field, value: false, disabled: true, onchange }
 		});
-		
-		const unsubscribe = component.$on('change', (event: any) => {
-			changeEventFired = true;
-		});
-		
+
 		const container = screen.getByRole('checkbox');
 		await fireEvent.keyDown(container, { key: 'Enter' });
-		
-		expect(changeEventFired).toBe(false);
-		
-		unsubscribe();
+
+		expect(onchange).not.toHaveBeenCalled();
 	});
 
 	// Test ARIA attributes
@@ -243,7 +209,7 @@ describe('CheckField', () => {
 		component = render(CheckField, {
 			props: { field, value: true, required: true }
 		});
-		
+
 		const container = screen.getByRole('checkbox');
 		expect(container).toHaveAttribute('aria-checked', 'true');
 		expect(container).toHaveAttribute('aria-required', 'true');
@@ -255,7 +221,7 @@ describe('CheckField', () => {
 		component = render(CheckField, {
 			props: { field, value: false, disabled: true }
 		});
-		
+
 		const container = screen.getByRole('checkbox');
 		expect(container).toHaveAttribute('aria-checked', 'false');
 		expect(container).toHaveAttribute('aria-disabled', 'true');
@@ -264,42 +230,30 @@ describe('CheckField', () => {
 
 	// Test blur event
 	it('emits blur event', async () => {
-		let blurEventFired = false;
-		
+		const onblur = vi.fn();
+
 		component = render(CheckField, {
-			props: { field, value: false }
+			props: { field, value: false, onblur }
 		});
-		
-		const unsubscribe = component.$on('blur', () => {
-			blurEventFired = true;
-		});
-		
+
 		const checkbox = screen.getByRole('checkbox');
 		await fireEvent.blur(checkbox);
-		
-		expect(blurEventFired).toBe(true);
-		
-		unsubscribe();
+
+		expect(onblur).toHaveBeenCalled();
 	});
 
 	// Test focus event
 	it('emits focus event', async () => {
-		let focusEventFired = false;
-		
+		const onfocus = vi.fn();
+
 		component = render(CheckField, {
-			props: { field, value: false }
+			props: { field, value: false, onfocus }
 		});
-		
-		const unsubscribe = component.$on('focus', () => {
-			focusEventFired = true;
-		});
-		
+
 		const checkbox = screen.getByRole('checkbox');
 		await fireEvent.focus(checkbox);
-		
-		expect(focusEventFired).toBe(true);
-		
-		unsubscribe();
+
+		expect(onfocus).toHaveBeenCalled();
 	});
 
 	// Test boolean value handling
@@ -307,14 +261,14 @@ describe('CheckField', () => {
 		component = render(CheckField, {
 			props: { field, value: true }
 		});
-		
+
 		const checkbox = screen.getByRole('checkbox');
 		expect(checkbox).toBeChecked();
-		
+
 		// Toggle to false
 		await fireEvent.click(checkbox);
 		expect(checkbox).not.toBeChecked();
-		
+
 		// Toggle back to true
 		await fireEvent.click(checkbox);
 		expect(checkbox).toBeChecked();
@@ -322,24 +276,15 @@ describe('CheckField', () => {
 
 	// Test container click handling
 	it('toggles checkbox when container is clicked', async () => {
-		let changeEventFired = false;
-		let changeEventValue = false;
-		
+		const onchange = vi.fn();
+
 		component = render(CheckField, {
-			props: { field, value: false }
+			props: { field, value: false, onchange }
 		});
-		
-		const unsubscribe = component.$on('change', (event: any) => {
-			changeEventFired = true;
-			changeEventValue = event.detail;
-		});
-		
+
 		const container = screen.getByRole('checkbox');
 		await fireEvent.click(container);
-		
-		expect(changeEventFired).toBe(true);
-		expect(changeEventValue).toBe(true);
-		
-		unsubscribe();
+
+		expect(onchange).toHaveBeenCalledWith(true);
 	});
 });

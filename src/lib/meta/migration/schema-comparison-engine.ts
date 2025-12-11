@@ -76,7 +76,7 @@ export class SchemaComparisonEngine {
 		};
 		this.cache = new Map();
 	}
-	
+
 	/**
 	 * Compare DocType schema with database table schema
 	 * @param doctypeName Name of DocType to compare
@@ -125,18 +125,23 @@ export class SchemaComparisonEngine {
 			}
 
 			// Get table schema from database
-			const tableName = doctype.table_name || doctypeName;
+			// Ensure consistent table naming (add 'tab' prefix if missing)
+			let tableName = doctype.table_name || doctypeName;
+			if (!tableName.startsWith('tab')) {
+				tableName = 'tab' + tableName;
+			}
+
 			let tableColumns: ColumnInfo[] = [];
 			let tableIndexes: IndexInfo[] = [];
-			
+
 			try {
 				[tableColumns, tableIndexes] = await Promise.all([
 					this.getTableColumns(tableName, context),
 					this.getTableIndexes(tableName, context)
 				]);
-		} catch (error) {
+			} catch (error) {
 				// Handle case where table doesn't exist
-				if (error instanceof TableNotFoundError) {
+				if (error instanceof TableNotFoundError || (error instanceof Error && error.message.includes('not found'))) {
 					// Table doesn't exist, use empty arrays
 					tableColumns = [];
 					tableIndexes = [];
@@ -187,8 +192,8 @@ export class SchemaComparisonEngine {
 			return diff;
 		} catch (error) {
 			context.errors.push(
-				error instanceof SchemaComparisonError 
-					? error 
+				error instanceof SchemaComparisonError
+					? error
 					: new SchemaComparisonError(
 						`Schema comparison failed: ${error instanceof Error ? error.message : String(error)}`,
 						'COMPARISON_FAILED',
@@ -199,7 +204,7 @@ export class SchemaComparisonEngine {
 			throw error;
 		}
 	}
-	
+
 	/**
 	 * Compare all registered DocTypes with their database tables
 	 * @param options Comparison options (overrides defaults)
@@ -212,17 +217,16 @@ export class SchemaComparisonEngine {
 	): Promise<Map<string, SchemaDiff>> {
 		const mergedOptions = { ...this.defaultOptions, ...options };
 		const results = new Map<string, SchemaDiff>();
-		
+
 		try {
-			// Get all DocType names
-			// For now, we'll use a placeholder implementation
-			// In a real implementation, this would get all DocType names
-			const doctypeNames = ['User', 'Todo']; // Placeholder
+			// Get all DocType names from the engine
+			const allDocTypes = await this.doctypeEngine.getAllDocTypes();
+			const doctypeNames = allDocTypes.map(dt => dt.name);
 			const total = doctypeNames.length;
-			
+
 			for (let i = 0; i < total; i++) {
 				const doctypeName = doctypeNames[i];
-				
+
 				try {
 					progressCallback?.({
 						operation: 'Comparing schemas',
@@ -231,7 +235,7 @@ export class SchemaComparisonEngine {
 						total,
 						processed: i
 					});
-					
+
 					const diff = await this.compareSchema(doctypeName, mergedOptions);
 					results.set(doctypeName, diff);
 				} catch (error) {
@@ -239,14 +243,14 @@ export class SchemaComparisonEngine {
 					console.error(`Error comparing ${doctypeName}:`, error);
 				}
 			}
-			
+
 			progressCallback?.({
 				operation: 'Comparison complete',
 				percentage: 100,
 				total,
 				processed: total
 			});
-			
+
 			return results;
 		} catch (error) {
 			throw new SchemaComparisonError(
@@ -257,7 +261,7 @@ export class SchemaComparisonEngine {
 			);
 		}
 	}
-	
+
 	/**
 	 * Compare multiple DocTypes in parallel batches
 	 * @param doctypeNames Array of DocType names to compare
@@ -274,14 +278,14 @@ export class SchemaComparisonEngine {
 		const results = new Map<string, SchemaDiff>();
 		const errors: SchemaComparisonError[] = [];
 		const startTime = Date.now();
-		
+
 		const batchSize = 5; // Process 5 schemas at a time
 		let processed = 0;
-		
+
 		try {
 			for (let i = 0; i < doctypeNames.length; i += batchSize) {
 				const batch = doctypeNames.slice(i, i + batchSize);
-				
+
 				progressCallback?.({
 					operation: 'Processing batch',
 					percentage: Math.floor((processed / doctypeNames.length) * 100),
@@ -289,14 +293,14 @@ export class SchemaComparisonEngine {
 					total: doctypeNames.length,
 					processed
 				});
-				
+
 				const batchPromises = batch.map(async (doctypeName) => {
 					try {
 						const diff = await this.compareSchema(doctypeName, mergedOptions);
 						return { doctypeName, diff, error: null };
 					} catch (error) {
-						const schemaError = error instanceof SchemaComparisonError 
-							? error 
+						const schemaError = error instanceof SchemaComparisonError
+							? error
 							: new SchemaComparisonError(
 								`Schema comparison failed: ${error instanceof Error ? error.message : String(error)}`,
 								'COMPARISON_FAILED',
@@ -306,9 +310,9 @@ export class SchemaComparisonEngine {
 						return { doctypeName, diff: null, error: schemaError };
 					}
 				});
-				
+
 				const batchResults = await Promise.all(batchPromises);
-				
+
 				for (const result of batchResults) {
 					if (result.error) {
 						errors.push(result.error);
@@ -316,19 +320,19 @@ export class SchemaComparisonEngine {
 						results.set(result.doctypeName, result.diff);
 					}
 				}
-				
+
 				processed += batch.length;
 			}
-			
+
 			const totalTime = Date.now() - startTime;
-			
+
 			progressCallback?.({
 				operation: 'Batch comparison complete',
 				percentage: 100,
 				total: doctypeNames.length,
 				processed
 			});
-			
+
 			return {
 				results,
 				successCount: results.size,
@@ -345,7 +349,7 @@ export class SchemaComparisonEngine {
 			);
 		}
 	}
-	
+
 	/**
 	 * Check if a schema diff contains any changes
 	 * @param diff SchemaDiff to check
@@ -354,7 +358,7 @@ export class SchemaComparisonEngine {
 	async hasChanges(diff: SchemaDiff): Promise<boolean> {
 		return SchemaDiffAnalyzer.hasChanges(diff);
 	}
-	
+
 	/**
 	 * Check if a schema diff requires data migration
 	 * @param diff SchemaDiff to check
@@ -363,7 +367,7 @@ export class SchemaComparisonEngine {
 	async requiresDataMigration(diff: SchemaDiff): Promise<boolean> {
 		return SchemaDiffAnalyzer.requiresDataMigration(diff);
 	}
-	
+
 	/**
 	 * Check if a schema diff contains potentially destructive changes
 	 * @param diff SchemaDiff to check
@@ -372,7 +376,7 @@ export class SchemaComparisonEngine {
 	async hasDestructiveChanges(diff: SchemaDiff): Promise<boolean> {
 		return SchemaDiffAnalyzer.hasDestructiveChanges(diff);
 	}
-	
+
 	/**
 	 * Get statistics for a schema diff
 	 * @param diff SchemaDiff to analyze
@@ -381,7 +385,7 @@ export class SchemaComparisonEngine {
 	async getDiffStatistics(diff: SchemaDiff): Promise<DiffStatistics> {
 		return SchemaDiffAnalyzer.getDiffStatistics(diff);
 	}
-	
+
 	/**
 	 * Get column information for a table
 	 * @param tableName Table name to query
@@ -402,7 +406,7 @@ export class SchemaComparisonEngine {
 
 		try {
 			const columns = await this.database.get_columns(tableName);
-			
+
 			// Update cache
 			if (context?.cache) {
 				context.cache.set(`columns:${tableName}`, {
@@ -413,13 +417,19 @@ export class SchemaComparisonEngine {
 					valid: true
 				});
 			}
-			
+
 			return columns;
 		} catch (error) {
-			throw new TableNotFoundError(tableName);
+			if (error instanceof Error && (
+				error.message.includes('no such table') ||
+				error instanceof TableNotFoundError
+			)) {
+				throw new TableNotFoundError(tableName);
+			}
+			throw error;
 		}
 	}
-	
+
 	/**
 	 * Get index information for a table
 	 * @param tableName Table name to query
@@ -440,7 +450,7 @@ export class SchemaComparisonEngine {
 
 		try {
 			const indexes = await this.database.get_indexes(tableName);
-			
+
 			// Update cache
 			if (context?.cache) {
 				context.cache.set(`indexes:${tableName}`, {
@@ -451,14 +461,14 @@ export class SchemaComparisonEngine {
 					valid: true
 				});
 			}
-			
+
 			return indexes;
 		} catch (error) {
 			// Indexes might not exist for all tables, return empty array
 			return [];
 		}
 	}
-	
+
 	/**
 	 * Validate a schema diff for consistency and correctness
 	 * @param diff SchemaDiff to validate
@@ -467,7 +477,7 @@ export class SchemaComparisonEngine {
 	async validateSchemaDiff(diff: SchemaDiff): Promise<any> {
 		return SchemaDiffAnalyzer.validateSchemaDiff(diff);
 	}
-	
+
 	/**
 	 * Set default comparison options
 	 * @param options New default options
@@ -475,7 +485,7 @@ export class SchemaComparisonEngine {
 	setDefaultOptions(options: SchemaComparisonOptions): void {
 		this.defaultOptions = { ...this.defaultOptions, ...options };
 	}
-	
+
 	/**
 	 * Get current default comparison options
 	 * @returns Current default options
@@ -483,7 +493,7 @@ export class SchemaComparisonEngine {
 	getDefaultOptions(): SchemaComparisonOptions {
 		return { ...this.defaultOptions };
 	}
-	
+
 	/**
 	 * Clear schema cache
 	 * @param tableName Optional table name to clear specific cache entry
@@ -496,7 +506,7 @@ export class SchemaComparisonEngine {
 			this.cache.clear();
 		}
 	}
-	
+
 	/**
 	 * Get cache statistics
 	 * @returns Cache statistics object
@@ -506,7 +516,7 @@ export class SchemaComparisonEngine {
 			key,
 			timestamp: entry.timestamp
 		}));
-		
+
 		return {
 			size: this.cache.size,
 			entries
@@ -537,35 +547,35 @@ export class SchemaComparisonEngine {
 			removedIndexes: [],
 			renamedColumns: []
 		};
-		
+
 		// Compare fields
 		const fieldComparison = await this.compareFields(
 			doctype.fields,
 			tableColumns,
 			options
 		);
-		
+
 		diff.addedColumns = fieldComparison.addedColumns;
 		diff.removedColumns = fieldComparison.removedColumns;
 		diff.modifiedColumns = fieldComparison.modifiedColumns;
-		
+
 		// Compare indexes
 		const indexComparison = await this.compareIndexes(
 			doctype.indexes || [],
 			tableIndexes,
 			doctype.name
 		);
-		
+
 		diff.addedIndexes = indexComparison.addedIndexes;
 		diff.removedIndexes = indexComparison.removedIndexes;
-		
+
 		// Detect potential column renames
 		diff.renamedColumns = await this.detectColumnRenames(
 			diff.removedColumns,
 			diff.addedColumns,
 			options
 		);
-		
+
 		return diff;
 	}
 
@@ -590,16 +600,16 @@ export class SchemaComparisonEngine {
 			removedColumns: [] as ColumnChange[],
 			modifiedColumns: [] as FieldChange[]
 		};
-		
+
 		// Filter system fields if requested
-		const filteredFields = options.includeSystemFields 
-			? fields 
+		const filteredFields = options.includeSystemFields
+			? fields
 			: fields.filter(f => !FieldComparator.isSystemField(f.fieldname));
-		
+
 		// Find added and modified fields
 		for (const field of filteredFields) {
 			const matchingColumn = FieldComparator.findMatchingColumn(field, columns, options);
-			
+
 			if (!matchingColumn) {
 				// Field not in database - added column
 				result.addedColumns.push({
@@ -610,27 +620,27 @@ export class SchemaComparisonEngine {
 			} else {
 				// Field exists - check for modifications
 				const fieldChange = FieldComparator.compareFieldToColumn(
-					field, 
-					matchingColumn, 
+					field,
+					matchingColumn,
 					options
 				);
-				
+
 				if (fieldChange) {
 					result.modifiedColumns.push(fieldChange);
 				}
 			}
 		}
-		
+
 		// Find removed columns
 		const nonSystemColumns = columns.filter(column =>
 			!FieldComparator.isSystemField(column.name)
 		);
-		
+
 		for (const column of nonSystemColumns) {
 			const matchingField = filteredFields.find(f =>
 				FieldComparator.findMatchingColumn(f, [column], options)
 			);
-			
+
 			if (!matchingField) {
 				// Column not in DocType - removed column
 				result.removedColumns.push({
@@ -640,7 +650,7 @@ export class SchemaComparisonEngine {
 				});
 			}
 		}
-		
+
 		return result;
 	}
 
@@ -663,32 +673,68 @@ export class SchemaComparisonEngine {
 			addedIndexes: [] as IndexChange[],
 			removedIndexes: [] as IndexChange[]
 		};
-		
-		// Find added indexes
+
+		const matchedDbIndexNames = new Set<string>();
+		const matchedDocIndexes = new Set<any>();
+
+		// 1. Match by Name first
 		for (const docIndex of docIndexes) {
-			const matchingDbIndex = IndexComparator.findMatchingIndex(docIndex, dbIndexes);
-			
+			if (docIndex.name) {
+				const matchingDbIndex = dbIndexes.find(i => i.name === docIndex.name);
+
+				if (matchingDbIndex) {
+					matchedDbIndexNames.add(matchingDbIndex.name);
+					matchedDocIndexes.add(docIndex);
+
+					// Check if definition changed
+					if (!IndexComparator.compareIndexToIndex(docIndex, matchingDbIndex)) {
+						// Index definition changed
+						// SQLite indexes are immutable, so we must drop and recreate
+						result.removedIndexes.push({
+							name: matchingDbIndex.name,
+							index: IndexComparator.indexInfoToIndexDefinition(matchingDbIndex),
+							destructive: false
+						});
+
+						result.addedIndexes.push({
+							name: docIndex.name,
+							index: IndexComparator.docIndexToIndexDefinition(docIndex, doctypeName),
+							destructive: false
+						});
+					}
+				}
+			}
+		}
+
+		// 2. Match by Content (for unnamed DocIndexes or new names)
+		for (const docIndex of docIndexes) {
+			if (matchedDocIndexes.has(docIndex)) continue;
+
+			const matchingDbIndex = dbIndexes.find(dbIndex =>
+				!matchedDbIndexNames.has(dbIndex.name) &&
+				IndexComparator.compareIndexToIndex(docIndex, dbIndex)
+			);
+
 			if (!matchingDbIndex) {
 				// Index not in database - added index
 				result.addedIndexes.push({
 					name: docIndex.name || IndexComparator.generateIndexName(
-						doctypeName, 
-						docIndex.columns, 
+						doctypeName,
+						docIndex.columns,
 						docIndex.unique
 					),
 					index: IndexComparator.docIndexToIndexDefinition(docIndex, doctypeName),
 					destructive: false
 				});
+			} else {
+				// Matched by content (even if name differs, effectively the same index)
+				matchedDbIndexNames.add(matchingDbIndex.name);
 			}
 		}
-		
-		// Find removed indexes
+
+		// 3. Find removed indexes (in DB but not in DocType)
 		for (const dbIndex of dbIndexes) {
-			const matchingDocIndex = docIndexes.find(di => 
-				IndexComparator.compareIndexToIndex(di, dbIndex)
-			);
-			
-			if (!matchingDocIndex) {
+			if (!matchedDbIndexNames.has(dbIndex.name)) {
 				// Index not in DocType - removed index
 				result.removedIndexes.push({
 					name: dbIndex.name,
@@ -697,7 +743,7 @@ export class SchemaComparisonEngine {
 				});
 			}
 		}
-		
+
 		return result;
 	}
 
@@ -716,18 +762,18 @@ export class SchemaComparisonEngine {
 		const renames: ColumnRename[] = [];
 		const processedRemoved = new Set<number>();
 		const processedAdded = new Set<number>();
-		
+
 		// Simple heuristic: look for exact type matches with similar names
 		for (let i = 0; i < removedColumns.length; i++) {
 			if (processedRemoved.has(i)) continue;
-			
+
 			const removed = removedColumns[i];
-			
+
 			for (let j = 0; j < addedColumns.length; j++) {
 				if (processedAdded.has(j)) continue;
-				
+
 				const added = addedColumns[j];
-				
+
 				// Check if columns have identical definitions
 				if (this.areColumnDefinitionsEqual(removed.column, added.column)) {
 					// Check name similarity (simple heuristic)
@@ -735,7 +781,7 @@ export class SchemaComparisonEngine {
 						removed.fieldname,
 						added.fieldname
 					);
-					
+
 					// If names are similar, consider it a rename
 					if (similarity > 0.7) {
 						renames.push({
@@ -743,7 +789,7 @@ export class SchemaComparisonEngine {
 							to: added.fieldname,
 							column: added.column
 						});
-						
+
 						processedRemoved.add(i);
 						processedAdded.add(j);
 						break;
@@ -751,7 +797,7 @@ export class SchemaComparisonEngine {
 				}
 			}
 		}
-		
+
 		return renames;
 	}
 
@@ -782,9 +828,9 @@ export class SchemaComparisonEngine {
 		// Simple similarity calculation based on common characters
 		const longer = name1.length > name2.length ? name1 : name2;
 		const shorter = name1.length > name2.length ? name2 : name1;
-		
+
 		if (longer.length === 0) return 1.0;
-		
+
 		const commonChars = longer.split('').filter(char => shorter.includes(char)).length;
 		return commonChars / longer.length;
 	}

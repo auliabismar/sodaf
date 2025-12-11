@@ -13,24 +13,41 @@ import { BackupType } from '../apply-types';
 import { sampleBackupInfo } from './fixtures/apply-fixtures';
 import { testConstants } from './fixtures/test-data';
 import { sampleColumnInfo } from './fixtures/test-data';
-import * as fs from 'fs/promises';
-import * as path from 'path';
-import * as crypto from 'crypto';
-
-// Mock database type
-let mockDatabase: Database;
-
 // Mock fs module
-vi.mock('fs/promises');
+vi.mock('fs/promises', () => ({
+	readFile: vi.fn(),
+	writeFile: vi.fn(),
+	access: vi.fn(),
+	stat: vi.fn(),
+	readdir: vi.fn(),
+	unlink: vi.fn(),
+	mkdir: vi.fn()
+}));
+import * as fs from 'fs/promises';
 const mockFs = vi.mocked(fs);
 
 // Mock path module
-vi.mock('path');
+vi.mock('path', () => ({
+	join: vi.fn((...args) => args.join('/')),
+	resolve: vi.fn((...args) => args.join('/')),
+	dirname: vi.fn(() => '/diir/name'),
+	basename: vi.fn(() => 'base.name')
+}));
+import * as path from 'path';
 const mockPath = vi.mocked(path);
 
 // Mock crypto module
-vi.mock('crypto');
+vi.mock('crypto', () => ({
+	createHash: vi.fn().mockReturnValue({
+		update: vi.fn().mockReturnThis(),
+		digest: vi.fn().mockReturnValue('test_checksum')
+	})
+}));
+import * as crypto from 'crypto';
 const mockCrypto = vi.mocked(crypto);
+
+// Mock database type
+let mockDatabase: Database;
 
 describe.sequential('MigrationBackupManager', () => {
 	let backupManager: MigrationBackupManager;
@@ -55,10 +72,7 @@ describe.sequential('MigrationBackupManager', () => {
 		} as unknown as Database;
 
 		// Reset readFile mock state explicitly
-		if (mockFs.readFile && mockFs.readFile.mockReset) {
-			mockFs.readFile.mockReset();
-		}
-		mockFs.readFile = vi.fn().mockRejectedValue(new Error('Unexpected readFile call in test'));
+		vi.mocked(fs.readFile).mockRejectedValue(new Error('Unexpected readFile call in test'));
 
 		backupManager = new MigrationBackupManager(mockDatabase, {
 			storagePath: testBackupDir,
@@ -69,11 +83,12 @@ describe.sequential('MigrationBackupManager', () => {
 		});
 
 		// Setup default mocks
-		mockPath.join = vi.fn((...args) => args.join('/'));
-		mockFs.writeFile = vi.fn().mockResolvedValue(undefined);
-		mockFs.access = vi.fn().mockResolvedValue(undefined); // Default to file exists
-		mockFs.stat = vi.fn().mockResolvedValue({ size: 1024 } as any);
-		mockCrypto.createHash = vi.fn().mockReturnValue({
+		// Setup default mocks
+		vi.mocked(path.join).mockImplementation((...args) => args.join('/'));
+		vi.mocked(fs.writeFile).mockResolvedValue(undefined);
+		vi.mocked(fs.access).mockResolvedValue(undefined); // Default to file exists
+		vi.mocked(fs.stat).mockResolvedValue({ size: 1024 } as any);
+		vi.mocked(crypto.createHash).mockReturnValue({
 			update: vi.fn().mockReturnThis(),
 			digest: vi.fn().mockReturnValue('test_checksum')
 		} as any);
@@ -199,7 +214,7 @@ describe.sequential('MigrationBackupManager', () => {
 			};
 
 			// Mock file reading
-			mockFs.readFile = vi.fn().mockResolvedValue(JSON.stringify(backupData));
+			vi.mocked(fs.readFile).mockResolvedValue(JSON.stringify(backupData));
 
 			// Mock database operations
 			mockDatabase.run = vi.fn().mockResolvedValue({ changes: 2 });
@@ -238,7 +253,7 @@ describe.sequential('MigrationBackupManager', () => {
 			};
 
 			// Mock file reading
-			mockFs.readFile = vi.fn().mockImplementation((filePath: string) => {
+			vi.mocked(fs.readFile).mockImplementation((filePath: any) => {
 				// Check for matching path, ignoring root/drive differences
 				if (filePath.replace(/\\/g, '/').includes('/tmp/column_backup.json')) {
 					return Promise.resolve(JSON.stringify(backupData));
@@ -259,7 +274,7 @@ describe.sequential('MigrationBackupManager', () => {
 			const backupPath = '/tmp/nonexistent_backup.json';
 
 			// Mock file access error
-			mockFs.access = vi.fn().mockRejectedValue(new Error('File not found'));
+			vi.mocked(fs.access).mockRejectedValue(new Error('File not found'));
 
 			const result = await backupManager.restoreFromBackup(backupPath);
 
@@ -272,8 +287,8 @@ describe.sequential('MigrationBackupManager', () => {
 			const backupData = { info: {}, data: {} };
 
 			// Mock file reading
-			mockFs.readFile = vi.fn().mockResolvedValue(JSON.stringify(backupData));
-			mockFs.access = vi.fn().mockResolvedValue(undefined);
+			vi.mocked(fs.readFile).mockResolvedValue(JSON.stringify(backupData));
+			vi.mocked(fs.access).mockResolvedValue(undefined);
 
 			// Create backup manager with integrity verification enabled
 			const verifyingBackupManager = new MigrationBackupManager(mockDatabase, {
@@ -297,10 +312,10 @@ describe.sequential('MigrationBackupManager', () => {
 			];
 
 			// Mock directory listing
-			mockFs.readdir = vi.fn().mockResolvedValue(backupFiles);
+			vi.mocked(fs.readdir).mockResolvedValue(backupFiles as any);
 
 			// Mock file reading
-			mockFs.readFile = vi.fn().mockImplementation((filePath: string) => {
+			vi.mocked(fs.readFile).mockImplementation((filePath: any) => {
 				// console.error('DEBUG: Mock readFile called for:', filePath);
 				if (filePath.includes('other_file')) return Promise.resolve('invalid json');
 				if (filePath.includes('test_backup_2')) return Promise.resolve(JSON.stringify({ info: sampleBackupInfo.column }));
@@ -326,11 +341,11 @@ describe.sequential('MigrationBackupManager', () => {
 			];
 
 			// Mock directory listing
-			mockFs.readdir = vi.fn().mockResolvedValue(backupFiles);
+			vi.mocked(fs.readdir).mockResolvedValue(backupFiles as any);
 
 			// Mock file reading
 			// Mock file reading
-			mockFs.readFile = vi.fn().mockImplementation((filePath: string) => {
+			vi.mocked(fs.readFile).mockImplementation((filePath: any) => {
 				if (filePath.includes('User')) return Promise.resolve(JSON.stringify({
 					info: { ...sampleBackupInfo.column, doctype: 'User' }
 				}));
@@ -364,7 +379,7 @@ describe.sequential('MigrationBackupManager', () => {
 			vi.spyOn(backupManager, 'listBackups').mockResolvedValue(backupFiles as any);
 
 			// Mock file deletion
-			mockFs.unlink = vi.fn().mockResolvedValue(undefined);
+			vi.mocked(fs.unlink).mockResolvedValue(undefined);
 
 			await backupManager.cleanupOldBackups();
 
@@ -386,7 +401,7 @@ describe.sequential('MigrationBackupManager', () => {
 			vi.spyOn(backupManager, 'listBackups').mockResolvedValue(backupFiles as any);
 
 			// Mock file deletion
-			mockFs.unlink = vi.fn().mockResolvedValue(undefined);
+			vi.mocked(fs.unlink).mockResolvedValue(undefined);
 
 			await backupManager.cleanupOldBackups(customRetentionDays);
 

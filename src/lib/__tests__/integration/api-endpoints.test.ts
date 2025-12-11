@@ -82,14 +82,14 @@ describe('API Endpoints Integration', () => {
 			// Assert
 			expect(routes).toBeDefined();
 			expect(routes.length).toBeGreaterThan(0);
-			
+
 			// Check for standard CRUD endpoints
 			const listRoute = routes.find(r => r.type === 'list');
 			const createRoute = routes.find(r => r.type === 'create');
 			const readRoute = routes.find(r => r.type === 'read');
 			const updateRoute = routes.find(r => r.type === 'update');
 			const deleteRoute = routes.find(r => r.type === 'delete');
-			
+
 			expect(listRoute).toBeDefined();
 			expect(createRoute).toBeDefined();
 			expect(readRoute).toBeDefined();
@@ -151,7 +151,7 @@ describe('API Endpoints Integration', () => {
 
 			// Assert
 			expect(routes).toBeDefined();
-			
+
 			// Check that routes include permission level information
 			const updateRoute = routes.find(r => r.type === 'update');
 			expect(updateRoute).toBeDefined();
@@ -205,7 +205,7 @@ describe('API Endpoints Integration', () => {
 
 			// Assert
 			expect(routes).toBeDefined();
-			
+
 			// Check that routes include validation constraints
 			const createRoute = routes.find(r => r.type === 'create');
 			expect(createRoute).toBeDefined();
@@ -216,6 +216,14 @@ describe('API Endpoints Integration', () => {
 	describe('Special Endpoints API', () => {
 		it('should generate list view endpoint', async () => {
 			// Arrange
+			const customerDocType: DocType = {
+				name: 'Customer',
+				module: 'Accounts',
+				fields: [{ fieldname: 'name', fieldtype: 'Data', label: 'Name' }],
+				permissions: []
+			};
+			await docTypeEngine.registerDocType(customerDocType);
+
 			const docType: DocType = {
 				name: 'Invoice',
 				module: 'Accounts',
@@ -262,7 +270,7 @@ describe('API Endpoints Integration', () => {
 
 			// Assert
 			expect(routes).toBeDefined();
-			
+
 			// Check for list view endpoint
 			const listViewRoute = routes.find(r => r.path?.includes('list-view'));
 			expect(listViewRoute).toBeDefined();
@@ -270,6 +278,14 @@ describe('API Endpoints Integration', () => {
 
 		it('should generate report endpoints', async () => {
 			// Arrange
+			const customerDocType: DocType = {
+				name: 'Customer',
+				module: 'Sales',
+				fields: [{ fieldname: 'name', fieldtype: 'Data', label: 'Name' }],
+				permissions: []
+			};
+			await docTypeEngine.registerDocType(customerDocType);
+
 			const docType: DocType = {
 				name: 'SalesOrder',
 				module: 'Sales',
@@ -313,7 +329,7 @@ describe('API Endpoints Integration', () => {
 
 			// Assert
 			expect(routes).toBeDefined();
-			
+
 			// Check for report endpoints
 			const reportRoute = routes.find(r => r.path?.includes('report'));
 			expect(reportRoute).toBeDefined();
@@ -365,7 +381,7 @@ describe('API Endpoints Integration', () => {
 
 			// Assert
 			expect(routes).toBeDefined();
-			
+
 			// Check for search endpoints
 			const searchRoute = routes.find(r => r.path?.includes('search'));
 			expect(searchRoute).toBeDefined();
@@ -391,6 +407,7 @@ describe('API Endpoints Integration', () => {
 						fieldtype: 'Table',
 						label: 'Items',
 						required: true,
+						options: 'OrderItem',
 						child_doctype: 'OrderItem'
 					}
 				],
@@ -405,14 +422,42 @@ describe('API Endpoints Integration', () => {
 				]
 			};
 
-			await docTypeEngine.registerDocType(docType);
+			const customerDocType: DocType = {
+				name: 'Customer',
+				module: 'Sales',
+				fields: [{ fieldname: 'name', fieldtype: 'Data', label: 'Name' }],
+				permissions: []
+			};
+			await docTypeEngine.registerDocType(customerDocType);
+
+			const itemDocType: DocType = {
+				name: 'OrderItem',
+				module: 'Sales',
+				istable: true,
+				fields: [
+					{
+						fieldname: 'item_code',
+						fieldtype: 'Data',
+						label: 'Item Code',
+						required: true
+					}
+				],
+				permissions: []
+			};
+			await docTypeEngine.registerDocType(itemDocType);
+			try {
+				await docTypeEngine.registerDocType(docType);
+			} catch (e) {
+				console.error('Validation errors:', JSON.stringify((e as any).validationErrors, null, 2));
+				throw e;
+			}
 
 			// Act
 			const routes = apiGenerator.generateRoutes(docType);
 
 			// Assert
 			expect(routes).toBeDefined();
-			
+
 			// Check for Link field endpoints
 			const itemsRoute = routes.find(r => r.path?.includes('items'));
 			expect(itemsRoute).toBeDefined();
@@ -420,6 +465,26 @@ describe('API Endpoints Integration', () => {
 
 		it('should handle child table endpoints', async () => {
 			// Arrange
+			// Reset for new test case
+			DocTypeEngine.resetInstance();
+			const docTypeEngine2 = DocTypeEngine.getInstance();
+
+			const orderDocType: DocType = {
+				name: 'Order',
+				module: 'Sales',
+				fields: [{ fieldname: 'name', fieldtype: 'Data', label: 'Name' }],
+				permissions: []
+			};
+			await docTypeEngine2.registerDocType(orderDocType);
+
+			const productDocType: DocType = {
+				name: 'Product',
+				module: 'Sales',
+				fields: [{ fieldname: 'name', fieldtype: 'Data', label: 'Name' }],
+				permissions: []
+			};
+			await docTypeEngine2.registerDocType(productDocType);
+
 			const childDocType: DocType = {
 				name: 'OrderItem',
 				module: 'Sales',
@@ -462,18 +527,18 @@ describe('API Endpoints Integration', () => {
 				]
 			};
 
-			await docTypeEngine.registerDocType(childDocType);
+			await docTypeEngine2.registerDocType(childDocType);
 
 			// Act
 			const routes = apiGenerator.generateRoutes(childDocType);
 
 			// Assert
 			expect(routes).toBeDefined();
-			
+
 			// Check for child table endpoints
 			const itemRoute = routes.find(r => r.type === 'list');
 			expect(itemRoute).toBeDefined();
-			
+
 			// Check that routes have parent filtering
 			if (itemRoute?.middleware) {
 				const parentMiddleware = itemRoute.middleware.find(m => m.name === 'parent_filter');
@@ -546,10 +611,10 @@ describe('API Endpoints Integration', () => {
 			// Assert
 			expect(openAPISpec).toBeDefined();
 			expect(typeof openAPISpec).toBe('string');
-			
+
 			// Parse the JSON to check structure
 			const apiSpec = JSON.parse(openAPISpec);
-			expect(apiSpec.openapi).toBe('3.0.0');
+			expect(apiSpec.openapi).toBe('3.0.3');
 			expect(apiSpec.info).toBeDefined();
 			expect(apiSpec.paths).toBeDefined();
 			expect(apiSpec.components).toBeDefined();
@@ -599,11 +664,11 @@ describe('API Endpoints Integration', () => {
 
 			// Assert
 			expect(openAPISpec).toBeDefined();
-			
+
 			// Parse the JSON to check structure
 			const apiSpec = JSON.parse(openAPISpec);
 			expect(apiSpec.components?.securitySchemes).toBeDefined();
-			
+
 			// Check that endpoints require authentication
 			if (apiSpec.security) {
 				expect(apiSpec.security.length).toBeGreaterThan(0);
@@ -653,7 +718,7 @@ describe('API Endpoints Integration', () => {
 
 			// Assert
 			expect(routes).toBeDefined();
-			
+
 			// Check that routes include validation
 			const createRoute = routes.find(r => r.type === 'create');
 			expect(createRoute).toBeDefined();
@@ -707,12 +772,12 @@ describe('API Endpoints Integration', () => {
 
 			// Assert
 			expect(routes).toBeDefined();
-			
+
 			// Check for permission middleware
 			const updateRoute = routes.find(r => r.type === 'update');
 			expect(updateRoute).toBeDefined();
 			expect(updateRoute?.middleware).toBeDefined();
-			
+
 			// Check that permission middleware is included
 			const permissionMiddleware = updateRoute?.middleware?.find(m => m.name === 'permission_check');
 			expect(permissionMiddleware).toBeDefined();

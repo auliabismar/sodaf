@@ -24,12 +24,12 @@ global.FileReader = class {
 			}
 		}, 0);
 	}
-	abort(): void {}
-	readAsArrayBuffer(file: File): void {}
-	readAsBinaryString(file: File): void {}
-	readAsText(file: File): void {}
-	addEventListener(type: string, listener: EventListenerOrEventListenerObject): void {}
-	removeEventListener(type: string, listener: EventListenerOrEventListenerObject): void {}
+	abort(): void { }
+	readAsArrayBuffer(file: File): void { }
+	readAsBinaryString(file: File): void { }
+	readAsText(file: File): void { }
+	addEventListener(type: string, listener: EventListenerOrEventListenerObject): void { }
+	removeEventListener(type: string, listener: EventListenerOrEventListenerObject): void { }
 	dispatchEvent(event: Event): boolean {
 		return true;
 	}
@@ -87,7 +87,7 @@ describe('AttachImageField', () => {
 		component = render(AttachImageField, {
 			props: { field, value: null }
 		});
-		
+
 		const uploader = screen.getByText(/Drop image here or click to upload/);
 		expect(uploader).toBeInTheDocument();
 	});
@@ -97,19 +97,19 @@ describe('AttachImageField', () => {
 		component = render(AttachImageField, {
 			props: { field, value: null }
 		});
-		
+
 		const imageFile = await createMockImageFile('test.jpg');
 		const fileList = {
 			0: imageFile,
 			length: 1,
 			item: () => imageFile
 		} as any;
-		
+
 		const fileInput = component.container.querySelector('input[type="file"]');
 		if (fileInput) {
 			await fireEvent.change(fileInput, { target: { files: fileList } });
 		}
-		
+
 		// Wait for image preview to load
 		await waitFor(() => {
 			const previewImage = screen.getByAltText('Preview');
@@ -119,84 +119,67 @@ describe('AttachImageField', () => {
 
 	// Test image type validation
 	it('validates file type and rejects non-image files', async () => {
+		const onerror = vi.fn();
 		component = render(AttachImageField, {
-			props: { field, value: null }
+			props: { field, value: null, onerror }
 		});
-		
+
 		const textFile = createMockFile('test.txt', 'text/plain');
 		const fileList = {
 			0: textFile,
 			length: 1,
 			item: () => textFile
 		} as any;
-		
-		// Listen for error event
-		let errorEventFired = false;
-		let errorEventValue: string[] | null = null;
-		const unsubscribe = component.$on('error', (event: any) => {
-			errorEventFired = true;
-			errorEventValue = event.detail;
-		});
-		
+
 		const fileInput = component.container.querySelector('input[type="file"]');
 		if (fileInput) {
 			await fireEvent.change(fileInput, { target: { files: fileList } });
 		}
-		
+
 		await waitFor(() => {
-			expect(errorEventFired).toBe(true);
-			expect(errorEventValue).toContain('Please select an image file');
+			expect(onerror).toHaveBeenCalled();
+			const callArgs = onerror.mock.calls[0][0]; // Assuming string or array is passed
+			expect(String(callArgs)).toContain('Please select an image file');
 		});
-		
-		unsubscribe();
 	});
 
 	// Test image size validation
 	it('validates image size and rejects files that are too large', async () => {
+		const onerror = vi.fn();
 		component = render(AttachImageField, {
-			props: { field, value: null, maxSize: 100 } // 100 bytes
+			props: { field, value: null, maxSize: 100, onerror } // 100 bytes
 		});
-		
+
 		const largeImageFile = await createMockImageFile('large.jpg');
-		const largeFile = new File([await largeImageFile.arrayBuffer()], 'large.jpg', { 
-			type: 'image/jpeg' 
+		const largeFile = new File([await largeImageFile.arrayBuffer()], 'large.jpg', {
+			type: 'image/jpeg'
 		});
-		
+
 		const fileList = {
 			0: largeFile,
 			length: 1,
 			item: () => largeFile
 		} as any;
-		
-		// Listen for error event
-		let errorEventFired = false;
-		let errorEventValue: string[] | null = null;
-		const unsubscribe = component.$on('error', (event: any) => {
-			errorEventFired = true;
-			errorEventValue = event.detail;
-		});
-		
+
 		const fileInput = component.container.querySelector('input[type="file"]');
 		if (fileInput) {
 			await fireEvent.change(fileInput, { target: { files: fileList } });
 		}
-		
+
 		await waitFor(() => {
-			expect(errorEventFired).toBe(true);
-			expect(errorEventValue).toContain('exceeds maximum size');
+			expect(onerror).toHaveBeenCalled();
+			expect(String(onerror.mock.calls[0][0])).toContain('exceeds maximum size');
 		});
-		
-		unsubscribe();
 	});
 
 	// Test image preview
 	it('displays image preview after upload', async () => {
 		const imageFile = await createMockImageFile('test.jpg');
-		
+
 		component = render(AttachImageField, {
 			props: { field, value: imageFile }
 		});
-		
+
 		await waitFor(() => {
 			const previewImage = screen.getByAltText('Preview');
 			expect(previewImage).toBeInTheDocument();
@@ -207,19 +190,19 @@ describe('AttachImageField', () => {
 	// Test crop functionality
 	it('opens crop modal when crop button is clicked', async () => {
 		const imageFile = await createMockImageFile('test.jpg');
-		
+
 		component = render(AttachImageField, {
 			props: { field, value: imageFile, enableCrop: true }
 		});
-		
+
 		await waitFor(() => {
 			const cropButton = screen.getByRole('button', { name: /crop image/i });
 			expect(cropButton).toBeInTheDocument();
 		});
-		
+
 		const cropButton = screen.getByRole('button', { name: /crop image/i });
 		await fireEvent.click(cropButton);
-		
+
 		await waitFor(() => {
 			expect(screen.getByText('Crop Image')).toBeInTheDocument();
 		});
@@ -228,16 +211,16 @@ describe('AttachImageField', () => {
 	// Test zoom functionality
 	it('provides zoom controls in crop modal', async () => {
 		const imageFile = await createMockImageFile('test.jpg');
-		
+
 		component = render(AttachImageField, {
 			props: { field, value: imageFile, enableCrop: true, enableZoom: true }
 		});
-		
+
 		await waitFor(() => {
 			const cropButton = screen.getByRole('button', { name: /crop image/i });
 			fireEvent.click(cropButton);
 		});
-		
+
 		await waitFor(() => {
 			const zoomInButton = screen.getByRole('button', { name: /zoom in/i });
 			const zoomOutButton = screen.getByRole('button', { name: /zoom out/i });
@@ -249,19 +232,19 @@ describe('AttachImageField', () => {
 	// Test image removal
 	it('removes image when remove button is clicked', async () => {
 		const imageFile = await createMockImageFile('test.jpg');
-		
+
 		component = render(AttachImageField, {
 			props: { field, value: imageFile }
 		});
-		
+
 		await waitFor(() => {
 			const removeButton = screen.getByRole('button', { name: /remove image/i });
 			expect(removeButton).toBeInTheDocument();
 		});
-		
+
 		const removeButton = screen.getByRole('button', { name: /remove image/i });
 		await fireEvent.click(removeButton);
-		
+
 		// Image should be removed
 		await waitFor(() => {
 			expect(screen.queryByAltText('Preview')).not.toBeInTheDocument();
@@ -271,7 +254,7 @@ describe('AttachImageField', () => {
 	// Test image download
 	it('downloads image when download button is clicked', async () => {
 		const imageFile = await createMockImageFile('test.jpg');
-		
+
 		// Mock document.createElement and link functionality
 		const mockLink = {
 			href: '',
@@ -282,7 +265,7 @@ describe('AttachImageField', () => {
 		const mockCreateElement = vi.fn().mockReturnValue(mockLink);
 		const mockAppendChild = vi.fn();
 		const mockRemoveChild = vi.fn();
-		
+
 		Object.defineProperty(document, 'createElement', {
 			value: mockCreateElement,
 			writable: true
@@ -295,19 +278,19 @@ describe('AttachImageField', () => {
 			value: mockRemoveChild,
 			writable: true
 		});
-		
+
 		component = render(AttachImageField, {
 			props: { field, value: imageFile }
 		});
-		
+
 		await waitFor(() => {
 			const downloadButton = screen.getByRole('button', { name: /download image/i });
 			expect(downloadButton).toBeInTheDocument();
 		});
-		
+
 		const downloadButton = screen.getByRole('button', { name: /download image/i });
 		await fireEvent.click(downloadButton);
-		
+
 		expect(mockCreateElement).toHaveBeenCalledWith('a');
 		expect(mockLink.click).toHaveBeenCalled();
 	});
@@ -317,7 +300,7 @@ describe('AttachImageField', () => {
 		component = render(AttachImageField, {
 			props: { field, value: null, disabled: true }
 		});
-		
+
 		const uploader = component.container.querySelector('.disabled-message');
 		expect(uploader).toBeInTheDocument();
 		expect(screen.getByText(/Image upload is disabled/)).toBeInTheDocument();
@@ -328,7 +311,7 @@ describe('AttachImageField', () => {
 		component = render(AttachImageField, {
 			props: { field, value: null, readonly: true }
 		});
-		
+
 		const uploader = component.container.querySelector('.disabled-message');
 		expect(uploader).toBeInTheDocument();
 		expect(screen.getByText(/Image upload is disabled/)).toBeInTheDocument();
@@ -337,11 +320,11 @@ describe('AttachImageField', () => {
 	// Test crop disabled
 	it('hides crop button when enableCrop is false', async () => {
 		const imageFile = await createMockImageFile('test.jpg');
-		
+
 		component = render(AttachImageField, {
 			props: { field, value: imageFile, enableCrop: false }
 		});
-		
+
 		await waitFor(() => {
 			const cropButton = screen.queryByRole('button', { name: /crop image/i });
 			expect(cropButton).not.toBeInTheDocument();
@@ -351,16 +334,16 @@ describe('AttachImageField', () => {
 	// Test zoom disabled
 	it('hides zoom controls when enableZoom is false', async () => {
 		const imageFile = await createMockImageFile('test.jpg');
-		
+
 		component = render(AttachImageField, {
 			props: { field, value: imageFile, enableCrop: true, enableZoom: false }
 		});
-		
+
 		await waitFor(() => {
 			const cropButton = screen.getByRole('button', { name: /crop image/i });
 			fireEvent.click(cropButton);
 		});
-		
+
 		await waitFor(() => {
 			const zoomInButton = screen.queryByRole('button', { name: /zoom in/i });
 			const zoomOutButton = screen.queryByRole('button', { name: /zoom out/i });
@@ -371,60 +354,50 @@ describe('AttachImageField', () => {
 
 	// Test change event emission
 	it('emits change event when image is uploaded', async () => {
-		let changeEventFired = false;
-		let changeEventValue: File | null = null;
-		
+		const onchange = vi.fn();
+
 		component = render(AttachImageField, {
-			props: { field, value: null }
+			props: { field, value: null, onchange }
 		});
-		
-		// Listen for change event
-		const unsubscribe = component.$on('change', (event: any) => {
-			changeEventFired = true;
-			changeEventValue = event.detail;
-		});
-		
+
 		const imageFile = await createMockImageFile('test.jpg');
 		const fileList = {
 			0: imageFile,
 			length: 1,
 			item: () => imageFile
 		} as any;
-		
+
 		const fileInput = component.container.querySelector('input[type="file"]');
 		if (fileInput) {
 			await fireEvent.change(fileInput, { target: { files: fileList } });
 		}
-		
+
 		await waitFor(() => {
-			expect(changeEventFired).toBe(true);
-			expect(changeEventValue).toBe(imageFile);
+			expect(onchange).toHaveBeenCalledWith(imageFile);
 		});
-		
-		unsubscribe();
 	});
 
 	// Test crop application
 	it('applies crop and updates image when apply crop is clicked', async () => {
 		const imageFile = await createMockImageFile('test.jpg');
-		
+
 		component = render(AttachImageField, {
 			props: { field, value: imageFile, enableCrop: true }
 		});
-		
+
 		await waitFor(() => {
 			const cropButton = screen.getByRole('button', { name: /crop image/i });
 			fireEvent.click(cropButton);
 		});
-		
+
 		await waitFor(() => {
 			const applyButton = screen.getByRole('button', { name: /apply crop/i });
 			expect(applyButton).toBeInTheDocument();
 		});
-		
+
 		const applyButton = screen.getByRole('button', { name: /apply crop/i });
 		await fireEvent.click(applyButton);
-		
+
 		// Modal should close
 		await waitFor(() => {
 			expect(screen.queryByText('Crop Image')).not.toBeInTheDocument();
@@ -434,11 +407,11 @@ describe('AttachImageField', () => {
 	// Test image info display
 	it('displays image name and size', async () => {
 		const imageFile = await createMockImageFile('test-image.jpg');
-		
+
 		component = render(AttachImageField, {
 			props: { field, value: imageFile }
 		});
-		
+
 		await waitFor(() => {
 			expect(screen.getByText('test-image.jpg')).toBeInTheDocument();
 			// File size should be displayed
@@ -449,15 +422,15 @@ describe('AttachImageField', () => {
 
 	// Test required field
 	it('shows required indicator when field is required', async () => {
-		const requiredField = createMockField({ 
-			fieldtype: 'Attach Image', 
-			required: true 
+		const requiredField = createMockField({
+			fieldtype: 'Attach Image',
+			required: true
 		});
-		
+
 		component = render(AttachImageField, {
 			props: { field: requiredField, value: null }
 		});
-		
+
 		const label = screen.getByText('Attach Image Field *');
 		expect(label).toBeInTheDocument();
 	});
@@ -467,22 +440,22 @@ describe('AttachImageField', () => {
 		component = render(AttachImageField, {
 			props: { field, value: null, error: 'Image upload failed' }
 		});
-		
+
 		const errorMessage = screen.getByText('Image upload failed');
 		expect(errorMessage).toBeInTheDocument();
 	});
 
 	// Test description tooltip
 	it('shows description tooltip when description is provided', async () => {
-		const fieldWithDescription = createMockField({ 
-			fieldtype: 'Attach Image', 
-			description: 'Upload your image here' 
+		const fieldWithDescription = createMockField({
+			fieldtype: 'Attach Image',
+			description: 'Upload your image here'
 		});
-		
+
 		component = render(AttachImageField, {
 			props: { field: fieldWithDescription, value: null }
 		});
-		
+
 		const infoButton = screen.getByRole('button', { name: /information/i });
 		expect(infoButton).toBeInTheDocument();
 	});
@@ -490,24 +463,24 @@ describe('AttachImageField', () => {
 	// Test crop modal close
 	it('closes crop modal when cancel button is clicked', async () => {
 		const imageFile = await createMockImageFile('test.jpg');
-		
+
 		component = render(AttachImageField, {
 			props: { field, value: imageFile, enableCrop: true }
 		});
-		
+
 		await waitFor(() => {
 			const cropButton = screen.getByRole('button', { name: /crop image/i });
 			fireEvent.click(cropButton);
 		});
-		
+
 		await waitFor(() => {
 			const cancelButton = screen.getByRole('button', { name: /cancel/i });
 			expect(cancelButton).toBeInTheDocument();
 		});
-		
+
 		const cancelButton = screen.getByRole('button', { name: /cancel/i });
 		await fireEvent.click(cancelButton);
-		
+
 		// Modal should close
 		await waitFor(() => {
 			expect(screen.queryByText('Crop Image')).not.toBeInTheDocument();

@@ -97,10 +97,10 @@ describe('DocTypeMeta Example Usage', () => {
 		const meta = await MetaFactory.create(sampleDocType);
 
 		// Test field access methods
-		expect(meta.get_field('customer_name')).toBeTruthy();
-		expect(meta.get_field('nonexistent')).toBeNull();
-		expect(meta.has_field('email')).toBe(true);
-		expect(meta.has_field('nonexistent')).toBe(false);
+		expect(await meta.get_field('customer_name')).toBeTruthy();
+		expect(await meta.get_field('nonexistent')).toBeNull();
+		expect(await meta.has_field('email')).toBe(true);
+		expect(await meta.has_field('nonexistent')).toBe(false);
 
 		// Test field type queries
 		const linkFields = await meta.get_link_fields();
@@ -219,7 +219,7 @@ describe('DocTypeMeta Example Usage', () => {
 		await engine.registerDocType(sampleDocType);
 
 		// Create from DocType
-		const meta1 = MetaFactory.create(sampleDocType);
+		const meta1 = await MetaFactory.create(sampleDocType);
 		expect(meta1).toBeInstanceOf(DocTypeMeta);
 
 		// Create from name

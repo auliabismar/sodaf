@@ -59,7 +59,7 @@ export class MigrationBackupManager {
 		doctypeName: string,
 		backupType: BackupType = this.options.defaultType
 	): Promise<string> {
-		console.log('DEBUG: createBackup called with backupType:', backupType);
+
 		const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
 		const fileName = this.options.namingPattern
 			.replace('{doctype}', doctypeName)
@@ -91,7 +91,7 @@ export class MigrationBackupManager {
 				default:
 					throw new Error(`Unsupported backup type: ${backupType}`);
 			}
-			console.log('DEBUG: backupData created:', JSON.stringify(backupData, null, 2));
+
 
 			// Add metadata to backup
 			const backupInfo: BackupInfo = {
@@ -350,9 +350,8 @@ export class MigrationBackupManager {
 			for (const file of backupFiles) {
 				try {
 					const filePath = path.join(this.options.storagePath, file);
-					console.log('DEBUG: listBackups reading file:', filePath);
+
 					const content = await fs.readFile(filePath, 'utf8');
-					console.log('DEBUG: listBackups content:', content ? content.substring(0, 50) + '...' : 'undefined');
 					const backup = JSON.parse(content);
 					const backupInfo = backup.info as BackupInfo;
 					backupInfo.createdAt = new Date(backupInfo.createdAt);

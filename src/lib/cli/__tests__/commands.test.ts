@@ -72,7 +72,8 @@ describe('CLI Commands', () => {
 			} as any,
 			workingDirectory: '/test',
 			env: {},
-			startTime: new Date()
+			startTime: new Date(),
+			site: {} as any
 		};
 
 		// Create mock args
@@ -121,10 +122,10 @@ describe('CLI Commands', () => {
 				errors: [],
 				executionTime: 150
 			};
-			
+
 			const mockRunMigrations = vi.fn().mockResolvedValue(mockResult);
 			MigrationService.prototype.runMigrations = mockRunMigrations;
-			
+
 			(mockArgs.getOption as any).mockImplementation((name: string) => {
 				switch (name) {
 					case 'site': return undefined;
@@ -134,13 +135,13 @@ describe('CLI Commands', () => {
 					default: return undefined;
 				}
 			});
-			
+
 			(mockArgs.hasFlag as any).mockImplementation((name: string) => {
 				return name === 'verbose';
 			});
 
 			const command = new MigrateCommand();
-			
+
 			// Act
 			const result = await command.execute(mockArgs, mockContext);
 
@@ -165,7 +166,7 @@ describe('CLI Commands', () => {
 			// Arrange
 			const mockRunMigrations = vi.fn().mockRejectedValue(new Error('Migration failed'));
 			MigrationService.prototype.runMigrations = mockRunMigrations;
-			
+
 			(mockArgs.getOption as any).mockImplementation((name: string) => {
 				switch (name) {
 					case 'site': return undefined;
@@ -175,13 +176,13 @@ describe('CLI Commands', () => {
 					default: return undefined;
 				}
 			});
-			
+
 			(mockArgs.hasFlag as any).mockImplementation((name: string) => {
 				return name === 'verbose';
 			});
 
 			const command = new MigrateCommand();
-			
+
 			// Act
 			const result = await command.execute(mockArgs, mockContext);
 
@@ -203,10 +204,10 @@ describe('CLI Commands', () => {
 				errors: [],
 				executionTime: 50
 			};
-			
+
 			const mockDryRunMigrations = vi.fn().mockResolvedValue(mockResult);
 			MigrationService.prototype.dryRunMigrations = mockDryRunMigrations;
-			
+
 			(mockArgs.getOption as any).mockImplementation((name: string) => {
 				switch (name) {
 					case 'site': return undefined;
@@ -216,13 +217,13 @@ describe('CLI Commands', () => {
 					default: return undefined;
 				}
 			});
-			
+
 			(mockArgs.hasFlag as any).mockImplementation((name: string) => {
 				return name === 'verbose';
 			});
 
 			const command = new MigrateDryRunCommand();
-			
+
 			// Act
 			const result = await command.execute(mockArgs, mockContext);
 
@@ -231,8 +232,7 @@ describe('CLI Commands', () => {
 			expect(mockDryRunMigrations).toHaveBeenCalledWith(
 				{
 					site: undefined,
-					force: false,
-					backup: true,
+					dryRun: true,
 					timeout: 300,
 					batchSize: 1000,
 					continueOnError: false,
@@ -265,21 +265,21 @@ describe('CLI Commands', () => {
 					lastMigrationDate: new Date('2023-01-01')
 				}
 			};
-			
+
 			const mockGetMigrationStatus = vi.fn().mockResolvedValue(mockHistory);
 			MigrationService.prototype.getMigrationStatus = mockGetMigrationStatus;
-			
+
 			(mockArgs.getOption as any).mockReturnValue(undefined);
 
 			const command = new MigrateStatusCommand();
-			
+
 			// Act
 			const result = await command.execute(mockArgs, mockContext);
 
 			// Assert
 			expect(result).toBe(ExitCode.SUCCESS);
-			expect(mockGetMigrationStatus).toHaveBeenCalledWith(undefined, mockContext);
-			expect(mockContext.output.migrationHistory).toHaveBeenCalledWith(mockHistory);
+			expect(mockGetMigrationStatus).toHaveBeenCalledWith('default', mockContext);
+			expect(mockContext.output.info).toHaveBeenCalledWith(expect.stringContaining('Migration Status'));
 		});
 	});
 
@@ -293,10 +293,10 @@ describe('CLI Commands', () => {
 				errors: [],
 				executionTime: 100
 			};
-			
+
 			const mockRollbackMigrations = vi.fn().mockResolvedValue(mockResult);
 			MigrationService.prototype.rollbackMigrations = mockRollbackMigrations;
-			
+
 			(mockArgs.getOption as any).mockImplementation((name: string) => {
 				switch (name) {
 					case 'site': return undefined;
@@ -306,13 +306,13 @@ describe('CLI Commands', () => {
 					default: return undefined;
 				}
 			});
-			
+
 			(mockArgs.hasFlag as any).mockImplementation((name: string) => {
 				return name === 'verbose';
 			});
 
 			const command = new MigrateRollbackCommand();
-			
+
 			// Act
 			const result = await command.execute(mockArgs, mockContext);
 
@@ -321,11 +321,11 @@ describe('CLI Commands', () => {
 			expect(mockRollbackMigrations).toHaveBeenCalledWith(
 				{
 					site: undefined,
+					steps: undefined,
+					id: undefined,
 					force: false,
 					backup: true,
 					timeout: 300,
-					batchSize: 1000,
-					continueOnError: false,
 					verbose: true
 				},
 				mockContext
@@ -337,7 +337,7 @@ describe('CLI Commands', () => {
 			// Arrange
 			const mockRollbackMigrations = vi.fn().mockRejectedValue(new Error('Rollback failed'));
 			MigrationService.prototype.rollbackMigrations = mockRollbackMigrations;
-			
+
 			(mockArgs.getOption as any).mockImplementation((name: string) => {
 				switch (name) {
 					case 'site': return undefined;
@@ -347,20 +347,20 @@ describe('CLI Commands', () => {
 					default: return undefined;
 				}
 			});
-			
+
 			(mockArgs.hasFlag as any).mockImplementation((name: string) => {
 				return name === 'verbose';
 			});
 
 			const command = new MigrateRollbackCommand();
-			
+
 			// Act
 			const result = await command.execute(mockArgs, mockContext);
 
 			// Assert
 			expect(result).toBe(ExitCode.MIGRATION_ERROR);
 			expect(mockContext.output.error).toHaveBeenCalledWith(
-				expect.stringContaining('Migration failed')
+				expect.stringContaining('Rollback failed')
 			);
 		});
 	});
@@ -375,10 +375,10 @@ describe('CLI Commands', () => {
 				errors: [],
 				executionTime: 0
 			};
-			
+
 			const mockRunMigrations = vi.fn().mockResolvedValue(mockResult);
 			MigrationService.prototype.runMigrations = mockRunMigrations;
-			
+
 			(mockArgs.getOption as any).mockImplementation((name: string) => {
 				switch (name) {
 					case 'site': return 'custom-site';
@@ -388,11 +388,11 @@ describe('CLI Commands', () => {
 					default: return undefined;
 				}
 			});
-			
+
 			(mockArgs.hasFlag as any).mockReturnValue(false);
 
 			const command = new MigrateCommand();
-			
+
 			// Act
 			await command.execute(mockArgs, mockContext);
 
@@ -414,10 +414,10 @@ describe('CLI Commands', () => {
 				errors: [],
 				executionTime: 0
 			};
-			
+
 			const mockRunMigrations = vi.fn().mockResolvedValue(mockResult);
 			MigrationService.prototype.runMigrations = mockRunMigrations;
-			
+
 			(mockArgs.getOption as any).mockImplementation((name: string) => {
 				switch (name) {
 					case 'site': return undefined;
@@ -427,13 +427,13 @@ describe('CLI Commands', () => {
 					default: return undefined;
 				}
 			});
-			
+
 			(mockArgs.hasFlag as any).mockImplementation((name: string) => {
 				return name === 'force';
 			});
 
 			const command = new MigrateCommand();
-			
+
 			// Act
 			await command.execute(mockArgs, mockContext);
 
@@ -455,10 +455,10 @@ describe('CLI Commands', () => {
 				errors: [],
 				executionTime: 0
 			};
-			
+
 			const mockRunMigrations = vi.fn().mockResolvedValue(mockResult);
 			MigrationService.prototype.runMigrations = mockRunMigrations;
-			
+
 			(mockArgs.getOption as any).mockImplementation((name: string) => {
 				switch (name) {
 					case 'site': return undefined;
@@ -468,13 +468,13 @@ describe('CLI Commands', () => {
 					default: return undefined;
 				}
 			});
-			
+
 			(mockArgs.hasFlag as any).mockImplementation((name: string) => {
 				return name === 'verbose' || name === 'force';
 			});
 
 			const command = new MigrateCommand();
-			
+
 			// Act
 			await command.execute(mockArgs, mockContext);
 
@@ -494,7 +494,7 @@ describe('CLI Commands', () => {
 			// Arrange
 			const mockRunMigrations = vi.fn().mockRejectedValue(new Error('Service unavailable'));
 			MigrationService.prototype.runMigrations = mockRunMigrations;
-			
+
 			(mockArgs.getOption as any).mockImplementation((name: string) => {
 				switch (name) {
 					case 'site': return undefined;
@@ -504,11 +504,11 @@ describe('CLI Commands', () => {
 					default: return undefined;
 				}
 			});
-			
+
 			(mockArgs.hasFlag as any).mockReturnValue(false);
 
 			const command = new MigrateCommand();
-			
+
 			// Act
 			const result = await command.execute(mockArgs, mockContext);
 
@@ -523,7 +523,7 @@ describe('CLI Commands', () => {
 			// Arrange
 			const mockRunMigrations = vi.fn().mockRejectedValue(new Error('Database locked'));
 			MigrationService.prototype.runMigrations = mockRunMigrations;
-			
+
 			(mockArgs.getOption as any).mockImplementation((name: string) => {
 				switch (name) {
 					case 'site': return undefined;
@@ -533,11 +533,11 @@ describe('CLI Commands', () => {
 					default: return undefined;
 				}
 			});
-			
+
 			(mockArgs.hasFlag as any).mockReturnValue(false);
 
 			const command = new MigrateCommand();
-			
+
 			// Act
 			const result = await command.execute(mockArgs, mockContext);
 

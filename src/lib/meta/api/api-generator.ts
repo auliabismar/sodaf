@@ -10,14 +10,14 @@
 import type { DocType, DocField, DocPerm, FieldType } from '../doctype/types';
 import type { VirtualDocType } from '../doctype/virtual-doctype';
 import type {
-	RouteConfig,
-	RouteType,
-	HTTPMethod,
-	ValidationSchema,
-	FieldValidationRule,
-	RequestValidationType,
-	RouteMiddleware,
-	RoutePermissions
+    RouteConfig,
+    RouteType,
+    HTTPMethod,
+    ValidationSchema,
+    FieldValidationRule,
+    RequestValidationType,
+    RouteMiddleware,
+    RoutePermissions
 } from './types';
 import { generateOpenAPISpecification, generateOpenAPIJSON } from '../openapi';
 import { CustomFieldManager } from '../custom';
@@ -118,21 +118,21 @@ const LAYOUT_FIELD_TYPES: FieldType[] = [
  * based on DocType definitions.
  */
 export class APIGenerator {
-	private options: Required<APIGeneratorOptions>;
-	private customFieldManager: CustomFieldManager;
+    private options: Required<APIGeneratorOptions>;
+    private customFieldManager: CustomFieldManager;
 
     /**
      * Create a new APIGenerator instance
      * @param options Generator options
      */
     constructor(options: APIGeneratorOptions = {}) {
-    	this.options = {
-    		basePath: options.basePath ?? '/api/resource',
-    		includeDeprecated: options.includeDeprecated ?? false,
-    		customPermissionChecks: options.customPermissionChecks ?? [],
-    		enableRateLimiting: options.enableRateLimiting ?? false
-    	};
-    	this.customFieldManager = CustomFieldManager.getInstance();
+        this.options = {
+            basePath: options.basePath ?? '/api/resource',
+            includeDeprecated: options.includeDeprecated ?? false,
+            customPermissionChecks: options.customPermissionChecks ?? [],
+            enableRateLimiting: options.enableRateLimiting ?? false
+        };
+        this.customFieldManager = CustomFieldManager.getInstance();
     }
 
     // =========================================================================
@@ -175,7 +175,7 @@ export class APIGenerator {
         const validation = this.generateValidators(doctype);
         const middleware = this.generateMiddleware(doctype);
 
-        return [
+        const routes: RouteConfig[] = [
             // GET /api/resource/{doctype} - List
             {
                 method: 'GET' as HTTPMethod,
@@ -239,6 +239,74 @@ export class APIGenerator {
                 tags: [doctype.module, doctype.name]
             }
         ];
+
+        // Add special endpoints
+
+        // List View endpoint
+        if (doctype.fields.some(f => f.in_list_view)) {
+            routes.push({
+                method: 'GET' as HTTPMethod,
+                path: `${basePath}/${doctypePath}/list-view`,
+                type: 'custom' as RouteType,
+                doctype: doctype.name,
+                description: `List view for ${doctype.name}`,
+                permissions: this.extractReadPermissions(doctype),
+                middleware,
+                requires_auth: true,
+                tags: [doctype.module, doctype.name]
+            });
+        }
+
+        // Report endpoint
+        if (doctype.permissions.some(p => p.report)) {
+            routes.push({
+                method: 'GET' as HTTPMethod,
+                path: `${basePath}/${doctypePath}/report`,
+                type: 'custom' as RouteType,
+                doctype: doctype.name,
+                description: `Report for ${doctype.name}`,
+                permissions: {
+                    roles: doctype.permissions.filter(p => p.report).map(p => p.role)
+                },
+                middleware,
+                requires_auth: true,
+                tags: [doctype.module, doctype.name]
+            });
+        }
+
+        // Search endpoint
+        if (doctype.fields.some(f => f.in_global_search)) {
+            routes.push({
+                method: 'GET' as HTTPMethod,
+                path: `${basePath}/${doctypePath}/search`,
+                type: 'custom' as RouteType,
+                doctype: doctype.name,
+                description: `Search ${doctype.name}`,
+                permissions: this.extractReadPermissions(doctype),
+                middleware,
+                requires_auth: true,
+                tags: [doctype.module, doctype.name]
+            });
+        }
+
+        // Link/Table field endpoints
+        for (const field of doctype.fields) {
+            if (['Link', 'Table'].includes(field.fieldtype)) {
+                routes.push({
+                    method: 'GET' as HTTPMethod,
+                    path: `${basePath}/${doctypePath}/{name}/${field.fieldname}`,
+                    type: 'custom' as RouteType,
+                    doctype: doctype.name,
+                    description: `Get ${field.fieldname} for ${doctype.name}`,
+                    permissions: this.extractReadPermissions(doctype),
+                    middleware,
+                    requires_auth: true,
+                    tags: [doctype.module, doctype.name]
+                });
+            }
+        }
+
+        return routes;
     }
 
     /**
@@ -528,6 +596,15 @@ export class APIGenerator {
                     max_requests: 100,
                     window_seconds: 60
                 },
+                order: 0
+            });
+        }
+
+        // Parent filter for child tables
+        if (doctype.istable || doctype.fields.some(f => f.fieldname === 'parent')) {
+            middleware.push({
+                name: 'parent_filter',
+                config: { doctype: doctype.name },
                 order: 0
             });
         }

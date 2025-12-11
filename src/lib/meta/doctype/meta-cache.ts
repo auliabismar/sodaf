@@ -71,7 +71,7 @@ export class MetaCache {
 	): Promise<DocTypeMeta | null> {
 		// Create cache key with includeCustomFields and includePropertySetters flags
 		const cacheKey = `${doctypeName}_${includeCustomFields}_${includePropertySetters}`;
-		
+
 		// Check cache first
 		if (this.cache.has(cacheKey)) {
 			return this.cache.get(cacheKey)!;
@@ -134,7 +134,7 @@ export class MetaCache {
 				keysToDelete.push(key);
 			}
 		}
-		
+
 		for (const key of keysToDelete) {
 			this.cache.delete(key);
 		}
@@ -166,7 +166,23 @@ export class MetaCache {
 	 * @returns Array of cached DocType names
 	 */
 	public getCachedDocTypes(): string[] {
-		return Array.from(this.cache.keys());
+		const keys = Array.from(this.cache.keys());
+		const docTypes = new Set<string>();
+
+		for (const key of keys) {
+			// Extract DocType name from key (format: Name_IncludeCustom_IncludeProps)
+			const parts = key.split('_');
+			// Handle cases where name might contain underscores, last two parts are always booleans
+			if (parts.length >= 3) {
+				const name = parts.slice(0, -2).join('_');
+				docTypes.add(name);
+			} else {
+				// Fallback for unexpected key format
+				docTypes.add(key);
+			}
+		}
+
+		return Array.from(docTypes);
 	}
 
 	/**
@@ -175,7 +191,13 @@ export class MetaCache {
 	 * @returns True if cached, false otherwise
 	 */
 	public isCached(doctypeName: string): boolean {
-		return this.cache.has(doctypeName);
+		// Check if any cache entry exists for this DocType
+		for (const key of this.cache.keys()) {
+			if (key.startsWith(`${doctypeName}_`)) {
+				return true;
+			}
+		}
+		return false;
 	}
 
 	/**

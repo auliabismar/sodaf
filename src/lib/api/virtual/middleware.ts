@@ -341,6 +341,16 @@ export function createLoggingMiddleware(options: {
 			};
 
 			console.error('[Virtual API Error]', errorLogData);
+
+			// Ensure error response is sent
+			response.status = 500;
+			response.headers = { 'Content-Type': 'application/json' };
+			response.body = JSON.stringify({
+				error: {
+					message: 'Request logging error',
+					details: error instanceof Error ? error.message : String(error)
+				}
+			});
 		}
 	};
 }

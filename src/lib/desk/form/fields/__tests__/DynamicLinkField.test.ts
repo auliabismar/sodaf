@@ -20,8 +20,8 @@ describe('DynamicLinkField', () => {
 
 	beforeEach(() => {
 		vi.clearAllMocks();
-		field = createMockField({ 
-			fieldtype: 'Dynamic Link', 
+		field = createMockField({
+			fieldtype: 'Dynamic Link',
 			options: 'reference_type\nUser\nCustomer\nSupplier',
 			label: 'Dynamic Link'
 		});
@@ -31,13 +31,13 @@ describe('DynamicLinkField', () => {
 	// P3-007-T11: Dynamic link based on another field's value
 	it('renders ComboBox component', async () => {
 		component = render(DynamicLinkField, {
-			props: { 
-				field, 
+			props: {
+				field,
 				value: 'DOC001',
 				formData: { reference_type: 'User' }
 			}
 		});
-		
+
 		const combobox = screen.getByRole('combobox');
 		expect(combobox).toBeInTheDocument();
 	});
@@ -45,8 +45,8 @@ describe('DynamicLinkField', () => {
 	// P3-007-T11: Dynamic link based on another field's value
 	it('determines target DocType from options field value', async () => {
 		component = render(DynamicLinkField, {
-			props: { 
-				field, 
+			props: {
+				field,
 				value: '',
 				formData: { reference_type: 'User' }
 			}
@@ -62,7 +62,7 @@ describe('DynamicLinkField', () => {
 	// P3-007-T11: Dynamic link based on another field's value
 	it('changes target DocType when options field value changes', async () => {
 		let formData = { reference_type: 'User' };
-		
+
 		component = render(DynamicLinkField, {
 			props: { field, value: '', formData }
 		});
@@ -87,7 +87,7 @@ describe('DynamicLinkField', () => {
 	// P3-007-T11: Dynamic link based on another field's value
 	it('clears value when DocType changes', async () => {
 		let formData = { reference_type: 'User' };
-		
+
 		component = render(DynamicLinkField, {
 			props: { field, value: 'DOC001', formData }
 		});
@@ -106,13 +106,13 @@ describe('DynamicLinkField', () => {
 	// P3-007-T11: Dynamic link based on another field's value
 	it('shows placeholder when no DocType is selected', async () => {
 		component = render(DynamicLinkField, {
-			props: { 
-				field, 
+			props: {
+				field,
 				value: '',
 				formData: {} // No reference_type
 			}
 		});
-		
+
 		const combobox = screen.getByPlaceholderText('Select reference_type first');
 		expect(combobox).toBeInTheDocument();
 	});
@@ -120,13 +120,13 @@ describe('DynamicLinkField', () => {
 	// P3-007-T11: Dynamic link based on another field's value
 	it('disables combobox when no DocType is selected', async () => {
 		component = render(DynamicLinkField, {
-			props: { 
-				field, 
+			props: {
+				field,
 				value: '',
 				formData: {} // No reference_type
 			}
 		});
-		
+
 		const combobox = screen.getByRole('combobox');
 		expect(combobox).toBeDisabled();
 	});
@@ -134,8 +134,8 @@ describe('DynamicLinkField', () => {
 	// Test quick create button
 	it('shows quick create button when DocType is selected', async () => {
 		component = render(DynamicLinkField, {
-			props: { 
-				field, 
+			props: {
+				field,
 				value: '',
 				formData: { reference_type: 'User' },
 				allowQuickCreate: true
@@ -149,8 +149,8 @@ describe('DynamicLinkField', () => {
 	// Test quick create button
 	it('hides quick create button when no DocType is selected', async () => {
 		component = render(DynamicLinkField, {
-			props: { 
-				field, 
+			props: {
+				field,
 				value: '',
 				formData: {}, // No reference_type
 				allowQuickCreate: true
@@ -163,42 +163,34 @@ describe('DynamicLinkField', () => {
 
 	// Test quick create event
 	it('dispatches quick-create event with correct DocType', async () => {
-		let quickCreateEventFired = false;
-		let quickCreateEventData = {};
+		const onquickcreate = vi.fn();
 
 		component = render(DynamicLinkField, {
-			props: { 
-				field, 
+			props: {
+				field,
 				value: '',
 				formData: { reference_type: 'Customer' },
-				allowQuickCreate: true
+				allowQuickCreate: true,
+				// @ts-ignore
+				'onquick-create': onquickcreate
 			}
-		});
-
-		// Listen for quick-create event
-		const unsubscribe = component.$on('quick-create', (event: any) => {
-			quickCreateEventFired = true;
-			quickCreateEventData = event.detail;
 		});
 
 		const quickCreateButton = screen.getByRole('button', { name: /create new customer/i });
 		await fireEvent.click(quickCreateButton);
 
-		expect(quickCreateEventFired).toBe(true);
-		expect(quickCreateEventData).toEqual({
+		expect(onquickcreate).toHaveBeenCalledWith({
 			doctype: 'Customer',
 			fieldname: 'test_field',
 			filters: {}
 		});
-
-		unsubscribe();
 	});
 
 	// Test open button
 	it('shows open button when value is set and DocType is selected', async () => {
 		component = render(DynamicLinkField, {
-			props: { 
-				field, 
+			props: {
+				field,
 				value: 'DOC001',
 				formData: { reference_type: 'User' },
 				showOpenButton: true
@@ -212,8 +204,8 @@ describe('DynamicLinkField', () => {
 	// Test open button
 	it('hides open button when no DocType is selected', async () => {
 		component = render(DynamicLinkField, {
-			props: { 
-				field, 
+			props: {
+				field,
 				value: 'DOC001',
 				formData: {}, // No reference_type
 				showOpenButton: true
@@ -226,42 +218,34 @@ describe('DynamicLinkField', () => {
 
 	// Test open document event
 	it('dispatches open-document event with correct DocType', async () => {
-		let openDocumentEventFired = false;
-		let openDocumentEventData = {};
+		const onopendocument = vi.fn();
 
 		component = render(DynamicLinkField, {
-			props: { 
-				field, 
+			props: {
+				field,
 				value: 'DOC001',
 				formData: { reference_type: 'Supplier' },
-				showOpenButton: true
+				showOpenButton: true,
+				// @ts-ignore
+				'onopen-document': onopendocument
 			}
-		});
-
-		// Listen for open-document event
-		const unsubscribe = component.$on('open-document', (event: any) => {
-			openDocumentEventFired = true;
-			openDocumentEventData = event.detail;
 		});
 
 		const openButton = screen.getByRole('button', { name: /open DOC001/i });
 		await fireEvent.click(openButton);
 
-		expect(openDocumentEventFired).toBe(true);
-		expect(openDocumentEventData).toEqual({
+		expect(onopendocument).toHaveBeenCalledWith({
 			doctype: 'Supplier',
 			name: 'DOC001'
 		});
-
-		unsubscribe();
 	});
 
 	// Test filters
 	it('applies filters when fetching options', async () => {
 		const filters = { status: 'Active' };
 		component = render(DynamicLinkField, {
-			props: { 
-				field, 
+			props: {
+				field,
 				value: '',
 				formData: { reference_type: 'User' },
 				filters
@@ -277,15 +261,15 @@ describe('DynamicLinkField', () => {
 
 	// Test field filters
 	it('applies field filters when fetching options', async () => {
-		const fieldWithFilters = createMockField({ 
-			fieldtype: 'Dynamic Link', 
+		const fieldWithFilters = createMockField({
+			fieldtype: 'Dynamic Link',
 			options: 'reference_type\nUser\nCustomer',
 			filters: 'status="Active"'
 		});
 
 		component = render(DynamicLinkField, {
-			props: { 
-				field: fieldWithFilters, 
+			props: {
+				field: fieldWithFilters,
 				value: '',
 				formData: { reference_type: 'User' }
 			}
@@ -301,8 +285,8 @@ describe('DynamicLinkField', () => {
 	// Test disabled state
 	it('disables combobox when disabled prop is true', async () => {
 		component = render(DynamicLinkField, {
-			props: { 
-				field, 
+			props: {
+				field,
 				value: '',
 				formData: { reference_type: 'User' },
 				disabled: true
@@ -316,8 +300,8 @@ describe('DynamicLinkField', () => {
 	// Test readonly state
 	it('disables combobox when readonly prop is true', async () => {
 		component = render(DynamicLinkField, {
-			props: { 
-				field, 
+			props: {
+				field,
 				value: '',
 				formData: { reference_type: 'User' },
 				readonly: true
@@ -330,15 +314,15 @@ describe('DynamicLinkField', () => {
 
 	// Test required field
 	it('shows required indicator when field is required', async () => {
-		const requiredField = createMockField({ 
-			fieldtype: 'Dynamic Link', 
+		const requiredField = createMockField({
+			fieldtype: 'Dynamic Link',
 			options: 'reference_type\nUser\nCustomer',
-			required: true 
+			required: true
 		});
 
 		component = render(DynamicLinkField, {
-			props: { 
-				field: requiredField, 
+			props: {
+				field: requiredField,
 				value: '',
 				formData: { reference_type: 'User' }
 			}
@@ -351,8 +335,8 @@ describe('DynamicLinkField', () => {
 	// Test error display
 	it('displays error message when error is provided', async () => {
 		component = render(DynamicLinkField, {
-			props: { 
-				field, 
+			props: {
+				field,
 				value: '',
 				formData: { reference_type: 'User' },
 				error: 'This field is required'
@@ -365,21 +349,15 @@ describe('DynamicLinkField', () => {
 
 	// Test change event
 	it('emits change event on value selection', async () => {
-		let changeEventFired = false;
-		let changeEventValue = '';
+		const onchange = vi.fn();
 
 		component = render(DynamicLinkField, {
-			props: { 
-				field, 
+			props: {
+				field,
 				value: '',
-				formData: { reference_type: 'User' }
+				formData: { reference_type: 'User' },
+				onchange
 			}
-		});
-
-		// Listen for change event
-		const unsubscribe = component.$on('change', (event: any) => {
-			changeEventFired = true;
-			changeEventValue = event.detail;
 		});
 
 		// Mock API response
@@ -393,73 +371,58 @@ describe('DynamicLinkField', () => {
 		const combobox = screen.getByRole('combobox');
 		await fireEvent.input(combobox, { target: { value: 'DOC001' } });
 
-		// Simulate selection (this would normally be handled by the ComboBox component)
+		// Simulate selection
 		const selectEvent = new CustomEvent('select', {
 			detail: { selectedItem: { value: 'DOC001' } }
 		});
 		combobox.dispatchEvent(selectEvent);
 
-		expect(changeEventFired).toBe(true);
-		expect(changeEventValue).toBe('DOC001');
-
-		unsubscribe();
+		expect(onchange).toHaveBeenCalledWith('DOC001');
 	});
 
 	// Test blur event
 	it('emits blur event', async () => {
-		let blurEventFired = false;
+		const onblur = vi.fn();
 
 		component = render(DynamicLinkField, {
-			props: { 
-				field, 
+			props: {
+				field,
 				value: '',
-				formData: { reference_type: 'User' }
+				formData: { reference_type: 'User' },
+				onblur
 			}
-		});
-
-		// Listen for blur event
-		const unsubscribe = component.$on('blur', () => {
-			blurEventFired = true;
 		});
 
 		const combobox = screen.getByRole('combobox');
 		await fireEvent.blur(combobox);
 
-		expect(blurEventFired).toBe(true);
-
-		unsubscribe();
+		expect(onblur).toHaveBeenCalled();
 	});
 
 	// Test focus event
 	it('emits focus event', async () => {
-		let focusEventFired = false;
+		const onfocus = vi.fn();
 
 		component = render(DynamicLinkField, {
-			props: { 
-				field, 
+			props: {
+				field,
 				value: '',
-				formData: { reference_type: 'User' }
+				formData: { reference_type: 'User' },
+				onfocus
 			}
-		});
-
-		// Listen for focus event
-		const unsubscribe = component.$on('focus', () => {
-			focusEventFired = true;
 		});
 
 		const combobox = screen.getByRole('combobox');
 		await fireEvent.focus(combobox);
 
-		expect(focusEventFired).toBe(true);
-
-		unsubscribe();
+		expect(onfocus).toHaveBeenCalled();
 	});
 
 	// Test custom placeholder
 	it('uses custom placeholder when provided', async () => {
 		component = render(DynamicLinkField, {
-			props: { 
-				field, 
+			props: {
+				field,
 				value: '',
 				formData: { reference_type: 'User' },
 				placeholder: 'Select a document...'
@@ -475,8 +438,8 @@ describe('DynamicLinkField', () => {
 		(fetch as any).mockRejectedValue(new Error('Network error'));
 
 		component = render(DynamicLinkField, {
-			props: { 
-				field, 
+			props: {
+				field,
 				value: '',
 				formData: { reference_type: 'User' }
 			}
@@ -494,14 +457,14 @@ describe('DynamicLinkField', () => {
 
 	// Test empty options
 	it('handles empty field options', async () => {
-		const fieldWithoutOptions = createMockField({ 
-			fieldtype: 'Dynamic Link', 
+		const fieldWithoutOptions = createMockField({
+			fieldtype: 'Dynamic Link',
 			options: ''
 		});
 
 		component = render(DynamicLinkField, {
-			props: { 
-				field: fieldWithoutOptions, 
+			props: {
+				field: fieldWithoutOptions,
 				value: '',
 				formData: { reference_type: 'User' }
 			}
@@ -517,8 +480,8 @@ describe('DynamicLinkField', () => {
 	// Test case insensitive DocType matching
 	it('matches DocType case insensitively', async () => {
 		component = render(DynamicLinkField, {
-			props: { 
-				field, 
+			props: {
+				field,
 				value: '',
 				formData: { reference_type: 'user' } // lowercase
 			}

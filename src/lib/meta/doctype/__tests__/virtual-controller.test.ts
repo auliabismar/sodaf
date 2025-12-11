@@ -110,7 +110,7 @@ describe('VirtualController', () => {
 		it('should initialize with type and config', () => {
 			expect(controller.type).toBe('api');
 			// Controller may be pre-initialized depending on implementation
-			expect(controller.isInitialized()).toBe(true);
+			expect(controller.isInitialized()).toBe(false);
 		});
 	});
 

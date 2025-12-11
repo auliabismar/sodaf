@@ -229,7 +229,35 @@ export class MigrationWorkflow {
 	 */
 	private isValidSQLSyntax(sql: string): boolean {
 		// Basic validation - in practice, you'd use a proper SQL parser
-		const trimmed = sql.trim().toUpperCase();
+		let trimmed = sql.trim();
+
+		// Strip leading SQL comments (-- style and /* */ style)
+		while (trimmed.startsWith('--') || trimmed.startsWith('/*')) {
+			if (trimmed.startsWith('--')) {
+				// Single-line comment: skip to end of line
+				const newlineIndex = trimmed.indexOf('\n');
+				if (newlineIndex === -1) {
+					// Entire SQL is just a comment
+					return true;
+				}
+				trimmed = trimmed.substring(newlineIndex + 1).trim();
+			} else if (trimmed.startsWith('/*')) {
+				// Multi-line comment: find closing */
+				const closeIndex = trimmed.indexOf('*/');
+				if (closeIndex === -1) {
+					// Unclosed comment
+					return false;
+				}
+				trimmed = trimmed.substring(closeIndex + 2).trim();
+			}
+		}
+
+		// If after stripping comments there's no SQL left, it's valid (just comments)
+		if (trimmed.length === 0) {
+			return true;
+		}
+
+		const upperTrimmed = trimmed.toUpperCase();
 
 		// Check for required keywords
 		const hasValidKeyword = [
@@ -241,7 +269,7 @@ export class MigrationWorkflow {
 			'INSERT INTO',
 			'UPDATE',
 			'DELETE FROM'
-		].some(keyword => trimmed.startsWith(keyword));
+		].some(keyword => upperTrimmed.startsWith(keyword));
 
 		if (!hasValidKeyword) {
 			return false;

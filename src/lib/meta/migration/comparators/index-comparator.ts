@@ -132,18 +132,32 @@ export class IndexComparator {
 		const columnsPart = columns
 			.map(col => col.toLowerCase().replace(/[^a-z0-9]/g, '_'))
 			.join('_');
-		
+
 		const uniquePrefix = unique ? 'uk_' : 'idx_';
 		let indexName = `${uniquePrefix}${tablePart}_${columnsPart}`;
 
 		// Truncate if too long
 		if (indexName.length > this.MAX_INDEX_NAME_LENGTH) {
-			const maxTablePart = Math.floor(
-				(this.MAX_INDEX_NAME_LENGTH - uniquePrefix.length - columnsPart.length - 1) / 2
-			);
-			const truncatedTable = tablePart.substring(0, maxTablePart);
-			const maxColumnsPart = this.MAX_INDEX_NAME_LENGTH - uniquePrefix.length - truncatedTable.length - 1;
-			const truncatedColumns = columnsPart.substring(0, maxColumnsPart);
+			const availableLength = this.MAX_INDEX_NAME_LENGTH - uniquePrefix.length - 1;
+			const halfLength = Math.floor(availableLength / 2);
+
+			let tableLen = tablePart.length;
+			let colLen = columnsPart.length;
+
+			if (tableLen <= halfLength) {
+				// Table fits in half, give rest to columns
+				colLen = Math.min(colLen, availableLength - tableLen);
+			} else if (colLen <= halfLength) {
+				// Columns fits in half, give rest to table
+				tableLen = Math.min(tableLen, availableLength - colLen);
+			} else {
+				// Both are long, cap both at half (roughly)
+				tableLen = halfLength;
+				colLen = availableLength - tableLen;
+			}
+
+			const truncatedTable = tablePart.substring(0, tableLen);
+			const truncatedColumns = columnsPart.substring(0, colLen);
 			indexName = `${uniquePrefix}${truncatedTable}_${truncatedColumns}`;
 		}
 
@@ -236,7 +250,7 @@ export class IndexComparator {
 		}
 
 		// Index type changes
-		if (fromIndex.type && toIndex.type && 
+		if (fromIndex.type && toIndex.type &&
 			fromIndex.type.toLowerCase() !== toIndex.type.toLowerCase()) {
 			score += 6;
 		}

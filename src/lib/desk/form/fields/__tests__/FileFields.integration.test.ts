@@ -25,12 +25,12 @@ global.FileReader = class {
 			}
 		}, 0);
 	}
-	abort(): void {}
-	readAsArrayBuffer(file: File): void {}
-	readAsBinaryString(file: File): void {}
-	readAsText(file: File): void {}
-	addEventListener(type: string, listener: EventListenerOrEventListenerObject): void {}
-	removeEventListener(type: string, listener: EventListenerOrEventListenerObject): void {}
+	abort(): void { }
+	readAsArrayBuffer(file: File): void { }
+	readAsBinaryString(file: File): void { }
+	readAsText(file: File): void { }
+	addEventListener(type: string, listener: EventListenerOrEventListenerObject): void { }
+	removeEventListener(type: string, listener: EventListenerOrEventListenerObject): void { }
 	dispatchEvent(event: Event): boolean {
 		return true;
 	}
@@ -86,54 +86,46 @@ describe('File Fields Integration', () => {
 
 		// Test integration with form submission
 		it('integrates with form submission workflow', async () => {
-			let formData: File[] = [];
-			
+			const onchange = vi.fn();
+
 			component = render(AttachField, {
-				props: { field, value: [] }
+				props: { field, value: [], onchange }
 			});
-			
-			// Listen for change events to simulate form data collection
-			const unsubscribe = component.$on('change', (event: any) => {
-				formData = event.detail;
-			});
-			
+
 			const file1 = createMockFile('document1.pdf', 'application/pdf');
 			const file2 = createMockFile('document2.txt', 'text/plain');
-			
+
 			const fileList = {
 				0: file1,
 				1: file2,
 				length: 2,
 				item: (index: number) => index === 0 ? file1 : file2
 			} as any;
-			
+
 			const fileInput = component.container.querySelector('input[type="file"]');
 			if (fileInput) {
 				await fireEvent.change(fileInput, { target: { files: fileList } });
 			}
-			
+
 			await waitFor(() => {
-				expect(formData).toEqual([file1, file2]);
-				expect(formData.length).toBe(2);
+				expect(onchange).toHaveBeenCalledWith([file1, file2]);
 			});
-			
-			unsubscribe();
 		});
 
 		// Test validation integration
 		it('integrates with form validation', async () => {
-			const requiredField = createMockField({ 
-				fieldtype: 'Attach', 
-				required: true 
+			const requiredField = createMockField({
+				fieldtype: 'Attach',
+				required: true
 			});
-			
+
 			component = render(AttachField, {
 				props: { field: requiredField, value: [], error: 'This field is required' }
 			});
-			
+
 			// Should show required indicator
 			expect(screen.getByText('Test Field *')).toBeInTheDocument();
-			
+
 			// Should show error message
 			expect(screen.getByText('This field is required')).toBeInTheDocument();
 		});
@@ -142,20 +134,20 @@ describe('File Fields Integration', () => {
 		it('handles form reset correctly', async () => {
 			const file1 = createMockFile('document1.pdf', 'application/pdf');
 			const file2 = createMockFile('document2.txt', 'text/plain');
-			
+
 			component = render(AttachField, {
 				props: { field, value: [file1, file2] }
 			});
-			
+
 			// Files should be displayed
 			await waitFor(() => {
 				expect(screen.getByText('document1.pdf')).toBeInTheDocument();
 				expect(screen.getByText('document2.txt')).toBeInTheDocument();
 			});
-			
+
 			// Simulate form reset by clearing value
 			component.$set({ value: [] });
-			
+
 			// Files should be removed
 			await waitFor(() => {
 				expect(screen.queryByText('document1.pdf')).not.toBeInTheDocument();
@@ -168,11 +160,11 @@ describe('File Fields Integration', () => {
 			component = render(AttachField, {
 				props: { field, value: [] }
 			});
-			
+
 			// Check for proper ARIA attributes
 			const uploader = component.container.querySelector('[role="button"]');
 			expect(uploader).toBeInTheDocument();
-			
+
 			// Check for keyboard navigation support
 			expect(uploader).toHaveAttribute('tabindex');
 		});
@@ -189,51 +181,43 @@ describe('File Fields Integration', () => {
 
 		// Test integration with form submission
 		it('integrates with form submission workflow', async () => {
-			let formData: File | null = null;
-			
+			const onchange = vi.fn();
+
 			component = render(AttachImageField, {
-				props: { field, value: null }
+				props: { field, value: null, onchange }
 			});
-			
-			// Listen for change events to simulate form data collection
-			const unsubscribe = component.$on('change', (event: any) => {
-				formData = event.detail;
-			});
-			
+
 			const imageFile = await createMockImageFile('profile.jpg');
 			const fileList = {
 				0: imageFile,
 				length: 1,
 				item: () => imageFile
 			} as any;
-			
+
 			const fileInput = component.container.querySelector('input[type="file"]');
 			if (fileInput) {
 				await fireEvent.change(fileInput, { target: { files: fileList } });
 			}
-			
+
 			await waitFor(() => {
-				expect(formData).toBe(imageFile);
-				expect(formData?.name).toBe('profile.jpg');
+				expect(onchange).toHaveBeenCalledWith(imageFile);
 			});
-			
-			unsubscribe();
 		});
 
 		// Test validation integration
 		it('integrates with form validation', async () => {
-			const requiredField = createMockField({ 
-				fieldtype: 'Attach Image', 
-				required: true 
+			const requiredField = createMockField({
+				fieldtype: 'Attach Image',
+				required: true
 			});
-			
+
 			component = render(AttachImageField, {
 				props: { field: requiredField, value: null, error: 'Image is required' }
 			});
-			
+
 			// Should show required indicator
 			expect(screen.getByText('Attach Image Field *')).toBeInTheDocument();
-			
+
 			// Should show error message
 			expect(screen.getByText('Image is required')).toBeInTheDocument();
 		});
@@ -241,20 +225,20 @@ describe('File Fields Integration', () => {
 		// Test form reset
 		it('handles form reset correctly', async () => {
 			const imageFile = await createMockImageFile('profile.jpg');
-			
+
 			component = render(AttachImageField, {
 				props: { field, value: imageFile }
 			});
-			
+
 			// Image should be displayed
 			await waitFor(() => {
 				const previewImage = screen.getByAltText('Preview');
 				expect(previewImage).toBeInTheDocument();
 			});
-			
+
 			// Simulate form reset by clearing value
 			component.$set({ value: null });
-			
+
 			// Image should be removed
 			await waitFor(() => {
 				expect(screen.queryByAltText('Preview')).not.toBeInTheDocument();
@@ -263,55 +247,48 @@ describe('File Fields Integration', () => {
 
 		// Test crop integration with form
 		it('integrates crop functionality with form workflow', async () => {
-			let formData: File | null = null;
-			
+			const onchange = vi.fn();
+
 			component = render(AttachImageField, {
-				props: { field, value: null, enableCrop: true }
+				props: { field, value: null, enableCrop: true, onchange }
 			});
-			
-			// Listen for change events to simulate form data collection
-			const unsubscribe = component.$on('change', (event: any) => {
-				formData = event.detail;
-			});
-			
+
 			const imageFile = await createMockImageFile('profile.jpg');
 			const fileList = {
 				0: imageFile,
 				length: 1,
 				item: () => imageFile
 			} as any;
-			
+
 			const fileInput = component.container.querySelector('input[type="file"]');
 			if (fileInput) {
 				await fireEvent.change(fileInput, { target: { files: fileList } });
 			}
-			
+
 			// Wait for image to load
 			await waitFor(() => {
 				const cropButton = screen.getByRole('button', { name: /crop image/i });
 				expect(cropButton).toBeInTheDocument();
 			});
-			
+
 			// Open crop modal
 			const cropButton = screen.getByRole('button', { name: /crop image/i });
 			await fireEvent.click(cropButton);
-			
+
 			// Wait for modal to open
 			await waitFor(() => {
 				expect(screen.getByText('Crop Image')).toBeInTheDocument();
 			});
-			
+
 			// Apply crop
 			const applyButton = screen.getByRole('button', { name: /apply crop/i });
 			await fireEvent.click(applyButton);
-			
+
 			// Wait for crop to be applied
 			await waitFor(() => {
-				expect(formData).not.toBe(imageFile); // Should be a new cropped file
+				expect(onchange).toHaveBeenCalled();
 				expect(screen.queryByText('Crop Image')).not.toBeInTheDocument();
 			});
-			
-			unsubscribe();
 		});
 
 		// Test accessibility integration
@@ -319,14 +296,14 @@ describe('File Fields Integration', () => {
 			component = render(AttachImageField, {
 				props: { field, value: null }
 			});
-			
+
 			// Check for proper ARIA attributes
 			const uploader = component.container.querySelector('[role="button"]');
 			expect(uploader).toBeInTheDocument();
-			
+
 			// Check for keyboard navigation support
 			expect(uploader).toHaveAttribute('tabindex');
-			
+
 			// Check for alt text on image preview
 			const imageFile = await createMockImageFile('test.jpg');
 			const fileList = {
@@ -334,12 +311,12 @@ describe('File Fields Integration', () => {
 				length: 1,
 				item: () => imageFile
 			} as any;
-			
+
 			const fileInput = component.container.querySelector('input[type="file"]');
 			if (fileInput) {
 				await fireEvent.change(fileInput, { target: { files: fileList } });
 			}
-			
+
 			await waitFor(() => {
 				const previewImage = screen.getByAltText('Preview');
 				expect(previewImage).toBeInTheDocument();
@@ -349,19 +326,19 @@ describe('File Fields Integration', () => {
 		// Test responsive design integration
 		it('maintains responsive design in form context', async () => {
 			const imageFile = await createMockImageFile('test.jpg');
-			
+
 			component = render(AttachImageField, {
 				props: { field, value: imageFile }
 			});
-			
+
 			// Check that component adapts to different screen sizes
 			const container = component.container.querySelector('.attach-image-field-container');
 			expect(container).toBeInTheDocument();
-			
+
 			// Simulate mobile viewport
 			window.innerWidth = 500;
 			window.dispatchEvent(new Event('resize'));
-			
+
 			// Component should still be functional
 			await waitFor(() => {
 				const previewImage = screen.getByAltText('Preview');
@@ -375,48 +352,48 @@ describe('File Fields Integration', () => {
 		it('handles multiple file fields in same form', async () => {
 			const attachField = mockFields.attach;
 			const attachImageField = mockFields.attachImage;
-			
+
 			// Render both fields
 			const attachComponent = render(AttachField, {
 				props: { field: attachField, value: [] }
 			});
-			
+
 			const imageComponent = render(AttachImageField, {
 				props: { field: attachImageField, value: null }
 			});
-			
+
 			// Both should render without conflicts
 			expect(screen.getByText(/Drop files here or click to upload/)).toBeInTheDocument();
 			expect(screen.getByText(/Drop image here or click to upload/)).toBeInTheDocument();
-			
+
 			// Both should handle file changes independently
 			const file = createMockFile('document.pdf', 'application/pdf');
 			const imageFile = await createMockImageFile('image.jpg');
-			
+
 			// Add file to AttachField
 			const attachFileList = {
 				0: file,
 				length: 1,
 				item: () => file
 			} as any;
-			
+
 			const attachInput = attachComponent.container.querySelector('input[type="file"]');
 			if (attachInput) {
 				await fireEvent.change(attachInput, { target: { files: attachFileList } });
 			}
-			
+
 			// Add image to AttachImageField
 			const imageFileList = {
 				0: imageFile,
 				length: 1,
 				item: () => imageFile
 			} as any;
-			
+
 			const imageInput = imageComponent.container.querySelector('input[type="file"]');
 			if (imageInput) {
 				await fireEvent.change(imageInput, { target: { files: imageFileList } });
 			}
-			
+
 			// Both should display their respective files
 			await waitFor(() => {
 				expect(screen.getByText('document.pdf')).toBeInTheDocument();

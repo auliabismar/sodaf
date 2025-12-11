@@ -120,6 +120,12 @@ describe('DocType JSON Parser and DocTypeEngine Integration', () => {
 						label: 'Items',
 						fieldtype: 'Table',
 						options: 'IntegrationTestItem'
+					},
+					{
+						fieldname: 'modified',
+						label: 'Modified',
+						fieldtype: 'Datetime',
+						read_only: true
 					}
 				],
 				permissions: [
@@ -271,7 +277,7 @@ describe('DocType JSON Parser and DocTypeEngine Integration', () => {
 
 			// Step 4: Register with DocTypeEngine
 			await engine.registerDocType(parsedDocType);
-			
+
 			// Verify it's registered
 			const isRegistered = await engine.isRegistered('IntegrationTestDocType');
 			expect(isRegistered).toBe(true);

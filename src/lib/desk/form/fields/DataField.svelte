@@ -41,14 +41,10 @@
 	let inputPlaceholder = $derived(placeholder || field.label || '');
 
 	// Event handlers
-	function handleChange(event: Event & { currentTarget: EventTarget & HTMLInputElement }) {
-		const newValue = event.currentTarget.value;
-		// value = newValue; // In runes, value prop is read-only unless we use bind:value or state.
-		// However, typically form fields in this architecture seem to rely on parent updating the value via binding or event.
-		// For now we just call callback. If parent binds `bind:value={val}`, then Svelte 5 handles it if we exported it as bindable $state.
-		// But here we received it as prop.
-		// Actually, standard pattern: just call onchange.
-		onchange?.(newValue);
+	function handleChange(event: CustomEvent<string | number | null> | any) {
+		// Handle Carbon's CustomEvent or native Event
+		const newValue = event.detail !== undefined ? event.detail : event.currentTarget.value;
+		onchange?.(newValue as string);
 	}
 
 	function handleBlur(event: FocusEvent) {
@@ -83,9 +79,9 @@
 			maxlength={maxLength}
 			invalid={!!error}
 			invalidText={Array.isArray(error) ? error.join(', ') : error}
-			onchange={handleChange}
-			onblur={handleBlur}
-			onfocus={handleFocus}
+			on:input={handleChange}
+			on:blur={handleBlur}
+			on:focus={handleFocus}
 		/>
 	{/snippet}
 </BaseField>

@@ -1,5 +1,5 @@
 import { render, screen, fireEvent } from '@testing-library/svelte';
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
 import '@testing-library/jest-dom';
 import TextField from '../TextField.svelte';
 import { createMockField, mockFields } from './fixtures/mockFields';
@@ -17,7 +17,7 @@ describe('TextField', () => {
 		component = render(TextField, {
 			props: { field, value: 'Test text content' }
 		});
-		
+
 		const textarea = screen.getByRole('textbox');
 		expect(textarea).toBeInTheDocument();
 		expect(textarea).toHaveValue('Test text content');
@@ -29,35 +29,25 @@ describe('TextField', () => {
 		component = render(TextField, {
 			props: { field, value: testValue }
 		});
-		
+
 		const textarea = screen.getByRole('textbox');
 		await fireEvent.input(textarea, { target: { value: 'Updated text content' } });
-		
+
 		expect(textarea).toHaveValue('Updated text content');
 	});
 
 	// P3-007-T16: Change event emitted
 	it('emits change event on value change', async () => {
-		let changeEventFired = false;
-		let changeEventValue = '';
-		
+		const onchange = vi.fn();
+
 		component = render(TextField, {
-			props: { field, value: '' }
+			props: { field, value: '', onchange }
 		});
-		
-		// Listen for change event
-		const unsubscribe = component.$on('change', (event: any) => {
-			changeEventFired = true;
-			changeEventValue = event.detail;
-		});
-		
+
 		const textarea = screen.getByRole('textbox');
 		await fireEvent.input(textarea, { target: { value: 'New text content' } });
-		
-		expect(changeEventFired).toBe(true);
-		expect(changeEventValue).toBe('New text content');
-		
-		unsubscribe();
+
+		expect(onchange).toHaveBeenCalledWith('New text content');
 	});
 
 	// Test disabled state
@@ -65,7 +55,7 @@ describe('TextField', () => {
 		component = render(TextField, {
 			props: { field, value: 'Test', disabled: true }
 		});
-		
+
 		const textarea = screen.getByRole('textbox');
 		expect(textarea).toBeDisabled();
 	});
@@ -75,22 +65,22 @@ describe('TextField', () => {
 		component = render(TextField, {
 			props: { field, value: 'Test', readonly: true }
 		});
-		
+
 		const textarea = screen.getByRole('textbox');
 		expect(textarea).toHaveAttribute('readonly');
 	});
 
 	// Test required field
 	it('shows required indicator when field is required', async () => {
-		const requiredField = createMockField({ 
-			fieldtype: 'Long Text', 
-			required: true 
+		const requiredField = createMockField({
+			fieldtype: 'Long Text',
+			required: true
 		});
-		
+
 		component = render(TextField, {
 			props: { field: requiredField, value: 'Test' }
 		});
-		
+
 		const label = screen.getByText('Test Field *');
 		expect(label).toBeInTheDocument();
 	});
@@ -100,7 +90,7 @@ describe('TextField', () => {
 		component = render(TextField, {
 			props: { field, value: 'Test', error: 'This field is required' }
 		});
-		
+
 		const errorMessage = screen.getByText('This field is required');
 		expect(errorMessage).toBeInTheDocument();
 	});
@@ -110,7 +100,7 @@ describe('TextField', () => {
 		component = render(TextField, {
 			props: { field, value: 'Test', rows: 6 }
 		});
-		
+
 		const textarea = screen.getByRole('textbox');
 		expect(textarea).toHaveAttribute('rows', '6');
 	});
@@ -120,7 +110,7 @@ describe('TextField', () => {
 		component = render(TextField, {
 			props: { field, value: 'Test', cols: 80 }
 		});
-		
+
 		const textarea = screen.getByRole('textbox');
 		expect(textarea).toHaveAttribute('cols', '80');
 	});
@@ -130,7 +120,7 @@ describe('TextField', () => {
 		component = render(TextField, {
 			props: { field, value: '', placeholder: 'Enter your text here...' }
 		});
-		
+
 		const textarea = screen.getByRole('textbox');
 		expect(textarea).toHaveAttribute('placeholder', 'Enter your text here...');
 	});
@@ -140,7 +130,7 @@ describe('TextField', () => {
 		component = render(TextField, {
 			props: { field, value: 'Test', maxLength: 100 }
 		});
-		
+
 		const textarea = screen.getByRole('textbox');
 		expect(textarea).toHaveAttribute('maxlength', '100');
 	});
@@ -150,7 +140,7 @@ describe('TextField', () => {
 		component = render(TextField, {
 			props: { field, value: 'Hello world', showCharCount: true }
 		});
-		
+
 		const charCount = screen.getByText('11 characters');
 		expect(charCount).toBeInTheDocument();
 	});
@@ -160,7 +150,7 @@ describe('TextField', () => {
 		component = render(TextField, {
 			props: { field, value: 'Hello', maxLength: 10, showCharCount: true }
 		});
-		
+
 		const charCount = screen.getByText('5/10');
 		expect(charCount).toBeInTheDocument();
 	});
@@ -170,25 +160,25 @@ describe('TextField', () => {
 		component = render(TextField, {
 			props: { field, value: 'This text is too long', maxLength: 10, showCharCount: true }
 		});
-		
+
 		const exceededMessage = screen.getByText('Character limit exceeded');
 		expect(exceededMessage).toBeInTheDocument();
-		
+
 		const charCount = screen.getByText('22/10 (Character limit exceeded)');
 		expect(charCount).toBeInTheDocument();
 	});
 
 	// Test field label
 	it('uses field label for display', async () => {
-		const labeledField = createMockField({ 
-			fieldtype: 'Long Text', 
-			label: 'Custom Text Field' 
+		const labeledField = createMockField({
+			fieldtype: 'Long Text',
+			label: 'Custom Text Field'
 		});
-		
+
 		component = render(TextField, {
 			props: { field: labeledField, value: 'Test' }
 		});
-		
+
 		const label = screen.getByText('Custom Text Field');
 		expect(label).toBeInTheDocument();
 	});
@@ -198,22 +188,22 @@ describe('TextField', () => {
 		component = render(TextField, {
 			props: { field, value: 'Test', hideLabel: true }
 		});
-		
+
 		const label = screen.queryByText('Test Field');
 		expect(label).not.toBeInTheDocument();
 	});
 
 	// Test description tooltip
 	it('shows description tooltip when description is provided', async () => {
-		const fieldWithDescription = createMockField({ 
-			fieldtype: 'Long Text', 
-			description: 'This is a text field' 
+		const fieldWithDescription = createMockField({
+			fieldtype: 'Long Text',
+			description: 'This is a text field'
 		});
-		
+
 		component = render(TextField, {
 			props: { field: fieldWithDescription, value: 'Test' }
 		});
-		
+
 		const infoButton = screen.getByRole('button', { name: /information/i });
 		expect(infoButton).toBeInTheDocument();
 	});
@@ -223,7 +213,7 @@ describe('TextField', () => {
 		component = render(TextField, {
 			props: { field, value: '' }
 		});
-		
+
 		const textarea = screen.getByRole('textbox');
 		expect(textarea).toHaveValue('');
 	});
@@ -233,7 +223,7 @@ describe('TextField', () => {
 		component = render(TextField, {
 			props: { field, value: null as any }
 		});
-		
+
 		const textarea = screen.getByRole('textbox');
 		expect(textarea).toHaveValue('');
 	});
@@ -244,80 +234,68 @@ describe('TextField', () => {
 		component = render(TextField, {
 			props: { field, value: multiLineText }
 		});
-		
+
 		const textarea = screen.getByRole('textbox');
 		expect(textarea).toHaveValue(multiLineText);
 	});
 
 	// Test blur event
 	it('emits blur event when textarea loses focus', async () => {
-		let blurEventFired = false;
-		
+		const onblur = vi.fn();
+
 		component = render(TextField, {
-			props: { field, value: 'Test' }
+			props: { field, value: 'Test', onblur }
 		});
-		
-		const unsubscribe = component.$on('blur', () => {
-			blurEventFired = true;
-		});
-		
+
 		const textarea = screen.getByRole('textbox');
 		await fireEvent.blur(textarea);
-		
-		expect(blurEventFired).toBe(true);
-		
-		unsubscribe();
+
+		expect(onblur).toHaveBeenCalled();
 	});
 
 	// Test focus event
 	it('emits focus event when textarea gains focus', async () => {
-		let focusEventFired = false;
-		
+		const onfocus = vi.fn();
+
 		component = render(TextField, {
-			props: { field, value: 'Test' }
+			props: { field, value: 'Test', onfocus }
 		});
-		
-		const unsubscribe = component.$on('focus', () => {
-			focusEventFired = true;
-		});
-		
+
 		const textarea = screen.getByRole('textbox');
 		await fireEvent.focus(textarea);
-		
-		expect(focusEventFired).toBe(true);
-		
-		unsubscribe();
+
+		expect(onfocus).toHaveBeenCalled();
 	});
 
 	// Test field read_only from field definition
 	it('disables textarea when field.read_only is true', async () => {
-		const readOnlyField = createMockField({ 
-			fieldtype: 'Long Text', 
-			read_only: true 
+		const readOnlyField = createMockField({
+			fieldtype: 'Long Text',
+			read_only: true
 		});
-		
+
 		component = render(TextField, {
 			props: { field: readOnlyField, value: 'Test' }
 		});
-		
+
 		const textarea = screen.getByRole('textbox');
 		expect(textarea).toBeDisabled();
 	});
 
 	// Test validation with required field
 	it('validates required field correctly', async () => {
-		const requiredField = createMockField({ 
-			fieldtype: 'Long Text', 
-			required: true 
+		const requiredField = createMockField({
+			fieldtype: 'Long Text',
+			required: true
 		});
-		
+
 		component = render(TextField, {
 			props: { field: requiredField, value: '', error: 'This field is required' }
 		});
-		
+
 		const textarea = screen.getByRole('textbox');
 		expect(textarea).toBeInvalid();
-		
+
 		const errorMessage = screen.getByText('This field is required');
 		expect(errorMessage).toBeInTheDocument();
 	});
@@ -327,7 +305,7 @@ describe('TextField', () => {
 		component = render(TextField, {
 			props: { field, value: 'This text is too long', maxLength: 10 }
 		});
-		
+
 		const textarea = screen.getByRole('textbox');
 		expect(textarea).toBeInvalid();
 	});

@@ -680,14 +680,14 @@ describe('FieldComparator', () => {
 			fieldname: 'price',
 			label: 'Price',
 			fieldtype: 'Currency',
-			precision: 2,
+			precision: 4, // Increasing to 4 decimal places
 			required: false,
 			unique: false
 		};
 
 		const column: ColumnInfo = {
 			name: 'price',
-			type: 'decimal(10,4)', // Different precision
+			type: 'decimal(10,2)', // Currently has 2 decimal places
 			nullable: true,
 			default_value: null,
 			primary_key: false,
@@ -701,8 +701,8 @@ describe('FieldComparator', () => {
 		// Assert
 		expect(result).not.toBeNull();
 		expect(result?.fieldname).toBe('price');
-		expect(result?.changes.precision?.from).toBe(4);
-		expect(result?.changes.precision?.to).toBe(2);
+		expect(result?.changes.precision?.from).toBe(2);
+		expect(result?.changes.precision?.to).toBe(4);
 		expect(result?.destructive).toBe(false); // Increasing precision is not destructive
 	});
 

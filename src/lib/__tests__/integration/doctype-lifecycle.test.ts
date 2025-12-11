@@ -242,11 +242,9 @@ describe('DocType Lifecycle Integration', () => {
 			expect(validColumns).toContain('created_at');
 		});
 
-		it('should handle invalid DocType gracefully', () => {
+		it('should handle invalid DocType gracefully', async () => {
 			// Act & Assert
-			expect(() => {
-				MetaFactory.create(null as any);
-			}).toThrow();
+			await expect(MetaFactory.create(null as any)).rejects.toThrow();
 		});
 	});
 

@@ -213,10 +213,10 @@ export class PropertySetterManager {
 		fieldname?: string,
 		property?: string
 	): Promise<PropertySetter | PropertySetter[]> {
-		const key = this.getPropertySetterKey(doctype, fieldname);
-		const propertySetters = this.propertySetters.get(key) || [];
-
 		if (property) {
+			const key = this.getPropertySetterKey(doctype, fieldname);
+			const propertySetters = this.propertySetters.get(key) || [];
+
 			// Remove specific property setter
 			const index = propertySetters.findIndex(ps => ps.property === property);
 			if (index === -1) {
@@ -235,11 +235,16 @@ export class PropertySetterManager {
 			this.invalidateCache(doctype);
 
 			return removedSetter;
-		} else {
-			// Remove all property setters for field/DocType
+		}
+
+		// Remove all property setters for Logic
+		if (fieldname) {
+			// Remove all property setters for specific field
+			const key = this.getPropertySetterKey(doctype, fieldname);
+			const propertySetters = this.propertySetters.get(key) || [];
+
 			if (propertySetters.length === 0) {
-				const target = fieldname ? `field '${fieldname}'` : 'DocType';
-				throw new Error(`No property setters found for ${target} of DocType '${doctype}'`);
+				throw new Error(`No property setters found for field '${fieldname}' of DocType '${doctype}'`);
 			}
 
 			const removedSetters = [...propertySetters];
@@ -254,6 +259,36 @@ export class PropertySetterManager {
 			this.invalidateCache(doctype);
 
 			return removedSetters;
+		} else {
+			// Remove ALL property setters for DocType (DocType-level AND ALL fields)
+			let allRemovedSetters: PropertySetter[] = [];
+
+			// Find all keys for this DocType
+			const keysToRemove: string[] = [];
+			for (const key of this.propertySetters.keys()) {
+				if (key.startsWith(`${doctype}:`)) {
+					keysToRemove.push(key);
+					const setters = this.propertySetters.get(key) || [];
+					allRemovedSetters = [...allRemovedSetters, ...setters];
+				}
+			}
+
+			if (allRemovedSetters.length === 0) {
+				throw new Error(`No property setters found for DocType '${doctype}'`);
+			}
+
+			// Delete all keys
+			keysToRemove.forEach(key => this.propertySetters.delete(key));
+
+			// Remove from database if enabled
+			if (this.config.enable_database_persistence) {
+				await Promise.all(allRemovedSetters.map(ps => this.removeFromDatabase(ps)));
+			}
+
+			// Invalidate cache
+			this.invalidateCache(doctype);
+
+			return allRemovedSetters;
 		}
 	}
 
@@ -315,7 +350,7 @@ export class PropertySetterManager {
 			propertySetters = propertySetters.filter(ps => ps.property === options.property);
 		}
 
-		if (!options.include_disabled) {
+		if (options.include_disabled === false) {
 			propertySetters = propertySetters.filter(ps => ps.enabled !== false);
 		}
 

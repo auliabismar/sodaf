@@ -232,6 +232,10 @@
 		if (!editor) return false;
 		return editor.isActive(name, attributes);
 	}
+
+	function handleBaseFieldChange(event: CustomEvent | any) {
+		value = event.detail || event;
+	}
 </script>
 
 <BaseField
@@ -243,13 +247,11 @@
 	{required}
 	{description}
 	{hideLabel}
-	onchange={(event: CustomEvent | any) => {
-		value = event.detail || event;
-	}}
+	onchange={handleBaseFieldChange}
 	{onblur}
 	{onfocus}
 >
-	<div class="text-editor-container" class:disabled={isDisabled} class:invalid={isInvalid}>
+	<div class="text-editor-container" class:disabled={isDisabled} class:has-error={isInvalid}>
 		{#if !isDisabled && toolbar.length > 0}
 			<div class="editor-toolbar" role="toolbar" aria-label="Text formatting toolbar">
 				<ButtonSet>
@@ -403,7 +405,13 @@
 		{#if showLinkDialog}
 			<!-- svelte-ignore a11y_click_events_have_key_events -->
 			<!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
-			<div class="dialog-overlay" role="dialog" aria-modal="true" tabindex="0" onclick={() => (showLinkDialog = false)}>
+			<div
+				class="dialog-overlay"
+				role="dialog"
+				aria-modal="true"
+				tabindex="0"
+				onclick={() => (showLinkDialog = false)}
+			>
 				<!-- svelte-ignore a11y_click_events_have_key_events -->
 				<!-- svelte-ignore a11y_no_static_element_interactions -->
 				<div class="dialog-content" onclick={(e) => e.stopPropagation()}>
@@ -423,7 +431,13 @@
 		{#if showImageDialog}
 			<!-- svelte-ignore a11y_click_events_have_key_events -->
 			<!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
-			<div class="dialog-overlay" role="dialog" aria-modal="true" tabindex="0" onclick={() => (showImageDialog = false)}>
+			<div
+				class="dialog-overlay"
+				role="dialog"
+				aria-modal="true"
+				tabindex="0"
+				onclick={() => (showImageDialog = false)}
+			>
 				<!-- svelte-ignore a11y_click_events_have_key_events -->
 				<!-- svelte-ignore a11y_no_static_element_interactions -->
 				<div class="dialog-content" onclick={(e) => e.stopPropagation()}>
@@ -447,7 +461,7 @@
 			id={editorId}
 			class="editor-content"
 			class:disabled={isDisabled}
-			class:invalid={isInvalid}
+			class:has-error={isInvalid}
 			role="textbox"
 			aria-multiline="true"
 			aria-label={field.label}
@@ -460,18 +474,6 @@
 			</div>
 		{/if}
 	</div>
-
-	<script>
-		function handleDialogKeydown(event: KeyboardEvent, dialogType: 'link' | 'image') {
-			if (event.key === 'Escape') {
-				if (dialogType === 'link') {
-					showLinkDialog = false;
-				} else if (dialogType === 'image') {
-					showImageDialog = false;
-				}
-			}
-		}
-	</script>
 </BaseField>
 
 <style>
@@ -496,7 +498,7 @@
 		pointer-events: none;
 	}
 
-	.text-editor-container.invalid {
+	.text-editor-container.has-error {
 		border-color: var(--cds-support-error);
 	}
 
@@ -524,7 +526,7 @@
 		background-color: var(--cds-ui-02);
 	}
 
-	.editor-content.invalid {
+	.editor-content.has-error {
 		border-color: var(--cds-support-error);
 	}
 

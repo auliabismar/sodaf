@@ -272,7 +272,18 @@ describe('Virtual API Middleware', () => {
 				window: 60000 // 1 minute
 			});
 
-			// Make 5 requests (exceeds limit)
+			// Make requests to reach limit
+			for (let i = 0; i < 3; i++) {
+				await middleware(
+					mockRequest as Request,
+					mockResponse as Response,
+					mockNext
+				);
+			}
+
+			mockNext.mockClear();
+
+			// Make one more request (exceeds limit)
 			await middleware(
 				mockRequest as Request,
 				mockResponse as Response,
@@ -318,7 +329,7 @@ describe('Virtual API Middleware', () => {
 			await middleware(
 				request2 as Request,
 				mockResponse as Response,
-				vi.fn().mockResolvedValue(undefined)
+				mockNext
 			);
 
 			expect(mockNext).toHaveBeenCalledTimes(2);
@@ -546,12 +557,11 @@ describe('Virtual API Middleware', () => {
 					mockNext
 				);
 
-				const logCall = consoleSpy.mock.calls.find(call =>
-					call[0] === '[Virtual API Request]'
-				);
-
-				if (logCall && typeof logCall[1] === 'object') {
-					requestIds.push((logCall[1] as any).request_id);
+				// Check calls directly
+				for (const call of consoleSpy.mock.calls) {
+					if (call[0] === '[Virtual API Request]' && typeof call[1] === 'object') {
+						requestIds.push((call[1] as any).request_id);
+					}
 				}
 			}
 
@@ -604,8 +614,8 @@ describe('Virtual API Middleware', () => {
 
 			// Chain middleware
 			const composedMiddleware = async (request: Request, response: Response, next: () => Promise<void>) => {
-				await authMiddleware(request, response, async () => {});
-				await roleMiddleware(request, response, async () => {});
+				await authMiddleware(request, response, async () => { });
+				await roleMiddleware(request, response, async () => { });
 				await loggingMiddleware(request, response, next);
 			};
 

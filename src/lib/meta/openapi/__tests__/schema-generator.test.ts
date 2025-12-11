@@ -141,15 +141,15 @@ describe('OpenAPI Schema Generator', () => {
 	describe('Field Schema Generation', () => {
 		it('should generate schema for Data field', () => {
 			// Arrange
-			const field = mockDocType.fields.find(f => f.fieldname === 'name')!;
+			const field = mockDocType.fields.find(f => f.fieldname === 'email')!;
 
 			// Act
 			const schema = schemaGenerator.generateDocTypeSchema(mockDocType);
 
 			// Assert
-			const fieldSchema = schema.properties?.name;
+			const fieldSchema = schema.properties?.email;
 			expect(fieldSchema?.type).toBe('string');
-			expect(fieldSchema?.description).toBe('Name');
+			expect(fieldSchema?.description).toBe('Email');
 			expect(fieldSchema?.minLength).toBe(1);
 		});
 
@@ -222,8 +222,8 @@ describe('OpenAPI Schema Generator', () => {
 
 		it('should validate field types', () => {
 			// Arrange
-			const testData = { 
-				name: 'John', 
+			const testData = {
+				name: 'John',
 				email: 'john@example.com',
 				age: 'invalid' // Should be number
 			};

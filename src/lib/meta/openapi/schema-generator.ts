@@ -415,10 +415,22 @@ export class SchemaGenerator {
 		config?: DocTypeOpenAPIConfig
 	): OpenAPIResponse {
 		const docSchema = this.generateDocTypeSchema(doctype, config);
-		const operationText = operation.charAt(0).toUpperCase() + operation.slice(1);
+
+		let actionPastTense: string;
+		switch (operation) {
+			case 'submit':
+				actionPastTense = 'Submitted';
+				break;
+			case 'cancel':
+				actionPastTense = 'Cancelled';
+				break;
+			case 'amend':
+				actionPastTense = 'Amended';
+				break;
+		}
 
 		return {
-			description: config?.descriptions?.[operation] || `${operationText}ed ${doctype.name} document`,
+			description: config?.descriptions?.[operation] || `${actionPastTense} ${doctype.name} document`,
 			content: {
 				'application/json': {
 					schema: SUCCESS_RESPONSE_WRAPPER,

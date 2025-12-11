@@ -5,29 +5,72 @@
  * testing interaction between migration engine, schema comparison, and SQL generation.
  */
 
-import { describe, it, expect, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { MigrationWorkflow } from '../../meta/migration/migration-workflow';
 import { DocTypeEngine } from '../../meta/doctype/doctype-engine';
 import type { DocType } from '../../meta/doctype/types';
-import type { SchemaDiff } from '../../meta/migration/types';
+import { FieldComparator } from '../../meta/migration/comparators/field-comparator';
 
 describe('Migration Workflow Integration', () => {
 	let migrationWorkflow: MigrationWorkflow;
 	let docTypeEngine: DocTypeEngine;
 	let mockDatabase: any;
 
+	// Helper to convert DocType to mock table schema
+	const createMockTableSchema = (doctype: DocType) => {
+		const columns = doctype.fields.map(field => {
+			const type = FieldComparator.mapFieldTypeToSQLiteType(field.fieldtype, field);
+			return {
+				name: field.fieldname,
+				type,
+				notnull: field.required ? 1 : 0,
+				dflt_value: field.default,
+				pk: 0,
+				// Additional properties used by FieldComparator
+				nullable: !field.required,
+				unique: field.unique ? 1 : 0,
+				default_value: field.default
+			};
+		});
+
+		// Add partial index info if needed based on unique fields
+		const indexes = doctype.fields
+			.filter(f => f.unique)
+			.map(f => ({
+				name: `idx_${doctype.name}_${f.fieldname}`,
+				columns: [f.fieldname],
+				unique: 1,
+				origin: 'c', // create table
+				partial: 0
+			}));
+
+		if (doctype.indexes) {
+			indexes.push(...doctype.indexes.map(idx => ({
+				name: idx.name || `idx_${doctype.name}_custom`,
+				columns: idx.columns,
+				unique: idx.unique ? 1 : 0,
+				origin: 'c',
+				partial: 0
+			})));
+		}
+
+		return { columns, indexes };
+	};
+
 	beforeEach(() => {
 		// Reset DocType engine
 		DocTypeEngine.resetInstance();
 		docTypeEngine = DocTypeEngine.getInstance();
-		
+
 		// Create mock database
 		mockDatabase = {
-			begin: async () => ({ commit: async () => {}, rollback: async () => {} }),
+			begin: async () => ({ commit: async () => { }, rollback: async () => { } }),
 			query: async () => ({ rows: [] }),
-			close: async () => {}
+			close: async () => { },
+			get_columns: vi.fn().mockResolvedValue([]),
+			get_indexes: vi.fn().mockResolvedValue([])
 		};
-		
+
 		// Initialize migration workflow
 		migrationWorkflow = new MigrationWorkflow(mockDatabase, docTypeEngine);
 	});
@@ -35,6 +78,7 @@ describe('Migration Workflow Integration', () => {
 	afterEach(() => {
 		// Clean up test data
 		DocTypeEngine.resetInstance();
+		vi.clearAllMocks();
 	});
 
 	describe('Schema Comparison Workflow', () => {
@@ -88,8 +132,12 @@ describe('Migration Workflow Integration', () => {
 				permissions: []
 			};
 
-			// Register both DocTypes
-			await docTypeEngine.registerDocType(sourceDocType);
+			// Setup DB mock to represent sourceDocType
+			const schema = createMockTableSchema(sourceDocType);
+			mockDatabase.get_columns.mockResolvedValue(schema.columns);
+			mockDatabase.get_indexes.mockResolvedValue(schema.indexes);
+
+			// Register target DocType only
 			await docTypeEngine.registerDocType(targetDocType);
 
 			// Act
@@ -101,7 +149,10 @@ describe('Migration Workflow Integration', () => {
 			// Assert
 			expect(result).toBeDefined();
 			expect(result.success).toBe(true);
-			// The exact structure depends on implementation
+			// We expect SQL to be generated for adding 'age' column
+			expect(result.sql.length).toBeGreaterThan(0);
+			expect(result.sql[0]).toContain('ADD COLUMN');
+			expect(result.sql[0]).toContain('age');
 		});
 
 		it('should handle field modifications', async () => {
@@ -150,8 +201,12 @@ describe('Migration Workflow Integration', () => {
 				permissions: []
 			};
 
-			// Register both DocTypes
-			await docTypeEngine.registerDocType(sourceDocType);
+			// Setup DB mock to represent sourceDocType
+			const schema = createMockTableSchema(sourceDocType);
+			mockDatabase.get_columns.mockResolvedValue(schema.columns);
+			mockDatabase.get_indexes.mockResolvedValue(schema.indexes);
+
+			// Register target DocType
 			await docTypeEngine.registerDocType(targetDocType);
 
 			// Act
@@ -163,6 +218,9 @@ describe('Migration Workflow Integration', () => {
 			// Assert
 			expect(result).toBeDefined();
 			expect(result.success).toBe(true);
+			// Modifications often involve temp table or direct alter depending on driver
+			// But check that we have SQL
+			expect(result.sql.length).toBeGreaterThan(0);
 		});
 
 		it('should handle field removals', async () => {
@@ -226,8 +284,12 @@ describe('Migration Workflow Integration', () => {
 				permissions: []
 			};
 
-			// Register both DocTypes
-			await docTypeEngine.registerDocType(sourceDocType);
+			// Setup DB mock to represent sourceDocType
+			const schema = createMockTableSchema(sourceDocType);
+			mockDatabase.get_columns.mockResolvedValue(schema.columns);
+			mockDatabase.get_indexes.mockResolvedValue(schema.indexes);
+
+			// Register target DocType
 			await docTypeEngine.registerDocType(targetDocType);
 
 			// Act
@@ -239,6 +301,9 @@ describe('Migration Workflow Integration', () => {
 			// Assert
 			expect(result).toBeDefined();
 			expect(result.success).toBe(true);
+			// Removing a column usually creates destructiveness warning or drops column
+			expect(result.sql.length).toBeGreaterThan(0);
+			// Should contain DROP COLUMN logic (or create new table without it)
 		});
 	});
 
@@ -272,6 +337,10 @@ describe('Migration Workflow Integration', () => {
 				permissions: []
 			};
 
+			// Ensure DB returns empty schema (new table)
+			mockDatabase.get_columns.mockResolvedValue([]);
+			mockDatabase.get_indexes.mockResolvedValue([]);
+
 			// Register DocType
 			await docTypeEngine.registerDocType(docType);
 
@@ -284,6 +353,10 @@ describe('Migration Workflow Integration', () => {
 			// Assert
 			expect(result).toBeDefined();
 			expect(result.success).toBe(true);
+			expect(result.sql.length).toBeGreaterThan(0);
+			// When DB is empty, schema comparison sees all fields as added columns
+			// which generates ALTER TABLE ADD COLUMN statements (not CREATE TABLE)
+			expect(result.sql[0]).toContain('ADD COLUMN');
 		});
 
 		it('should handle migration rollback', async () => {
@@ -307,6 +380,9 @@ describe('Migration Workflow Integration', () => {
 				],
 				permissions: []
 			};
+
+			mockDatabase.get_columns.mockResolvedValue([]);
+			mockDatabase.get_indexes.mockResolvedValue([]);
 
 			// Register DocType
 			await docTypeEngine.registerDocType(docType);
@@ -337,6 +413,9 @@ describe('Migration Workflow Integration', () => {
 				],
 				permissions: []
 			};
+
+			mockDatabase.get_columns.mockResolvedValue([]);
+			mockDatabase.get_indexes.mockResolvedValue([]);
 
 			// Register DocType
 			await docTypeEngine.registerDocType(docType);
@@ -370,6 +449,9 @@ describe('Migration Workflow Integration', () => {
 				permissions: []
 			};
 
+			mockDatabase.get_columns.mockResolvedValue([]);
+			mockDatabase.get_indexes.mockResolvedValue([]);
+
 			// Register DocType
 			await docTypeEngine.registerDocType(validDocType);
 
@@ -400,7 +482,7 @@ describe('Migration Workflow Integration', () => {
 				// Expected to fail
 			}
 
-			// Act
+			// Act - try to migrate a non-existent doctype (since it failed registration)
 			const result = await migrationWorkflow.executeMigration('', {
 				dryRun: true,
 				validateData: true
@@ -408,7 +490,9 @@ describe('Migration Workflow Integration', () => {
 
 			// Assert
 			expect(result).toBeDefined();
-			// Should handle the error gracefully
+			// Should fail because DocType not found or empty name
+			expect(result.success).toBe(false);
+			expect(result.errors.length).toBeGreaterThan(0);
 		});
 	});
 
@@ -470,8 +554,12 @@ describe('Migration Workflow Integration', () => {
 				permissions: []
 			};
 
-			// Register both DocTypes
-			await docTypeEngine.registerDocType(sourceDocType);
+			// Setup DB mock to represent sourceDocType
+			const schema = createMockTableSchema(sourceDocType);
+			mockDatabase.get_columns.mockResolvedValue(schema.columns);
+			mockDatabase.get_indexes.mockResolvedValue(schema.indexes);
+
+			// Register target DocType
 			await docTypeEngine.registerDocType(targetDocType);
 
 			// Act - Complete workflow
@@ -483,6 +571,11 @@ describe('Migration Workflow Integration', () => {
 			// Assert
 			expect(result).toBeDefined();
 			expect(result.success).toBe(true);
+			expect(result.sql.length).toBeGreaterThan(0);
+			// Check for added columns
+			const sqlString = result.sql.join(' ').toLowerCase();
+			expect(sqlString).toContain('due_date');
+			expect(sqlString).toContain('status');
 		});
 	});
 });

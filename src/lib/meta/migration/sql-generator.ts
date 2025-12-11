@@ -152,7 +152,8 @@ export class SQLGenerator {
 			destructive: false,
 			table: tableName,
 			column: field.fieldname,
-			comment: `Add column '${field.fieldname}' to table '${tableName}'`
+			comment: `Add column '${field.fieldname}' to table '${tableName}'`,
+			columnDef: field
 		}];
 	}
 
@@ -161,66 +162,23 @@ export class SQLGenerator {
 	 */
 	generateDropColumnSQL(doctype: DocType, field: DocField): SQLStatement[] {
 		const tableName = this.getTableName(doctype);
-		const columnName = this.quoteIdentifier(field.fieldname);
 
-		let sql = this.formatter.formatAlterTable(tableName, 'DROP COLUMN', columnName);
+		// Use table rebuild strategy for SQLite
+		const strategy = this.options.defaultRebuildStrategy;
 
-		if (this.options.includeComments) {
-			sql = this.formatter.addComments(
-				sql,
-				`Drop column '${field.fieldname}' from table '${tableName}'`
-			);
-		}
-
-		return [{
-			sql,
-			type: 'alter_table',
-			destructive: true,
-			table: tableName,
-			comment: `Drop column '${field.fieldname}' from table '${tableName}'`
-		}];
+		// We pass the full fields list so builder can create the new table schema (excluding droppped column)
+		return this.tableRebuilder.buildDropColumnRebuild(tableName, doctype.fields, field.fieldname, strategy);
 	}
 
 	/**
 	 * Generate ALTER TABLE MODIFY COLUMN SQL
 	 */
-	generateModifyColumnSQL(doctype: string, change: ColumnChange): SQLStatement[] {
+	generateModifyColumnSQL(doctype: string, change: FieldChange): SQLStatement[] {
 		// SQLite doesn't support MODIFY COLUMN directly, needs table rebuild
 		const strategy = this.options.defaultRebuildStrategy;
-		// For now, return a simple ALTER TABLE statement
-		// In a full implementation, this would rebuild the table
-		const tableName = this.getTableName(this.getDocTypeFromName(doctype));
+		const columns = this.getDocTypeFromName(doctype).fields; // Placeholder fields
 
-		// Create a basic DocField from the change information
-		const columnDef: DocField = {
-			fieldname: change.fieldname,
-			label: change.fieldname,
-			fieldtype: 'Data', // Default type
-			required: false,
-			unique: false,
-			default: undefined
-		};
-
-		const columnDefinition = this.typeMapper.mapFieldType(columnDef);
-		const colConstraints = this.constraintBuilder.buildColumnConstraints(columnDef);
-		const columnDefStr = this.constraintBuilder.buildColumnDefinition(columnDefinition, colConstraints);
-
-		let sql = this.formatter.formatAlterTable(tableName, 'MODIFY COLUMN', columnDefStr);
-
-		if (this.options.includeComments) {
-			sql = this.formatter.addComments(
-				sql,
-				`Modify column '${change.fieldname}' in table '${tableName}'`
-			);
-		}
-
-		return [{
-			sql,
-			type: 'alter_table',
-			destructive: change.destructive || false,
-			table: tableName,
-			comment: `Modify column '${change.fieldname}' in table '${tableName}'`
-		}];
+		return this.tableRebuilder.buildModifyColumnRebuild(doctype, columns, change, strategy);
 	}
 
 	/**
@@ -228,7 +186,8 @@ export class SQLGenerator {
 	 */
 	generateCreateIndexSQL(doctype: DocType, index: DocIndex): SQLStatement[] {
 		const tableName = this.getTableName(doctype);
-		const indexName = `idx_${doctype.name}_${index.columns.join('_')}`;
+		// Use the index name if provided, otherwise generate one
+		const indexName = index.name || `idx_${doctype.name}_${index.columns.join('_')}`;
 		const columns = index.columns.map(col => this.quoteIdentifier(col));
 
 		let sql = this.formatter.formatCreateIndex(
@@ -316,21 +275,17 @@ export class SQLGenerator {
 				destructive = true;
 			}
 
-			// Skip field changes for now as they need special handling
-			// In a full implementation, this would convert FieldChange to ColumnChange
-			const columnDef: DocField = {
-				fieldname: change.fieldname,
-				label: change.fieldname,
-				fieldtype: 'Data',
-				required: false,
-				unique: false,
-				default: undefined
-			};
-			const sql = this.generateModifyColumnSQL(doctype, {
-				fieldname: change.fieldname,
-				column: this.typeMapper.mapFieldType(columnDef),
-				destructive: change.destructive
-			});
+			// Add warning for type conversion
+			if (change.changes.type) {
+				warnings.push(`Column '${change.fieldname}' type conversion from '${change.changes.type.from}' to '${change.changes.type.to}'`);
+			}
+
+			// Add warning for data migration requirement
+			if (change.requiresDataMigration) {
+				warnings.push(`Column '${change.fieldname}' requires data migration`);
+			}
+
+			const sql = this.generateModifyColumnSQL(doctype, change);
 			statements.push(...sql);
 		}
 
@@ -391,10 +346,13 @@ export class SQLGenerator {
 	 * Get table name from DocType
 	 */
 	private getTableName(doctype: DocType): string {
+		// If an explicit table_name is set, use it directly without formatting
+		// This preserves the intended name format
 		if (doctype.table_name) {
-			return this.formatter.formatTableName(doctype.table_name);
+			return doctype.table_name;
 		}
 
+		// Only apply naming strategy when deriving from DocType name
 		return this.formatter.formatTableName(doctype.name);
 	}
 
@@ -576,9 +534,6 @@ export class SQLGenerator {
 		return statements;
 	}
 
-	/**
-	 * Quote identifier according to options
-	 */
 	private quoteIdentifier(name: string): string {
 		return `${this.options.identifierQuote}${name}${this.options.identifierQuote}`;
 	}

@@ -1,5 +1,5 @@
 import { render, screen, fireEvent } from '@testing-library/svelte';
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
 import PercentField from '../PercentField.svelte';
 import { createMockField } from './fixtures/mockFields';
 
@@ -16,7 +16,7 @@ describe('PercentField', () => {
 		component = render(PercentField, {
 			props: { field, value: 42 }
 		});
-		
+
 		const input = screen.getByRole('spinbutton');
 		expect(input).toBeInTheDocument();
 		expect(input).toHaveValue(42);
@@ -28,35 +28,25 @@ describe('PercentField', () => {
 		component = render(PercentField, {
 			props: { field, value: testValue }
 		});
-		
+
 		const input = screen.getByRole('spinbutton');
 		await fireEvent.input(input, { target: { value: '75' } });
-		
+
 		expect(input).toHaveValue(75);
 	});
 
 	// P3-007-T34: Change event emitted
 	it('emits change event on value change', async () => {
-		let changeEventFired = false;
-		let changeEventValue = 0;
-		
+		const onchange = vi.fn();
+
 		component = render(PercentField, {
-			props: { field, value: 0 }
+			props: { field, value: 0, onchange }
 		});
-		
-		// Listen for change event
-		const unsubscribe = component.$on('change', (event: any) => {
-			changeEventFired = true;
-			changeEventValue = event.detail;
-		});
-		
+
 		const input = screen.getByRole('spinbutton');
 		await fireEvent.input(input, { target: { value: '85' } });
-		
-		expect(changeEventFired).toBe(true);
-		expect(changeEventValue).toBe(85);
-		
-		unsubscribe();
+
+		expect(onchange).toHaveBeenCalledWith(85);
 	});
 
 	// Test disabled state
@@ -64,7 +54,7 @@ describe('PercentField', () => {
 		component = render(PercentField, {
 			props: { field, value: 0, disabled: true }
 		});
-		
+
 		const input = screen.getByRole('spinbutton');
 		expect(input).toBeDisabled();
 	});
@@ -74,22 +64,22 @@ describe('PercentField', () => {
 		component = render(PercentField, {
 			props: { field, value: 0, readonly: true }
 		});
-		
+
 		const input = screen.getByRole('spinbutton');
 		expect(input).toHaveAttribute('readonly');
 	});
 
 	// Test required field
 	it('shows required indicator when field is required', async () => {
-		const requiredField = createMockField({ 
-			fieldtype: 'Percent', 
-			required: true 
+		const requiredField = createMockField({
+			fieldtype: 'Percent',
+			required: true
 		});
-		
+
 		component = render(PercentField, {
 			props: { field: requiredField, value: 0 }
 		});
-		
+
 		const label = screen.getByText('Test Field *');
 		expect(label).toBeInTheDocument();
 	});
@@ -99,7 +89,7 @@ describe('PercentField', () => {
 		component = render(PercentField, {
 			props: { field, value: 0, error: 'This field is required' }
 		});
-		
+
 		const errorMessage = screen.getByText('This field is required');
 		expect(errorMessage).toBeInTheDocument();
 	});
@@ -109,7 +99,7 @@ describe('PercentField', () => {
 		component = render(PercentField, {
 			props: { field, value: 0, min: 0 }
 		});
-		
+
 		const input = screen.getByRole('spinbutton');
 		expect(input).toHaveAttribute('min', '0');
 	});
@@ -119,7 +109,7 @@ describe('PercentField', () => {
 		component = render(PercentField, {
 			props: { field, value: 0, max: 100 }
 		});
-		
+
 		const input = screen.getByRole('spinbutton');
 		expect(input).toHaveAttribute('max', '100');
 	});
@@ -129,7 +119,7 @@ describe('PercentField', () => {
 		component = render(PercentField, {
 			props: { field, value: 0, min: 10, max: 90 }
 		});
-		
+
 		const input = screen.getByRole('spinbutton');
 		expect(input).toHaveAttribute('min', '10');
 		expect(input).toHaveAttribute('max', '90');
@@ -140,22 +130,22 @@ describe('PercentField', () => {
 		component = render(PercentField, {
 			props: { field, value: 0, step: 5 }
 		});
-		
+
 		const input = screen.getByRole('spinbutton');
 		expect(input).toHaveAttribute('step', '5');
 	});
 
 	// Test precision
 	it('respects precision property', async () => {
-		const fieldWithPrecision = createMockField({ 
-			fieldtype: 'Percent', 
+		const fieldWithPrecision = createMockField({
+			fieldtype: 'Percent',
 			precision: 2
 		});
-		
+
 		component = render(PercentField, {
 			props: { field: fieldWithPrecision, value: 0, precision: 2 }
 		});
-		
+
 		// Precision is handled in the formatting logic
 		const input = screen.getByRole('spinbutton');
 		expect(input).toBeInTheDocument();
@@ -163,15 +153,15 @@ describe('PercentField', () => {
 
 	// Test field label
 	it('uses field label for display', async () => {
-		const labeledField = createMockField({ 
-			fieldtype: 'Percent', 
-			label: 'Custom Percent Field' 
+		const labeledField = createMockField({
+			fieldtype: 'Percent',
+			label: 'Custom Percent Field'
 		});
-		
+
 		component = render(PercentField, {
 			props: { field: labeledField, value: 0 }
 		});
-		
+
 		const label = screen.getByText('Custom Percent Field');
 		expect(label).toBeInTheDocument();
 	});
@@ -181,22 +171,22 @@ describe('PercentField', () => {
 		component = render(PercentField, {
 			props: { field, value: 0, hideLabel: true }
 		});
-		
+
 		const label = screen.queryByText('Test Field');
 		expect(label).not.toBeInTheDocument();
 	});
 
 	// Test description tooltip
 	it('shows description tooltip when description is provided', async () => {
-		const fieldWithDescription = createMockField({ 
-			fieldtype: 'Percent', 
-			description: 'This is a percent field' 
+		const fieldWithDescription = createMockField({
+			fieldtype: 'Percent',
+			description: 'This is a percent field'
 		});
-		
+
 		component = render(PercentField, {
 			props: { field: fieldWithDescription, value: 0 }
 		});
-		
+
 		const infoButton = screen.getByRole('button', { name: /information/i });
 		expect(infoButton).toBeInTheDocument();
 	});
@@ -206,7 +196,7 @@ describe('PercentField', () => {
 		component = render(PercentField, {
 			props: { field, value: null }
 		});
-		
+
 		const input = screen.getByRole('spinbutton');
 		expect(input).toHaveValue(null);
 	});
@@ -216,13 +206,13 @@ describe('PercentField', () => {
 		component = render(PercentField, {
 			props: { field, value: 0 }
 		});
-		
+
 		const input = screen.getByRole('spinbutton');
-		
+
 		// Test valid percentage
 		await fireEvent.input(input, { target: { value: '50' } });
 		expect(input).toHaveValue(50);
-		
+
 		// Test decimal percentage
 		await fireEvent.input(input, { target: { value: '75.5' } });
 		expect(input).toHaveValue(75.5);
@@ -233,9 +223,9 @@ describe('PercentField', () => {
 		component = render(PercentField, {
 			props: { field, value: 50 }
 		});
-		
+
 		const input = screen.getByRole('spinbutton');
-		
+
 		// Test values outside range
 		// The component should handle these appropriately
 		expect(input).toHaveAttribute('min', '0');

@@ -89,7 +89,7 @@ export class FieldComparator {
 			field,
 			options?.fieldTypeMappings
 		);
-		
+
 		if (!this.areTypesEquivalent(column.type, expectedType)) {
 			changes.type = { from: column.type, to: expectedType };
 			hasChanges = true;
@@ -121,7 +121,7 @@ export class FieldComparator {
 		if (!options?.ignoreDefaultValues) {
 			const columnDefault = column.default_value;
 			const fieldDefault = field.default;
-			
+
 			if (!this.areDefaultsEqual(columnDefault, fieldDefault)) {
 				changes.default = { from: columnDefault, to: fieldDefault };
 				hasChanges = true;
@@ -264,17 +264,17 @@ export class FieldComparator {
 		// Check default mappings
 		if (this.DEFAULT_TYPE_MAPPINGS[fieldType]) {
 			let mappedType = this.DEFAULT_TYPE_MAPPINGS[fieldType];
-			
+
 			// Add length for text fields if specified
 			if (field?.length && (mappedType === 'text' || mappedType === 'varchar')) {
 				mappedType = `varchar(${field.length})`;
 			}
-			
+
 			// Add precision for numeric fields if specified
 			if (field?.precision && (mappedType === 'real' || mappedType === 'decimal')) {
 				mappedType = `decimal(${field.precision})`;
 			}
-			
+
 			return mappedType;
 		}
 
@@ -316,18 +316,18 @@ export class FieldComparator {
 		}
 
 		// Text types are generally compatible with each other
-		if ((fromBase === 'text' || fromBase === 'varchar') && 
+		if ((fromBase === 'text' || fromBase === 'varchar') &&
 			(toBase === 'text' || toBase === 'varchar')) {
 			return true;
 		}
 
 		// Numeric types have some compatibility
-		if ((fromBase === 'integer' || fromBase === 'int') && 
+		if ((fromBase === 'integer' || fromBase === 'int') &&
 			(toBase === 'integer' || toBase === 'int' || toBase === 'real')) {
 			return true;
 		}
 
-		if ((fromBase === 'real' || fromBase === 'float' || fromBase === 'decimal') && 
+		if ((fromBase === 'real' || fromBase === 'float' || fromBase === 'decimal') &&
 			(toBase === 'real' || toBase === 'float' || toBase === 'decimal')) {
 			return true;
 		}
@@ -419,25 +419,21 @@ export class FieldComparator {
 	}
 
 	/**
-	 * Check if field matches column based on name and type
+	 * Check if field matches column based on name
+	 * Note: Matching is done by name only. Type differences are detected as modifications
+	 * by the compareFieldToColumn method, not as add/remove operations.
 	 * @param field DocType field
 	 * @param column Database column
 	 * @param caseSensitive Whether comparison is case sensitive
-	 * @returns True if field matches column
+	 * @returns True if field matches column by name
 	 */
 	private static isFieldMatchingColumn(
 		field: DocField,
 		column: ColumnInfo,
 		caseSensitive: boolean
 	): boolean {
-		// Check name match
-		if (!this.isNameMatching(field.fieldname, column.name, caseSensitive)) {
-			return false;
-		}
-
-		// Check type compatibility
-		const expectedType = this.mapFieldTypeToSQLiteType(field.fieldtype, field);
-		return this.areTypesCompatible(column.type, expectedType);
+		// Match by name only - type differences are handled as modifications
+		return this.isNameMatching(field.fieldname, column.name, caseSensitive);
 	}
 
 	/**
@@ -449,18 +445,24 @@ export class FieldComparator {
 	private static areTypesEquivalent(type1: string, type2: string): boolean {
 		const base1 = this.getBaseType(type1);
 		const base2 = this.getBaseType(type2);
-		
+
 		// Direct match
 		if (base1 === base2) {
 			return true;
 		}
-		
+
 		// Text types are equivalent (text, varchar)
 		if ((base1 === 'text' || base1 === 'varchar') &&
 			(base2 === 'text' || base2 === 'varchar')) {
 			return true;
 		}
-		
+
+		// Numeric types
+		if ((base1 === 'integer' || base1 === 'int') &&
+			(base2 === 'integer' || base2 === 'int')) {
+			return true;
+		}
+
 		return false;
 	}
 
@@ -486,11 +488,18 @@ export class FieldComparator {
 
 	/**
 	 * Extract precision from type string
+	 * Handles formats like decimal(10,4) where the second number (scale) represents decimal places
 	 * @param type Type string
 	 * @returns Precision if specified, undefined otherwise
 	 */
 	private static extractPrecisionFromType(type: string): number | undefined {
-		const match = type.match(/(?:decimal|real)\((\d+)\)/i);
+		// Match decimal(precision,scale) format - scale is the decimal places
+		const matchWithScale = type.match(/(?:decimal|numeric)\(\d+,\s*(\d+)\)/i);
+		if (matchWithScale) {
+			return parseInt(matchWithScale[1], 10);
+		}
+		// Match decimal(precision) or real(precision) format
+		const match = type.match(/(?:decimal|real|numeric)\((\d+)\)/i);
 		return match ? parseInt(match[1], 10) : undefined;
 	}
 
@@ -505,7 +514,7 @@ export class FieldComparator {
 		const toBase = this.getBaseType(toType);
 
 		// Changing from text to numeric is potentially destructive
-		if ((fromBase === 'text' || fromBase === 'varchar') && 
+		if ((fromBase === 'text' || fromBase === 'varchar') &&
 			(toBase === 'integer' || toBase === 'real' || toBase === 'decimal')) {
 			return true;
 		}
@@ -518,7 +527,7 @@ export class FieldComparator {
 		}
 
 		// Reducing precision is destructive
-		if ((fromBase === 'decimal' || fromBase === 'real') && 
+		if ((fromBase === 'decimal' || fromBase === 'real') &&
 			(toBase === 'decimal' || toBase === 'real')) {
 			const fromPrecision = this.extractPrecisionFromType(fromType);
 			const toPrecision = this.extractPrecisionFromType(toType);

@@ -57,7 +57,7 @@ export class MigrationExecutor {
 			await this.database.commit(transaction);
 
 			affectedRows = this.extractAffectedRows(result);
-			
+
 			return result;
 
 		} catch (error) {
@@ -70,18 +70,17 @@ export class MigrationExecutor {
 					await this.database.rollback(transaction);
 				}
 			} catch (rollbackError) {
-				errors.push(`Rollback failed: ${
-					rollbackError instanceof Error
-						? rollbackError.message
-						: String(rollbackError)
-				}`);
+				errors.push(`Rollback failed: ${rollbackError instanceof Error
+					? rollbackError.message
+					: String(rollbackError)
+					}`);
 			}
 
 			throw new Error(`Transaction execution failed: ${errorMessage}`);
 		} finally {
 			// Log execution time
 			const executionTime = Date.now() - startTime;
-			
+
 			if (errors.length > 0) {
 				console.error(`Transaction execution failed after ${executionTime}ms:`, errors);
 			}
@@ -103,10 +102,11 @@ export class MigrationExecutor {
 		const errors: string[] = [];
 		let totalAffectedRows = 0;
 		const savepoints: Savepoint[] = [];
+		let transaction: any;
 
 		try {
 			// Start transaction
-			const transaction = await this.database.begin({
+			transaction = await this.database.begin({
 				isolation_level: options.isolationLevel,
 				read_only: false,
 				savepoint: options.createSavepoints
@@ -115,31 +115,29 @@ export class MigrationExecutor {
 			// Execute each statement
 			for (let i = 0; i < statements.length; i++) {
 				const statement = statements[i];
-				
+
 				try {
 					// Create savepoint if requested
 					let savepoint: Savepoint | undefined;
 					if (options.createSavepoints) {
-						const savepointName = options.savepointPattern 
+						const savepointName = options.savepointPattern
 							? options.savepointPattern.replace('{index}', i.toString())
 							: `sp_${i}`;
-						
-						savepoint = await this.database.savepoint(savepointName, transaction);
-						if (savepoint) {
-							savepoints.push(savepoint);
-						}
+
+						savepoint = await this.createSavepoint(savepointName, transaction);
+						savepoints.push(savepoint);
 					}
 
 					// Execute the SQL statement
-					const result = await this.database.run(statement.sql);
-					
+					const result = await this.executeWithTimeout(statement.sql, this.getTimeout(options));
+
 					// Check if statement affected rows
 					const affectedRows = this.extractAffectedRows(result);
 					totalAffectedRows += affectedRows || 0;
 
 					// Release savepoint if created
 					if (savepoint) {
-						await this.database.release_savepoint(savepoint);
+						await this.releaseSavepoint(savepoint);
 					}
 
 					// Log statement execution
@@ -148,24 +146,23 @@ export class MigrationExecutor {
 					}
 
 				} catch (statementError) {
-					const errorMessage = statementError instanceof Error 
-						? statementError.message 
+					const errorMessage = statementError instanceof Error
+						? statementError.message
 						: String(statementError);
-					
+
 					errors.push(`Statement ${i + 1} failed: ${errorMessage}`);
-					
+
 					// Rollback to savepoint if available
 					if (savepoints.length > 0) {
 						try {
 							const lastSavepoint = savepoints[savepoints.length - 1];
-							await this.database.rollback_to_savepoint(lastSavepoint);
+							await this.rollbackToSavepoint(lastSavepoint);
 							warnings.push(`Rolled back to savepoint: ${lastSavepoint.name}`);
 						} catch (rollbackError) {
-							errors.push(`Savepoint rollback failed: ${
-								rollbackError instanceof Error 
-									? rollbackError.message 
-									: String(rollbackError)
-							}`);
+							errors.push(`Savepoint rollback failed: ${rollbackError instanceof Error
+								? rollbackError.message
+								: String(rollbackError)
+								}`);
 						}
 					}
 
@@ -190,7 +187,21 @@ export class MigrationExecutor {
 
 		} catch (error) {
 			const errorMessage = error instanceof Error ? error.message : String(error);
-			errors.push(`Migration execution failed: ${errorMessage}`);
+			if (errors.length === 0) {
+				errors.push(`Migration execution failed: ${errorMessage}`);
+			}
+
+			// Rollback transaction if it exists
+			try {
+				if (transaction) {
+					await this.database.rollback(transaction);
+				}
+			} catch (rollbackError) {
+				errors.push(`Rollback failed: ${rollbackError instanceof Error
+					? rollbackError.message
+					: String(rollbackError)
+					}`);
+			}
 
 			return {
 				success: false,
@@ -202,6 +213,7 @@ export class MigrationExecutor {
 			};
 		}
 	}
+
 
 	/**
 	 * Execute rollback SQL statements
@@ -218,10 +230,11 @@ export class MigrationExecutor {
 		const errors: string[] = [];
 		let totalAffectedRows = 0;
 		const savepoints: Savepoint[] = [];
+		let transaction: any;
 
 		try {
 			// Start transaction
-			const transaction = await this.database.begin({
+			transaction = await this.database.begin({
 				isolation_level: options.isolationLevel || 'SERIALIZABLE',
 				read_only: false,
 				savepoint: true // Always use savepoints for rollback
@@ -230,16 +243,16 @@ export class MigrationExecutor {
 			// Execute each rollback statement
 			for (let i = 0; i < statements.length; i++) {
 				const statement = statements[i];
-				
+
 				try {
 					// Create savepoint
 					const savepointName = `rollback_sp_${i}`;
-					const savepoint = await this.database.savepoint(savepointName, transaction);
+					const savepoint = await this.createSavepoint(savepointName, transaction);
 					savepoints.push(savepoint);
 
 					// Execute the rollback statement
-					const result = await this.database.run(statement.sql);
-					
+					const result = await this.executeWithTimeout(statement.sql, this.getTimeout(options));
+
 					// Check if statement affected rows
 					const affectedRows = this.extractAffectedRows(result);
 					totalAffectedRows += affectedRows || 0;
@@ -250,27 +263,26 @@ export class MigrationExecutor {
 					}
 
 					// Release savepoint
-					await this.database.release_savepoint(savepoint);
+					await this.releaseSavepoint(savepoint);
 
 				} catch (statementError) {
-					const errorMessage = statementError instanceof Error 
-						? statementError.message 
+					const errorMessage = statementError instanceof Error
+						? statementError.message
 						: String(statementError);
-					
+
 					errors.push(`Rollback statement ${i + 1} failed: ${errorMessage}`);
-					
+
 					// Rollback to previous savepoint
 					if (savepoints.length > 0) {
 						try {
 							const lastSavepoint = savepoints[savepoints.length - 1];
-							await this.database.rollback_to_savepoint(lastSavepoint);
+							await this.rollbackToSavepoint(lastSavepoint);
 							warnings.push(`Rolled back to savepoint: ${lastSavepoint.name}`);
 						} catch (rollbackError) {
-							errors.push(`Savepoint rollback failed: ${
-								rollbackError instanceof Error 
-									? rollbackError.message 
-									: String(rollbackError)
-							}`);
+							errors.push(`Savepoint rollback failed: ${rollbackError instanceof Error
+								? rollbackError.message
+								: String(rollbackError)
+								}`);
 						}
 					}
 
@@ -295,7 +307,21 @@ export class MigrationExecutor {
 
 		} catch (error) {
 			const errorMessage = error instanceof Error ? error.message : String(error);
-			errors.push(`Rollback execution failed: ${errorMessage}`);
+			if (errors.length === 0) {
+				errors.push(`Rollback execution failed: ${errorMessage}`);
+			}
+
+			// Rollback transaction if it exists
+			try {
+				if (transaction) {
+					await this.database.rollback(transaction);
+				}
+			} catch (rollbackError) {
+				errors.push(`Rollback failed: ${rollbackError instanceof Error
+					? rollbackError.message
+					: String(rollbackError)
+					}`);
+			}
 
 			return {
 				success: false,
@@ -308,6 +334,7 @@ export class MigrationExecutor {
 		}
 	}
 
+
 	/**
 	 * Create a savepoint
 	 * @param name Savepoint name
@@ -317,7 +344,7 @@ export class MigrationExecutor {
 	async createSavepoint(name: string, transaction: any): Promise<Savepoint> {
 		try {
 			const savepoint = await this.database.savepoint(name, transaction);
-			
+
 			return {
 				name,
 				createdAt: new Date(),
@@ -325,9 +352,8 @@ export class MigrationExecutor {
 			};
 
 		} catch (error) {
-			throw new Error(`Failed to create savepoint ${name}: ${
-				error instanceof Error ? error.message : String(error)
-			}`);
+			throw new Error(`Failed to create savepoint ${name}: ${error instanceof Error ? error.message : String(error)
+				}`);
 		}
 	}
 
@@ -339,14 +365,13 @@ export class MigrationExecutor {
 	async rollbackToSavepoint(savepoint: Savepoint): Promise<void> {
 		try {
 			await this.database.rollback_to_savepoint(savepoint);
-			
+
 			// Update savepoint status
 			savepoint.active = false;
 
 		} catch (error) {
-			throw new Error(`Failed to rollback to savepoint ${savepoint.name}: ${
-				error instanceof Error ? error.message : String(error)
-			}`);
+			throw new Error(`Failed to rollback to savepoint ${savepoint.name}: ${error instanceof Error ? error.message : String(error)
+				}`);
 		}
 	}
 
@@ -358,14 +383,13 @@ export class MigrationExecutor {
 	async releaseSavepoint(savepoint: Savepoint): Promise<void> {
 		try {
 			await this.database.release_savepoint(savepoint);
-			
+
 			// Update savepoint status
 			savepoint.active = false;
 
 		} catch (error) {
-			throw new Error(`Failed to release savepoint ${savepoint.name}: ${
-				error instanceof Error ? error.message : String(error)
-			}`);
+			throw new Error(`Failed to release savepoint ${savepoint.name}: ${error instanceof Error ? error.message : String(error)
+				}`);
 		}
 	}
 
@@ -422,8 +446,8 @@ export class MigrationExecutor {
 	private isReadOnlyStatement(sql: string): boolean {
 		const upperSQL = sql.toUpperCase().trim();
 		const readOnlyStatements = ['SELECT', 'SHOW', 'DESCRIBE', 'EXPLAIN'];
-		
-		return readOnlyStatements.some(stmt => 
+
+		return readOnlyStatements.some(stmt =>
 			upperSQL.startsWith(stmt + ' ') || upperSQL.startsWith(stmt + '\n')
 		);
 	}
@@ -517,7 +541,7 @@ export class MigrationExecutor {
 			'SERIALIZABLE'
 		];
 
-		if (options.isolationLevel && 
+		if (options.isolationLevel &&
 			!validIsolationLevels.includes(options.isolationLevel)) {
 			throw new Error(`Invalid isolation level: ${options.isolationLevel}`);
 		}

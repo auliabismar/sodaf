@@ -67,7 +67,7 @@ export class MigrationHistoryManager {
 
 		try {
 			await this.database.run(createTableSQL);
-			
+
 			for (const indexSQL of createIndexesSQL) {
 				await this.database.run(indexSQL);
 			}
@@ -75,8 +75,7 @@ export class MigrationHistoryManager {
 			this.historyTableInitialized = true;
 		} catch (error) {
 			throw new Error(
-				`Failed to initialize migration history table: ${
-					error instanceof Error ? error.message : String(error)
+				`Failed to initialize migration history table: ${error instanceof Error ? error.message : String(error)
 				}`
 			);
 		}
@@ -111,11 +110,11 @@ export class MigrationHistoryManager {
 				migration.affectedRows || null,
 				migration.backupPath || null,
 				migration.error || null,
-				migration.rollbackInfo 
-					? JSON.stringify(migration.rollbackInfo) 
+				migration.rollbackInfo
+					? JSON.stringify(migration.rollbackInfo)
 					: null,
-				migration.environment 
-					? JSON.stringify(migration.environment) 
+				migration.environment
+					? JSON.stringify(migration.environment)
 					: null,
 				JSON.stringify(migration.metadata || {})
 			];
@@ -123,8 +122,7 @@ export class MigrationHistoryManager {
 			await this.database.run(insertSQL, values);
 		} catch (error) {
 			throw new Error(
-				`Failed to record migration ${migration.id}: ${
-					error instanceof Error ? error.message : String(error)
+				`Failed to record migration ${migration.id}: ${error instanceof Error ? error.message : String(error)
 				}`
 			);
 		}
@@ -154,8 +152,7 @@ export class MigrationHistoryManager {
 			await this.database.run(updateSQL, values);
 		} catch (error) {
 			throw new Error(
-				`Failed to update migration status for ${migrationId}: ${
-					error instanceof Error ? error.message : String(error)
+				`Failed to update migration status for ${migrationId}: ${error instanceof Error ? error.message : String(error)
 				}`
 			);
 		}
@@ -226,8 +223,7 @@ export class MigrationHistoryManager {
 
 		} catch (error) {
 			throw new Error(
-				`Failed to get migration history: ${
-					error instanceof Error ? error.message : String(error)
+				`Failed to get migration history: ${error instanceof Error ? error.message : String(error)
 				}`
 			);
 		}
@@ -250,7 +246,7 @@ export class MigrationHistoryManager {
 			`;
 
 			const rows = await this.database.sql(query, [migrationId]);
-			
+
 			if (rows.length === 0) {
 				return null;
 			}
@@ -259,8 +255,7 @@ export class MigrationHistoryManager {
 
 		} catch (error) {
 			throw new Error(
-				`Failed to get migration ${migrationId}: ${
-					error instanceof Error ? error.message : String(error)
+				`Failed to get migration ${migrationId}: ${error instanceof Error ? error.message : String(error)
 				}`
 			);
 		}
@@ -286,7 +281,7 @@ export class MigrationHistoryManager {
 				doctypeName,
 				MigrationStatus.APPLIED
 			]);
-			
+
 			if (rows.length === 0) {
 				return null;
 			}
@@ -295,8 +290,7 @@ export class MigrationHistoryManager {
 
 		} catch (error) {
 			throw new Error(
-				`Failed to get latest migration for ${doctypeName}: ${
-					error instanceof Error ? error.message : String(error)
+				`Failed to get latest migration for ${doctypeName}: ${error instanceof Error ? error.message : String(error)
 				}`
 			);
 		}
@@ -318,8 +312,7 @@ export class MigrationHistoryManager {
 
 		} catch (error) {
 			throw new Error(
-				`Failed to get pending migrations: ${
-					error instanceof Error ? error.message : String(error)
+				`Failed to get pending migrations: ${error instanceof Error ? error.message : String(error)
 				}`
 			);
 		}
@@ -348,8 +341,7 @@ export class MigrationHistoryManager {
 
 		} catch (error) {
 			throw new Error(
-				`Failed to check if migration ${migrationId} is applied: ${
-					error instanceof Error ? error.message : String(error)
+				`Failed to check if migration ${migrationId} is applied: ${error instanceof Error ? error.message : String(error)
 				}`
 			);
 		}
@@ -372,8 +364,7 @@ export class MigrationHistoryManager {
 
 		} catch (error) {
 			throw new Error(
-				`Failed to clear migration history: ${
-					error instanceof Error ? error.message : String(error)
+				`Failed to clear migration history: ${error instanceof Error ? error.message : String(error)
 				}`
 			);
 		}
@@ -436,16 +427,15 @@ export class MigrationHistoryManager {
 				pending,
 				failed,
 				destructive,
-				lastMigrationDate: row.last_migration_date 
-					? new Date(row.last_migration_date) 
+				lastMigrationDate: row.last_migration_date
+					? new Date(row.last_migration_date)
 					: undefined,
 				totalExecutionTime: row.total_execution_time || 0
 			};
 
 		} catch (error) {
 			throw new Error(
-				`Failed to get migration statistics: ${
-					error instanceof Error ? error.message : String(error)
+				`Failed to get migration statistics: ${error instanceof Error ? error.message : String(error)
 				}`
 			);
 		}
@@ -528,8 +518,8 @@ export class MigrationHistoryManager {
 			pending,
 			failed,
 			destructive,
-			lastMigrationDate: lastMigrationDate 
-				? new Date(lastMigrationDate) 
+			lastMigrationDate: lastMigrationDate
+				? new Date(lastMigrationDate)
 				: undefined,
 			totalExecutionTime
 		};

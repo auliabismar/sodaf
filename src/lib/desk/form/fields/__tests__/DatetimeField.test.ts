@@ -1,5 +1,5 @@
 import { render, screen, fireEvent } from '@testing-library/svelte';
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
 import DatetimeField from '../DatetimeField.svelte';
 import { createMockField } from './fixtures/mockFields';
 
@@ -16,7 +16,7 @@ describe('DatetimeField', () => {
 		component = render(DatetimeField, {
 			props: { field, value: '2023-12-25T14:30:00Z' }
 		});
-		
+
 		const datePicker = screen.getByRole('textbox', { name: /date/i });
 		const timePicker = screen.getByRole('textbox', { name: /time/i });
 		expect(datePicker).toBeInTheDocument();
@@ -29,7 +29,7 @@ describe('DatetimeField', () => {
 		component = render(DatetimeField, {
 			props: { field, value: testValue }
 		});
-		
+
 		const datePicker = screen.getByRole('textbox', { name: /date/i });
 		const timePicker = screen.getByRole('textbox', { name: /time/i });
 		expect(datePicker).toHaveValue('2023-01-01');
@@ -38,26 +38,17 @@ describe('DatetimeField', () => {
 
 	// P3-007-T34: Change event emitted
 	it('emits change event on value change', async () => {
-		let changeEventFired = false;
-		let changeEventValue = '';
-		
+		const onchange = vi.fn();
+
 		component = render(DatetimeField, {
-			props: { field, value: '2023-01-01T10:30:00Z' }
+			props: { field, value: '2023-01-01T10:30:00Z', onchange }
 		});
-		
-		// Listen for change event
-		const unsubscribe = component.$on('change', (event: any) => {
-			changeEventFired = true;
-			changeEventValue = event.detail;
-		});
-		
+
 		const datePicker = screen.getByRole('textbox', { name: /date/i });
 		await fireEvent.input(datePicker, { target: { value: '2023-12-31' } });
-		
-		expect(changeEventFired).toBe(true);
-		expect(changeEventValue).toMatch(/2023-12-31T/);
-		
-		unsubscribe();
+
+		expect(onchange).toHaveBeenCalled();
+		expect(onchange.mock.calls[0][0]).toMatch(/2023-12-31T/);
 	});
 
 	// Test disabled state
@@ -65,7 +56,7 @@ describe('DatetimeField', () => {
 		component = render(DatetimeField, {
 			props: { field, value: '2023-01-01T10:30:00Z', disabled: true }
 		});
-		
+
 		const datePicker = screen.getByRole('textbox', { name: /date/i });
 		const timePicker = screen.getByRole('textbox', { name: /time/i });
 		expect(datePicker).toBeDisabled();
@@ -77,7 +68,7 @@ describe('DatetimeField', () => {
 		component = render(DatetimeField, {
 			props: { field, value: '2023-01-01T10:30:00Z', readonly: true }
 		});
-		
+
 		const datePicker = screen.getByRole('textbox', { name: /date/i });
 		const timePicker = screen.getByRole('textbox', { name: /time/i });
 		expect(datePicker).toHaveAttribute('readonly');
@@ -86,15 +77,15 @@ describe('DatetimeField', () => {
 
 	// Test required field
 	it('shows required indicator when field is required', async () => {
-		const requiredField = createMockField({ 
-			fieldtype: 'Datetime', 
-			required: true 
+		const requiredField = createMockField({
+			fieldtype: 'Datetime',
+			required: true
 		});
-		
+
 		component = render(DatetimeField, {
 			props: { field: requiredField, value: '2023-01-01T10:30:00Z' }
 		});
-		
+
 		const label = screen.getByText('Test Field *');
 		expect(label).toBeInTheDocument();
 	});
@@ -104,52 +95,52 @@ describe('DatetimeField', () => {
 		component = render(DatetimeField, {
 			props: { field, value: '2023-01-01T10:30:00Z', error: 'Invalid datetime' }
 		});
-		
+
 		const errorMessage = screen.getByText('Invalid datetime');
 		expect(errorMessage).toBeInTheDocument();
 	});
 
 	// Test min date validation
 	it('respects min date property', async () => {
-		const fieldWithMin = createMockField({ 
-			fieldtype: 'Datetime', 
+		const fieldWithMin = createMockField({
+			fieldtype: 'Datetime',
 			options: '2023-01-01,2023-12-31'
 		});
-		
+
 		component = render(DatetimeField, {
 			props: { field: fieldWithMin, value: '2023-06-15T10:30:00Z' }
 		});
-		
+
 		const datePicker = screen.getByRole('textbox', { name: /date/i });
 		expect(datePicker).toHaveAttribute('min', '2023-01-01');
 	});
 
 	// Test max date validation
 	it('respects max date property', async () => {
-		const fieldWithMax = createMockField({ 
-			fieldtype: 'Datetime', 
+		const fieldWithMax = createMockField({
+			fieldtype: 'Datetime',
 			options: '2023-01-01,2023-12-31'
 		});
-		
+
 		component = render(DatetimeField, {
 			props: { field: fieldWithMax, value: '2023-06-15T10:30:00Z' }
 		});
-		
+
 		const datePicker = screen.getByRole('textbox', { name: /date/i });
 		expect(datePicker).toHaveAttribute('max', '2023-12-31');
 	});
 
 	// Test field label
 	it('uses field label for display', async () => {
-		const labeledField = createMockField({ 
-			fieldtype: 'Datetime', 
-			label: 'Custom Datetime Field' 
+		const labeledField = createMockField({
+			fieldtype: 'Datetime',
+			label: 'Custom Datetime Field'
 		});
-		
+
 		component = render(DatetimeField, {
 			props: { field: labeledField, value: '2023-01-01T10:30:00Z' }
 		});
-		
+
 		const label = screen.getByText('Custom Datetime Field');
 		expect(label).toBeInTheDocument();
 	});
@@ -159,22 +150,22 @@ describe('DatetimeField', () => {
 		component = render(DatetimeField, {
 			props: { field, value: '2023-01-01T10:30:00Z', hideLabel: true }
 		});
-		
+
 		const label = screen.queryByText('Test Field');
 		expect(label).not.toBeInTheDocument();
 	});
 
 	// Test description tooltip
 	it('shows description tooltip when description is provided', async () => {
-		const fieldWithDescription = createMockField({ 
-			fieldtype: 'Datetime', 
-			description: 'This is a datetime field' 
+		const fieldWithDescription = createMockField({
+			fieldtype: 'Datetime',
+			description: 'This is a datetime field'
 		});
-		
+
 		component = render(DatetimeField, {
 			props: { field: fieldWithDescription, value: '2023-01-01T10:30:00Z' }
 		});
-		
+
 		const infoButton = screen.getByRole('button', { name: /information/i });
 		expect(infoButton).toBeInTheDocument();
 	});
@@ -184,7 +175,7 @@ describe('DatetimeField', () => {
 		component = render(DatetimeField, {
 			props: { field, value: null }
 		});
-		
+
 		const datePicker = screen.getByRole('textbox', { name: /date/i });
 		const timePicker = screen.getByRole('textbox', { name: /time/i });
 		expect(datePicker).toHaveValue('');
@@ -196,7 +187,7 @@ describe('DatetimeField', () => {
 		component = render(DatetimeField, {
 			props: { field, value: '2023-12-25T14:30:00Z' }
 		});
-		
+
 		const datePicker = screen.getByRole('textbox', { name: /date/i });
 		const timePicker = screen.getByRole('textbox', { name: /time/i });
 		expect(datePicker).toHaveValue('2023-12-25');
@@ -205,56 +196,36 @@ describe('DatetimeField', () => {
 
 	// Test datetime formatting
 	it('correctly formats datetime for storage', async () => {
-		let changeEventFired = false;
-		let changeEventValue = '';
-		
+		const onchange = vi.fn();
+
 		component = render(DatetimeField, {
-			props: { field, value: null }
+			props: { field, value: null, onchange }
 		});
-		
-		// Listen for change event
-		const unsubscribe = component.$on('change', (event: any) => {
-			changeEventFired = true;
-			changeEventValue = event.detail;
-		});
-		
+
 		const datePicker = screen.getByRole('textbox', { name: /date/i });
 		const timePicker = screen.getByRole('textbox', { name: /time/i });
 		await fireEvent.input(datePicker, { target: { value: '2023-12-31' } });
 		await fireEvent.input(timePicker, { target: { value: '23:59' } });
-		
-		expect(changeEventFired).toBe(true);
-		expect(changeEventValue).toMatch(/2023-12-31T23:59/);
-		
-		unsubscribe();
+
+		expect(onchange).toHaveBeenCalled();
+		expect(onchange.mock.calls[0][0]).toMatch(/2023-12-31T23:59/);
 	});
 
 	// Test focus and blur events
 	it('emits focus and blur events', async () => {
-		let focusEventFired = false;
-		let blurEventFired = false;
-		
+		const onfocus = vi.fn();
+		const onblur = vi.fn();
+
 		component = render(DatetimeField, {
-			props: { field, value: '2023-01-01T10:30:00Z' }
+			props: { field, value: '2023-01-01T10:30:00Z', onfocus, onblur }
 		});
-		
-		// Listen for events
-		const unsubscribeFocus = component.$on('focus', () => {
-			focusEventFired = true;
-		});
-		const unsubscribeBlur = component.$on('blur', () => {
-			blurEventFired = true;
-		});
-		
+
 		const datePicker = screen.getByRole('textbox', { name: /date/i });
 		await fireEvent.focus(datePicker);
 		await fireEvent.blur(datePicker);
-		
-		expect(focusEventFired).toBe(true);
-		expect(blurEventFired).toBe(true);
-		
-		unsubscribeFocus();
-		unsubscribeBlur();
+
+		expect(onfocus).toHaveBeenCalled();
+		expect(onblur).toHaveBeenCalled();
 	});
 
 	// Test time format (12-hour vs 24-hour)
@@ -262,7 +233,7 @@ describe('DatetimeField', () => {
 		component = render(DatetimeField, {
 			props: { field, value: '2023-01-01T14:30:00Z', timeFormat: '12' }
 		});
-		
+
 		const amPmSelect = screen.getByRole('button', { name: /AM|PM/i });
 		expect(amPmSelect).toBeInTheDocument();
 	});
@@ -271,14 +242,14 @@ describe('DatetimeField', () => {
 	it('adapts to mobile layout', async () => {
 		// Mock mobile viewport
 		global.innerWidth = 500;
-		
+
 		component = render(DatetimeField, {
 			props: { field, value: '2023-01-01T10:30:00Z' }
 		});
-		
+
 		const container = screen.getByRole('group', { name: /datetime/i });
 		expect(container).toHaveClass('datetime-container');
-		
+
 		// Reset viewport
 		global.innerWidth = 1024;
 	});

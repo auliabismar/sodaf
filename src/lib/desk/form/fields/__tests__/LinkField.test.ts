@@ -20,8 +20,8 @@ describe('LinkField', () => {
 
 	beforeEach(() => {
 		vi.clearAllMocks();
-		field = createMockField({ 
-			fieldtype: 'Link', 
+		field = createMockField({
+			fieldtype: 'Link',
 			options: 'User',
 			label: 'User Link'
 		});
@@ -33,7 +33,7 @@ describe('LinkField', () => {
 		component = render(LinkField, {
 			props: { field, value: 'DOC001' }
 		});
-		
+
 		const combobox = screen.getByRole('combobox');
 		expect(combobox).toBeInTheDocument();
 	});
@@ -89,30 +89,21 @@ describe('LinkField', () => {
 
 	// P3-007-T9: Quick create button
 	it('dispatches quick-create event when quick create button is clicked', async () => {
-		let quickCreateEventFired = false;
-		let quickCreateEventData = {};
+		const onquickcreate = vi.fn();
 
 		component = render(LinkField, {
-			props: { field, value: '', allowQuickCreate: true }
-		});
-
-		// Listen for quick-create event
-		const unsubscribe = component.$on('quick-create', (event: any) => {
-			quickCreateEventFired = true;
-			quickCreateEventData = event.detail;
+			// @ts-ignore
+			props: { field, value: '', allowQuickCreate: true, 'onquick-create': onquickcreate }
 		});
 
 		const quickCreateButton = screen.getByRole('button', { name: /create new user/i });
 		await fireEvent.click(quickCreateButton);
 
-		expect(quickCreateEventFired).toBe(true);
-		expect(quickCreateEventData).toEqual({
+		expect(onquickcreate).toHaveBeenCalledWith({
 			doctype: 'User',
 			fieldname: 'test_field',
 			filters: {}
 		});
-
-		unsubscribe();
 	});
 
 	// P3-007-T10: Filter support via get_query
@@ -131,8 +122,8 @@ describe('LinkField', () => {
 
 	// P3-007-T10: Filter support via get_query
 	it('applies field filters when fetching options', async () => {
-		const fieldWithFilters = createMockField({ 
-			fieldtype: 'Link', 
+		const fieldWithFilters = createMockField({
+			fieldtype: 'Link',
 			options: 'User',
 			filters: 'status="Active"'
 		});
@@ -170,29 +161,20 @@ describe('LinkField', () => {
 
 	// P3-007-T10: Open button for existing value
 	it('dispatches open-document event when open button is clicked', async () => {
-		let openDocumentEventFired = false;
-		let openDocumentEventData = {};
+		const onopendocument = vi.fn();
 
 		component = render(LinkField, {
-			props: { field, value: 'DOC001', showOpenButton: true }
-		});
-
-		// Listen for open-document event
-		const unsubscribe = component.$on('open-document', (event: any) => {
-			openDocumentEventFired = true;
-			openDocumentEventData = event.detail;
+			// @ts-ignore
+			props: { field, value: 'DOC001', showOpenButton: true, 'onopen-document': onopendocument }
 		});
 
 		const openButton = screen.getByRole('button', { name: /open DOC001/i });
 		await fireEvent.click(openButton);
 
-		expect(openDocumentEventFired).toBe(true);
-		expect(openDocumentEventData).toEqual({
+		expect(onopendocument).toHaveBeenCalledWith({
 			doctype: 'User',
 			name: 'DOC001'
 		});
-
-		unsubscribe();
 	});
 
 	// Test disabled state
@@ -217,10 +199,10 @@ describe('LinkField', () => {
 
 	// Test required field
 	it('shows required indicator when field is required', async () => {
-		const requiredField = createMockField({ 
-			fieldtype: 'Link', 
+		const requiredField = createMockField({
+			fieldtype: 'Link',
 			options: 'User',
-			required: true 
+			required: true
 		});
 
 		component = render(LinkField, {
@@ -243,17 +225,10 @@ describe('LinkField', () => {
 
 	// Test change event
 	it('emits change event on value selection', async () => {
-		let changeEventFired = false;
-		let changeEventValue = '';
+		const onchange = vi.fn();
 
 		component = render(LinkField, {
-			props: { field, value: '' }
-		});
-
-		// Listen for change event
-		const unsubscribe = component.$on('change', (event: any) => {
-			changeEventFired = true;
-			changeEventValue = event.detail;
+			props: { field, value: '', onchange }
 		});
 
 		// Mock the API response
@@ -267,59 +242,41 @@ describe('LinkField', () => {
 		const combobox = screen.getByRole('combobox');
 		await fireEvent.input(combobox, { target: { value: 'DOC001' } });
 
-		// Simulate selection (this would normally be handled by the ComboBox component)
-		// For testing purposes, we'll trigger the change event directly
+		// Simulate selection
 		const selectEvent = new CustomEvent('select', {
 			detail: { selectedItem: { value: 'DOC001' } }
 		});
 		combobox.dispatchEvent(selectEvent);
 
-		expect(changeEventFired).toBe(true);
-		expect(changeEventValue).toBe('DOC001');
-
-		unsubscribe();
+		expect(onchange).toHaveBeenCalledWith('DOC001');
 	});
 
 	// Test blur event
 	it('emits blur event', async () => {
-		let blurEventFired = false;
+		const onblur = vi.fn();
 
 		component = render(LinkField, {
-			props: { field, value: '' }
-		});
-
-		// Listen for blur event
-		const unsubscribe = component.$on('blur', () => {
-			blurEventFired = true;
+			props: { field, value: '', onblur }
 		});
 
 		const combobox = screen.getByRole('combobox');
 		await fireEvent.blur(combobox);
 
-		expect(blurEventFired).toBe(true);
-
-		unsubscribe();
+		expect(onblur).toHaveBeenCalled();
 	});
 
 	// Test focus event
 	it('emits focus event', async () => {
-		let focusEventFired = false;
+		const onfocus = vi.fn();
 
 		component = render(LinkField, {
-			props: { field, value: '' }
-		});
-
-		// Listen for focus event
-		const unsubscribe = component.$on('focus', () => {
-			focusEventFired = true;
+			props: { field, value: '', onfocus }
 		});
 
 		const combobox = screen.getByRole('combobox');
 		await fireEvent.focus(combobox);
 
-		expect(focusEventFired).toBe(true);
-
-		unsubscribe();
+		expect(onfocus).toHaveBeenCalled();
 	});
 
 	// Test placeholder text
@@ -334,10 +291,10 @@ describe('LinkField', () => {
 
 	// Test placeholder text for required field
 	it('uses required placeholder for required field', async () => {
-		const requiredField = createMockField({ 
-			fieldtype: 'Link', 
+		const requiredField = createMockField({
+			fieldtype: 'Link',
 			options: 'User',
-			required: true 
+			required: true
 		});
 
 		component = render(LinkField, {
@@ -368,8 +325,8 @@ describe('LinkField', () => {
 
 	// Test empty options
 	it('handles empty DocType options', async () => {
-		const fieldWithoutOptions = createMockField({ 
-			fieldtype: 'Link', 
+		const fieldWithoutOptions = createMockField({
+			fieldtype: 'Link',
 			options: ''
 		});
 

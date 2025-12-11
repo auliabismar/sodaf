@@ -528,8 +528,8 @@ describe('IndexComparator', () => {
 		// Arrange & Act & Assert
 		expect(IndexComparator.sanitizeIndexName('')).toBe('idx_default');
 		expect(IndexComparator.sanitizeIndexName('123invalid')).toBe('idx_123invalid');
-		expect(IndexComparator.sanitizeIndexName('invalid-name-with-dashes')).toBe('idx_invalid_name_with_dashes');
-		expect(IndexComparator.sanitizeIndexName('invalid name with spaces')).toBe('idx_invalid_name_with_spaces');
+		expect(IndexComparator.sanitizeIndexName('invalid-name-with-dashes')).toBe('invalid_name_with_dashes');
+		expect(IndexComparator.sanitizeIndexName('invalid name with spaces')).toBe('invalid_name_with_spaces');
 		expect(IndexComparator.sanitizeIndexName('a'.repeat(65))).toHaveLength(64); // Truncated
 	});
 

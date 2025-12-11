@@ -547,7 +547,10 @@ describe('PropertySetterManager', () => {
 
 	describe('configuration', () => {
 		it('should get default configuration', () => {
-			const config = propertySetterManager.getConfig();
+			// Create a fresh instance with default config
+			PropertySetterManager.resetInstance();
+			const manager = PropertySetterManager.getInstance();
+			const config = manager.getConfig();
 
 			expect(config.enable_cache).toBe(true);
 			expect(config.cache_ttl).toBe(300);
@@ -556,12 +559,16 @@ describe('PropertySetterManager', () => {
 		});
 
 		it('should update configuration', () => {
-			propertySetterManager.updateConfig({
+			// Create a fresh instance with default config
+			PropertySetterManager.resetInstance();
+			const manager = PropertySetterManager.getInstance();
+
+			manager.updateConfig({
 				cache_ttl: 600,
 				enable_validation: false
 			});
 
-			const config = propertySetterManager.getConfig();
+			const config = manager.getConfig();
 
 			expect(config.cache_ttl).toBe(600);
 			expect(config.enable_validation).toBe(false);

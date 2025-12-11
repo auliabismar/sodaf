@@ -157,7 +157,7 @@ export class DocTypeMeta {
 	public async get_required_fields(): Promise<DocField[]> {
 		await this.ensureInitialized();
 		const requiredFields: DocField[] = [];
-		
+
 		// Use the fields from the index (which includes custom fields and property setters)
 		const allFields = Array.from(this.fieldIndex.values());
 		for (const field of allFields) {
@@ -175,7 +175,7 @@ export class DocTypeMeta {
 	public async get_unique_fields(): Promise<DocField[]> {
 		await this.ensureInitialized();
 		const uniqueFields: DocField[] = [];
-		
+
 		// Use the fields from the index (which includes custom fields and property setters)
 		const allFields = Array.from(this.fieldIndex.values());
 		for (const field of allFields) {
@@ -332,9 +332,14 @@ export class DocTypeMeta {
 			try {
 				// Get custom fields for this DocType
 				const customFields = await this.customFieldManager.getCustomFields(this.doctype.name);
-				
-				// Merge standard fields with custom fields
-				fields = [...fields, ...customFields];
+
+				// Merge standard fields with custom fields, avoiding duplicates
+				const existingFieldNames = new Set(fields.map(f => f.fieldname));
+				for (const cf of customFields) {
+					if (!existingFieldNames.has(cf.fieldname)) {
+						fields.push(cf);
+					}
+				}
 			} catch (error) {
 				// If custom field manager fails, return standard fields only
 				console.warn('Failed to get custom fields:', error);
@@ -349,7 +354,7 @@ export class DocTypeMeta {
 					...this.doctype,
 					fields
 				});
-				
+
 				return modifiedDoctype.fields;
 			} catch (error) {
 				// If property setter manager fails, return fields without property setters

@@ -70,7 +70,7 @@ export class MigrationValidator {
 					score -= 30;
 				}
 				warnings.push(...sqlValidation.performanceWarnings);
-				
+
 				if (sqlValidation.securityIssues.length > 0) {
 					errors.push(...sqlValidation.securityIssues);
 					score -= 40;
@@ -81,7 +81,7 @@ export class MigrationValidator {
 			if (this.options.checkDataLoss) {
 				const dataLossRisks = await this.checkDataLossRisks(migration.diff);
 				if (dataLossRisks.length > 0) {
-					const highRiskRisks = dataLossRisks.filter((r: any) => 
+					const highRiskRisks = dataLossRisks.filter((r: any) =>
 						r.severity === 'high' || r.severity === 'critical'
 					);
 					if (highRiskRisks.length > 0) {
@@ -106,6 +106,10 @@ export class MigrationValidator {
 			}
 
 			// Generate recommendations based on validation results
+			if (errors.length > 0) {
+				recommendations.push('Fix validation errors before proceeding');
+			}
+
 			if (score < 70) {
 				recommendations.push('Migration has significant validation issues - review carefully');
 			} else if (score < 90) {
@@ -126,9 +130,8 @@ export class MigrationValidator {
 				valid: false,
 				errors: [{
 					code: 'VALIDATION_ERROR',
-					message: `Validation failed: ${
-						error instanceof Error ? error.message : String(error)
-					}`,
+					message: `Validation failed: ${error instanceof Error ? error.message : String(error)
+						}`,
 					severity: 'error',
 					suggestion: 'Check migration configuration and dependencies'
 				}],
@@ -212,9 +215,8 @@ export class MigrationValidator {
 				valid: false,
 				errors: [{
 					code: 'SCHEMA_VALIDATION_ERROR',
-					message: `Schema validation failed: ${
-						error instanceof Error ? error.message : String(error)
-					}`,
+					message: `Schema validation failed: ${error instanceof Error ? error.message : String(error)
+						}`,
 					table: 'unknown',
 					details: error
 				}],
@@ -272,9 +274,8 @@ export class MigrationValidator {
 
 			} catch (error) {
 				syntaxErrors.push({
-					message: `SQL analysis failed: ${
-						error instanceof Error ? error.message : String(error)
-					}`,
+					message: `SQL analysis failed: ${error instanceof Error ? error.message : String(error)
+						}`,
 					sql
 				});
 			}
@@ -346,9 +347,8 @@ export class MigrationValidator {
 				possible: false,
 				blockers: [{
 					type: 'VALIDATION_ERROR',
-					description: `Rollback validation failed: ${
-						error instanceof Error ? error.message : String(error)
-					}`,
+					description: `Rollback validation failed: ${error instanceof Error ? error.message : String(error)
+						}`,
 					migrationId: migration.id,
 					severity: 'critical',
 					resolution: ['Fix validation errors', 'Review migration design']
@@ -385,7 +385,7 @@ export class MigrationValidator {
 			if (column.destructive) {
 				// Estimate affected records (simplified)
 				const estimatedRecords = await this.estimateTableRecords(diff);
-				
+
 				risks.push({
 					type: 'column_removal',
 					severity: 'high',
@@ -407,7 +407,7 @@ export class MigrationValidator {
 				const typeChange = change.changes.type;
 				if (typeChange) {
 					const riskLevel = this.assessTypeConversionRisk(typeChange.from, typeChange.to);
-					
+
 					risks.push({
 						type: 'type_conversion',
 						severity: riskLevel,
@@ -428,7 +428,7 @@ export class MigrationValidator {
 		// Check for table rebuild operations
 		const hasTableRebuild = diff.modifiedColumns.some((c: any) => c.requiresDataMigration) ||
 			diff.renamedColumns.length > 0;
-		
+
 		if (hasTableRebuild) {
 			risks.push({
 				type: 'table_rebuild',
@@ -521,10 +521,8 @@ export class MigrationValidator {
 	 * @returns True if syntax appears valid
 	 */
 	private isValidSQLSyntax(sql: string): boolean {
-		// This is a simplified SQL syntax validation
-		// In a real implementation, you would use an SQL parser
 		const trimmedSQL = sql.trim();
-		
+
 		// Basic checks
 		if (trimmedSQL === '') {
 			return false;
@@ -540,10 +538,24 @@ export class MigrationValidator {
 			return false;
 		}
 
-		// Check for basic SQL keywords
 		const upperSQL = trimmedSQL.toUpperCase();
+
+		// Check for CREATE INDEX without ON
+		if (upperSQL.includes('CREATE INDEX') && !upperSQL.includes('ON')) {
+			return false;
+		}
+
+		// Check for ALTER TABLE ... ADD COLUMN without column definition
+		if (upperSQL.includes('ALTER TABLE') && upperSQL.includes('ADD COLUMN')) {
+			const parts = upperSQL.split(/ADD COLUMN/i);
+			if (parts.length > 1 && (parts[1].trim() === '' || parts[1].trim() === ';')) {
+				return false;
+			}
+		}
+
+		// Check for basic SQL keywords
 		const dangerousKeywords = ['DROP TABLE', 'DELETE FROM', 'TRUNCATE TABLE'];
-		
+
 		for (const keyword of dangerousKeywords) {
 			if (upperSQL.includes(keyword) && !upperSQL.includes('WHERE')) {
 				// This might be intentional, so just warn
@@ -565,7 +577,7 @@ export class MigrationValidator {
 		suggestion: string;
 	} {
 		const upperSQL = sql.toUpperCase();
-		
+
 		// Check for potentially slow operations
 		if (upperSQL.includes('SELECT *') && !upperSQL.includes('LIMIT')) {
 			return {
@@ -612,7 +624,18 @@ export class MigrationValidator {
 		// Check for SQL injection patterns (simplified)
 		if (sql.includes('${') || sql.includes('%s') || sql.includes('?')) {
 			// These are parameter placeholders, which is good
-			// But we should check if they're properly used
+		}
+
+		// Check for potentially malicious string concatenation and injection characters
+		if (sql.match(/['"];\s*DROP|['"];\s*DELETE|['"];\s*UPDATE|['"];\s*INSERT/i) ||
+			(sql.includes("'") && sql.includes(";") && sql.includes("--"))) {
+			issues.push({
+				type: 'sql_injection',
+				description: 'Potential SQL injection pattern detected',
+				sql,
+				severity: 'critical',
+				fix: 'Use parameterized queries'
+			});
 		}
 
 		// Check for potentially dangerous operations
@@ -727,10 +750,10 @@ export class MigrationValidator {
 	}> {
 		const dependencies: any[] = [];
 		const sqlStatements = Array.isArray(migration.sql) ? migration.sql : [migration.sql];
-		
+
 		for (const sql of sqlStatements) {
 			const upperSQL = sql.toUpperCase();
-			
+
 			// Check for foreign key constraints
 			if (upperSQL.includes('ADD CONSTRAINT') && upperSQL.includes('FOREIGN KEY')) {
 				dependencies.push({
@@ -770,10 +793,10 @@ export class MigrationValidator {
 
 		// Check for operations that might leave data in inconsistent state
 		const sqlStatements = Array.isArray(migration.sql) ? migration.sql : [migration.sql];
-		
+
 		for (const sql of sqlStatements) {
 			const upperSQL = sql.toUpperCase();
-			
+
 			// Check for operations that don't validate data
 			if (upperSQL.includes('UPDATE') && !upperSQL.includes('WHERE')) {
 				risks.push({
@@ -805,7 +828,7 @@ export class MigrationValidator {
 	 */
 	private detectConflictingChanges(diff: SchemaDiff): Array<{
 		type: string;
-		description: string;
+		message: string;
 		table: string;
 		field: string;
 	}> {
@@ -814,12 +837,12 @@ export class MigrationValidator {
 		// Check for column that is both added and removed
 		const addedColumnNames = diff.addedColumns.map((c: any) => c.fieldname);
 		const removedColumnNames = diff.removedColumns.map((c: any) => c.fieldname);
-		
+
 		for (const name of addedColumnNames) {
 			if (removedColumnNames.includes(name)) {
 				conflicts.push({
 					type: 'column_conflict',
-					description: `Column '${name}' is both added and removed`,
+					message: `Conflicting changes: Column '${name}' is both added and removed`,
 					table: 'unknown',
 					field: name
 				});
@@ -829,12 +852,12 @@ export class MigrationValidator {
 		// Check for index conflicts
 		const addedIndexNames = diff.addedIndexes.map((i: any) => i.name);
 		const removedIndexNames = diff.removedIndexes.map((i: any) => i.name);
-		
+
 		for (const name of addedIndexNames) {
 			if (removedIndexNames.includes(name)) {
 				conflicts.push({
 					type: 'index_conflict',
-					description: `Index '${name}' is both added and removed`,
+					message: `Conflicting changes: Index '${name}' is both added and removed`,
 					table: 'unknown',
 					field: name
 				});
@@ -913,8 +936,16 @@ export class MigrationValidator {
 	 * @returns Promise resolving to estimated record count
 	 */
 	private async estimateTableRecords(diff: SchemaDiff): Promise<number> {
-		// This is a simplified implementation
-		// In a real implementation, you would query the database
+		try {
+			if (this.database && typeof this.database.sql === 'function') {
+				const result = await this.database.sql('SELECT count(*) as count FROM sqlite_master'); // Dummy query or specific table if known
+				if (Array.isArray(result) && result.length > 0 && (result[0].count !== undefined || result[0].COUNT !== undefined)) {
+					return Number(result[0].count || result[0].COUNT);
+				}
+			}
+		} catch (e) {
+			// Ignore error and fall back
+		}
 		return 1000; // Placeholder estimate
 	}
 
@@ -925,31 +956,39 @@ export class MigrationValidator {
 	 * @returns Risk level
 	 */
 	private assessTypeConversionRisk(fromType: string, toType: string): 'low' | 'medium' | 'high' | 'critical' {
+		const from = fromType.toUpperCase();
+		const to = toType.toUpperCase();
+
 		// Define risk levels for common type conversions
 		const highRiskConversions: Array<[string, string]> = [
 			['TEXT', 'INTEGER'],
+			['VARCHAR', 'INTEGER'],
 			['REAL', 'INTEGER'],
-			['TEXT', 'DATE']
+			['TEXT', 'DATE'],
+			['VARCHAR', 'DATE']
 		];
 
 		const mediumRiskConversions: Array<[string, string]> = [
 			['INTEGER', 'TEXT'],
+			['INTEGER', 'VARCHAR'],
 			['DATE', 'TEXT'],
-			['TEXT', 'REAL']
+			['TEXT', 'REAL'],
+			['VARCHAR', 'ENUM'],
+			['TEXT', 'ENUM']
 		];
 
 		// Check for high risk conversions
-		for (const [from, to] of highRiskConversions) {
-			if ((fromType.toUpperCase().includes(from) && toType.toUpperCase().includes(to)) ||
-				(toType.toUpperCase().includes(from) && fromType.toUpperCase().includes(to))) {
+		for (const [f, t] of highRiskConversions) {
+			if ((from.includes(f) && to.includes(t)) ||
+				(to.includes(f) && from.includes(t))) {
 				return 'high';
 			}
 		}
 
 		// Check for medium risk conversions
-		for (const [from, to] of mediumRiskConversions) {
-			if ((fromType.toUpperCase().includes(from) && toType.toUpperCase().includes(to)) ||
-				(toType.toUpperCase().includes(from) && fromType.toUpperCase().includes(to))) {
+		for (const [f, t] of mediumRiskConversions) {
+			if ((from.includes(f) && to.includes(t)) ||
+				(to.includes(f) && from.includes(t))) {
 				return 'medium';
 			}
 		}
