@@ -3,6 +3,7 @@
  * 
  * P3-011: User Types and Interfaces
  * P3-012: User Manager
+ * P3-013: Auth Manager
  */
 
 // Types
@@ -29,3 +30,12 @@ export {
     type PasswordResetToken,
     type PasswordValidationResult,
 } from './user-manager';
+
+// Auth Manager
+export {
+    AuthManager,
+    AuthenticationError,
+    UserDisabledError,
+    AccountLockedError,
+    type AuthManagerConfig,
+} from './auth-manager';

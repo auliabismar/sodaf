@@ -6,7 +6,7 @@
  * password handling, and user preferences.
  */
 
-import * as crypto from 'crypto';
+import { hashPassword as cryptoHashPassword, getRandomBytes, bytesToHex } from './crypto-utils';
 import type { User, UserRole, UserType, PasswordPolicy } from './types';
 
 /**
@@ -176,32 +176,10 @@ export class UserManager {
 
     /**
      * Hash a password using PBKDF2-SHA512
-     * P3-012-T23: Uses secure hashing
+     * P3-012-T23: Uses secure hashing (cross-platform)
      */
     private async hashPassword(password: string, salt?: string): Promise<{ hash: string; salt: string }> {
-        const saltBuffer = salt
-            ? Buffer.from(salt, 'hex')
-            : crypto.randomBytes(32);
-
-        return new Promise((resolve, reject) => {
-            crypto.pbkdf2(
-                password,
-                saltBuffer,
-                this.hashIterations,
-                64, // 512 bits
-                'sha512',
-                (err, derivedKey) => {
-                    if (err) {
-                        reject(err);
-                    } else {
-                        resolve({
-                            hash: derivedKey.toString('hex'),
-                            salt: saltBuffer.toString('hex'),
-                        });
-                    }
-                }
-            );
-        });
+        return cryptoHashPassword(password, salt, this.hashIterations);
     }
 
     /**
@@ -604,8 +582,8 @@ export class UserManager {
             throw new Error('User not found');
         }
 
-        // Generate secure random key
-        const key = crypto.randomBytes(32).toString('hex');
+        // Generate secure random key (cross-platform)
+        const key = bytesToHex(getRandomBytes(32));
 
         // Set expiry (1 hour from now)
         const expiry = new Date(Date.now() + 60 * 60 * 1000).toISOString();
