@@ -118,7 +118,7 @@
 		readonly,
 		required,
 		description,
-		hideLabel: true, // Hide label since BaseField already handles it (wait, BaseField is inside the components)
+		hideLabel, // Pass through hideLabel prop
 		// Actually, `FieldRenderer` seems to be used *inside* a `FormGroup` or similar?
 		// Or does `FieldRenderer` replace the whole field display including label?
 		// The original code passed `hideLabel: true`.
