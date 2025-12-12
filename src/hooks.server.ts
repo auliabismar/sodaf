@@ -1,7 +1,7 @@
 /**
  * SvelteKit Server Hooks
  *
- * Integrates cache layers with SvelteKit request lifecycle.
+ * P3-014: Auth middleware integration with cache layers.
  * Each request is wrapped in a request cache scope and user
  * session data is populated into event.locals.
  *
@@ -9,18 +9,33 @@
  */
 
 import type { Handle } from '@sveltejs/kit';
+import { sequence } from '@sveltejs/kit/hooks';
 import { runWithRequestCache } from '$lib/cache/request-cache';
 import { CacheManager, createCacheManager } from '$lib/cache/cache-manager';
-
-/**
- * Cookie name for session ID
- */
-const SESSION_COOKIE = 'sodaf_session';
+import {
+    createAuthMiddleware,
+    createCSRFMiddleware,
+    SESSION_COOKIE,
+    setCSRFCookie,
+    type AuthMiddlewareConfig,
+} from '$lib/auth/middleware';
+import { AuthManager } from '$lib/auth/auth-manager';
+import { UserManager } from '$lib/auth/user-manager';
 
 /**
  * Global cache manager instance
  */
 let cacheManager: CacheManager | null = null;
+
+/**
+ * Global auth manager instance
+ */
+let authManager: AuthManager | null = null;
+
+/**
+ * Global user manager instance
+ */
+let userManager: UserManager | null = null;
 
 /**
  * Get or create the global cache manager
@@ -40,15 +55,46 @@ export function setCacheManager(manager: CacheManager): void {
 }
 
 /**
- * Handle hook
- *
- * Wraps each request in a request cache scope and loads
- * user session data into event.locals.
+ * Get or create the global user manager
  */
-export const handle: Handle = async ({ event, resolve }) => {
+export function getUserManager(): UserManager {
+    if (!userManager) {
+        userManager = new UserManager();
+    }
+    return userManager;
+}
+
+/**
+ * Set the user manager (for testing or custom configuration)
+ */
+export function setUserManager(manager: UserManager): void {
+    userManager = manager;
+}
+
+/**
+ * Get or create the global auth manager
+ */
+export function getAuthManager(): AuthManager {
+    if (!authManager) {
+        authManager = new AuthManager({ userManager: getUserManager() });
+    }
+    return authManager;
+}
+
+/**
+ * Set the auth manager (for testing or custom configuration)
+ */
+export function setAuthManager(manager: AuthManager): void {
+    authManager = manager;
+}
+
+/**
+ * Cache middleware handle
+ * Wraps each request in a request cache scope and populates cache manager
+ */
+const cacheHandle: Handle = async ({ event, resolve }) => {
     const manager = getCacheManager();
 
-    // Wrap the entire request in a request cache scope
     return runWithRequestCache(async () => {
         // Get session ID from cookie
         const sessionId = event.cookies.get(SESSION_COOKIE);
@@ -90,3 +136,51 @@ export const handle: Handle = async ({ event, resolve }) => {
         return response;
     });
 };
+
+/**
+ * Create auth handle with dependency injection
+ */
+function createAuthHandle(): Handle {
+    return createAuthMiddleware({
+        authManager: getAuthManager(),
+        refreshSession: true,
+        refreshThreshold: 5 * 60 * 1000, // 5 minutes
+    });
+}
+
+/**
+ * CSRF handle for state-changing requests
+ */
+const csrfHandle: Handle = createCSRFMiddleware({
+    excludePaths: ['/api/auth/login', '/api/auth/logout'],
+    excludeApiRoutes: true, // Skip CSRF for API key auth
+});
+
+/**
+ * CSRF token initialization handle
+ * Sets CSRF cookie for non-authenticated requests that don't have one
+ */
+const csrfInitHandle: Handle = async ({ event, resolve }) => {
+    // Set CSRF token if not present
+    if (!event.cookies.get('sodaf_csrf')) {
+        setCSRFCookie(event);
+    }
+    return resolve(event);
+};
+
+/**
+ * Combined handle hook
+ *
+ * Order of middleware:
+ * 1. Cache - Set up request cache scope
+ * 2. Auth - Validate tokens and set user
+ * 3. CSRF Init - Ensure CSRF cookie exists
+ * 4. CSRF - Validate CSRF tokens for state changes
+ */
+export const handle: Handle = sequence(
+    cacheHandle,
+    createAuthHandle(),
+    csrfInitHandle,
+    csrfHandle
+);
+
