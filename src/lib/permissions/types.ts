@@ -146,19 +146,40 @@ export interface PermissionCheckResult {
 }
 
 /**
- * Function signature type for permission check functions
+ * Synchronous permission check function signature
  * @param doctype - Document type to check
  * @param permission - Permission type to check
  * @param doc - Document being checked (optional)
  * @param context - Permission check context
  * @returns Permission check result
  */
-export type PermissionCheck = (
+export type SyncPermissionCheck = (
     doctype: string,
     permission: PermissionType,
     doc?: PermissionDocument,
     context?: PermissionCheckContext
-) => PermissionCheckResult | Promise<PermissionCheckResult>;
+) => PermissionCheckResult;
+
+/**
+ * Asynchronous permission check function signature
+ * @param doctype - Document type to check
+ * @param permission - Permission type to check
+ * @param doc - Document being checked (optional)
+ * @param context - Permission check context
+ * @returns Promise of permission check result
+ */
+export type AsyncPermissionCheck = (
+    doctype: string,
+    permission: PermissionType,
+    doc?: PermissionDocument,
+    context?: PermissionCheckContext
+) => Promise<PermissionCheckResult>;
+
+/**
+ * Union type for permission check functions (sync or async)
+ * Use SyncPermissionCheck or AsyncPermissionCheck for type-safe calls
+ */
+export type PermissionCheck = SyncPermissionCheck | AsyncPermissionCheck;
 
 /**
  * SQL WHERE clause condition for permission-based queries

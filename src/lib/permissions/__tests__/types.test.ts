@@ -10,7 +10,8 @@ import type {
     PermLevel,
     UserPermission,
     FieldPermission,
-    PermissionCheck,
+    SyncPermissionCheck,
+    AsyncPermissionCheck,
     PermissionQueryCondition,
     PermissionCheckResult,
     PermissionCheckContext,
@@ -211,9 +212,9 @@ describe('P3-009: Permission Types and Interfaces', () => {
     });
 
     describe('P3-009-T7: PermissionCheck type defined', () => {
-        it('should define PermissionCheck function signature', () => {
-            // Type check: create a function that matches PermissionCheck signature
-            const checkPermission: PermissionCheck = (
+        it('should define SyncPermissionCheck function signature', () => {
+            // Type check: create a function that matches SyncPermissionCheck signature
+            const checkPermission: SyncPermissionCheck = (
                 doctype: string,
                 permission: PermissionType,
                 doc?: PermissionDocument,
@@ -231,8 +232,8 @@ describe('P3-009: Permission Types and Interfaces', () => {
             expect(result.granting_role).toBe('System Manager');
         });
 
-        it('should support async permission checks', async () => {
-            const asyncCheck: PermissionCheck = async (
+        it('should support async permission checks with AsyncPermissionCheck', async () => {
+            const asyncCheck: AsyncPermissionCheck = async (
                 doctype: string,
                 permission: PermissionType
             ): Promise<PermissionCheckResult> => {
