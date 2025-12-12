@@ -94,6 +94,9 @@ export interface FormUIState {
 
     /** Whether the sidebar is expanded */
     sidebar_expanded?: boolean;
+
+    /** Timeline entries for the view */
+    timeline?: FormTimelineEntry[];
 }
 
 /**
