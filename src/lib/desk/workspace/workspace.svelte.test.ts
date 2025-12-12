@@ -6,11 +6,11 @@
 import { render } from 'vitest-browser-svelte';
 import { page } from '@vitest/browser/context';
 import { describe, it, expect, vi } from 'vitest';
-import Workspace from '../Workspace.svelte';
-import ShortcutCard from '../ShortcutCard.svelte';
-import LinkGroup from '../LinkGroup.svelte';
-import WorkspaceChart from '../WorkspaceChart.svelte';
-import type { FilteredWorkspace, WorkspaceShortcut, WorkspaceLink, WorkspaceChart as ChartType } from '../types';
+import Workspace from './Workspace.svelte';
+import ShortcutCard from './ShortcutCard.svelte';
+import LinkGroup from './LinkGroup.svelte';
+import WorkspaceChart from './WorkspaceChart.svelte';
+import type { FilteredWorkspace, WorkspaceShortcut, WorkspaceLink, WorkspaceChart as ChartType } from './types';
 
 describe('P3-017 Workspace Components (Browser)', () => {
     const mockShortcut: WorkspaceShortcut = {
