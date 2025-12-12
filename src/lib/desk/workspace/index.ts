@@ -26,3 +26,10 @@ export {
     type UserContext,
     type RecentDocument
 } from './workspace-manager';
+
+// P3-017: Svelte Components
+export { default as WorkspaceView } from './Workspace.svelte';
+export { default as ShortcutCard } from './ShortcutCard.svelte';
+export { default as LinkGroup } from './LinkGroup.svelte';
+export { default as WorkspaceChartComponent } from './WorkspaceChart.svelte';
+

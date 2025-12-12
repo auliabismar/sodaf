@@ -16,7 +16,7 @@ export default defineConfig({
 	// 	exclude: ['svelte', '@sveltejs/kit']
 	// },
 	test: {
-		include: ['src/**/*.{test,spec}.{js,ts}'],
+		include: ['src/**/*.{test,spec}.{js,ts}', 'src/**/*.svelte.test.ts'],
 		browser: {
 			enabled: true,
 			provider: playwright(),
